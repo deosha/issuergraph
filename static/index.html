@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IssuerGraph</title>
+<style>
+  :root {
+    --bg: #10131a; --panel: #171b24; --panel2: #1d2230; --line: #2a3040;
+    --text: #e6e9f0; --muted: #8b93a7; --accent: #6aa6ff; --warn: #ffb020;
+    --bad: #ff6b6b; --ok: #4ec9a0; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex;
+           align-items: baseline; gap: 14px; }
+  header h1 { font-size: 16px; margin: 0; letter-spacing: .3px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  main { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr);
+         height: calc(100vh - 53px); }
+  .left { overflow: auto; border-right: 1px solid var(--line); }
+  .right { overflow: auto; background: var(--panel); }
+  nav { display: flex; gap: 2px; padding: 10px 14px 0; position: sticky; top: 0;
+        background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; }
+  nav button { background: none; border: 0; border-bottom: 2px solid transparent;
+               color: var(--muted); padding: 8px 12px; cursor: pointer; font-size: 13px; }
+  nav button.on { color: var(--text); border-bottom-color: var(--accent); }
+  section { padding: 16px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .09em;
+       color: var(--muted); margin: 22px 0 8px; font-weight: 600; }
+  h2:first-child { margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+       color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 7px 8px; border-bottom: 1px solid #21273400; border-top: 1px solid var(--line); }
+  tr:hover td { background: var(--panel2); }
+  .fact { color: var(--accent); cursor: pointer; font-family: var(--mono);
+          text-decoration: underline dotted var(--line); text-underline-offset: 3px; }
+  .fact:hover { text-decoration-color: var(--accent); }
+  .fact.sel { background: rgba(106,166,255,.16); border-radius: 3px; }
+  .num { font-family: var(--mono); text-align: right; white-space: nowrap; }
+  .muted { color: var(--muted); }
+  .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px;
+          border: 1px solid var(--line); color: var(--muted); }
+  .pill.bad { color: var(--bad); border-color: #4a2731; background: #2a1a1e; }
+  .pill.ok { color: var(--ok); border-color: #234238; background: #16241f; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+          margin-bottom: 12px; background: var(--panel2); }
+  .card.conflict { border-color: #4a2731; }
+  .card h3 { margin: 0 0 4px; font-size: 13px; }
+  .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }
+  .members { display: grid; gap: 6px; }
+  .member { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+            padding: 6px 8px; background: var(--panel); border-radius: 6px; }
+  .arrow { color: var(--muted); }
+  .evidence { padding: 16px; }
+  .evidence .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .evidence .meta b { color: var(--text); font-weight: 600; }
+  blockquote { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--warn);
+               background: #221d12; font-family: var(--mono); font-size: 12.5px;
+               white-space: pre-wrap; word-break: break-word; }
+  .pageimg { width: 100%; border: 1px solid var(--line); border-radius: 6px; display: block; }
+  .empty { color: var(--muted); padding: 30px 16px; }
+  code { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .chg { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: start; }
+  .chg > div { background: var(--panel); padding: 8px 10px; border-radius: 6px; font-size: 12.5px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="issuer-name">IssuerGraph</h1>
+  <span class="sub" id="issuer-sub"></span>
+</header>
+<main>
+  <div class="left">
+    <nav id="tabs"></nav>
+    <section id="view"><div class="empty">Loading…</div></section>
+  </div>
+  <div class="right"><div class="evidence" id="evidence">
+    <div class="empty">Click any underlined figure or statement to see the source document,
+    the page it came from, and the exact text behind it.</div>
+  </div></div>
+</main>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const inr = (v) => v == null ? "—" : "₹" + Number(v).toLocaleString("en-IN",
+  { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Cr";
+const day = (d) => d ? new Date(d).toLocaleDateString("en-GB",
+  { day: "2-digit", month: "short", year: "numeric" }) : "—";
+
+const fact = (claimId, label, cls = "") =>
+  `<span class="fact ${cls}" data-claim="${claimId}">${label}</span>`;
+
+const TABS = [
+  ["debt", "Debt"],
+  ["ratings", "Ratings"],
+  ["conflicts", "Conflicts"],
+  ["changes", "What changed"],
+  ["sources", "Sources"],
+];
+let state = { tab: "debt", data: {} };
+
+async function get(path) { const r = await fetch(path); return r.json(); }
+
+async function boot() {
+  const [issuer, debt, ratings, conflicts, corrob, changes] = await Promise.all([
+    get("/api/issuer"), get("/api/debt"), get("/api/ratings"),
+    get("/api/conflicts"), get("/api/corroborations"), get("/api/changes"),
+  ]);
+  state.data = { issuer, debt, ratings, conflicts, corrob, changes };
+  $("#issuer-name").textContent = issuer.name;
+  $("#issuer-sub").textContent =
+    `${issuer.documents.length} documents · ${issuer.claim_count} anchored claims · ` +
+    `${conflicts.length} conflicts · CIN ${issuer.cin}`;
+  $("#tabs").innerHTML = TABS.map(([id, label]) =>
+    `<button data-tab="${id}">${label}${id === "conflicts" && conflicts.length
+      ? ` <span class="pill bad">${conflicts.length}</span>` : ""}</button>`).join("");
+  render();
+}
+
+function render() {
+  document.querySelectorAll("#tabs button").forEach(b =>
+    b.classList.toggle("on", b.dataset.tab === state.tab));
+  $("#view").innerHTML = ({
+    debt: viewDebt, ratings: viewRatings, conflicts: viewConflicts,
+    changes: viewChanges, sources: viewSources,
+  })[state.tab]();
+}
+
+function viewDebt() {
+  const { totals, instruments } = state.data.debt;
+  const groups = {};
+  for (const t of totals) (groups[`${t.basis}|${t.as_of_date}`] ||= []).push(t);
+
+  const rows = Object.entries(groups).sort().reverse().map(([key, items]) => {
+    const [basis, asOf] = key.split("|");
+    const conflicted = items.find(i => i.conflict);
+    return `<tr>
+      <td>${esc(basis)}<div class="muted" style="font-size:12px">as at ${day(asOf)}</div></td>
+      ${items.map(i => `<td class="num">${fact(i.claim_id, inr(i.value_numeric))}
+        <div class="muted" style="font-size:11px">${esc(i.source_name)}</div></td>`).join("")}
+      <td>${conflicted
+        ? `<span class="pill bad">conflict ${Number(conflicted.conflict.spread_pct).toFixed(3)}%</span>`
+        : items.length > 1 ? `<span class="pill ok">${items.length} sources agree</span>`
+        : `<span class="pill">single source</span>`}</td></tr>`;
+  }).join("");
+
+  const instRows = instruments.map(i => `<tr>
+      <td>${fact(i.claim_id, esc(i.instrument_name))}</td>
+      <td><span class="pill">${esc(i.instrument_type)}</span></td>
+      <td class="num">${inr(i.amount_cr)}</td>
+      <td class="num">${day(i.maturity_date)}</td>
+      <td class="muted">${esc(i.source_name)}</td></tr>`).join("");
+
+  return `<h2>Total borrowings — every figure is a link to its source</h2>
+    <table><thead><tr><th>Basis</th><th colspan="9"></th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <h2>Rated instruments with stated maturity (${instruments.length})</h2>
+    <table><thead><tr><th>Instrument</th><th>Type</th><th class="num">Amount</th>
+      <th class="num">Maturity</th><th>Source</th></tr></thead>
+    <tbody>${instRows}</tbody></table>`;
+}
+
+function viewRatings() {
+  const rows = state.data.ratings.map(r => `<tr>
+    <td class="muted">${day(r.action_date)}</td>
+    <td>${esc(r.agency)}</td>
+    <td>${fact(r.claim_id, esc(r.instrument))}</td>
+    <td class="num">${r.rated_amount_cr == null ? "—" : inr(r.rated_amount_cr)}</td>
+    <td><b>${esc(r.rating)}</b>${r.outlook ? ` <span class="pill">${esc(r.outlook)}</span>` : ""}
+        ${r.watch ? ` <span class="pill bad">${esc(r.watch)}</span>` : ""}</td>
+    <td class="muted">${esc(r.action ?? "")}</td></tr>`).join("");
+  return `<h2>Rating actions across agencies</h2>
+    <table><thead><tr><th>Date</th><th>Agency</th><th>Instrument</th>
+      <th class="num">Rated amount</th><th>Rating</th><th>Action</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+function viewConflicts() {
+  const cards = state.data.conflicts.map(c => `<div class="card conflict">
+    <h3>⚠️ ${esc(c.subject)}</h3>
+    <div class="note">${esc(c.note)}</div>
+    <div class="members">${c.members.map(m => `<div class="member">
+      <span><b>${esc(m.source_name)}</b>
+        <span class="muted">· ${esc(m.title)} · ${day(m.published_date)}</span></span>
+      <span>${fact(m.claim_id, m.value_numeric != null ? inr(m.value_numeric)
+        : esc(m.value_text))}</span></div>`).join("")}</div>
+    <div class="muted" style="margin-top:8px;font-size:12px">
+      IssuerGraph does not choose between these. <code>${esc(c.fact_key)}</code></div>
+  </div>`).join("");
+
+  const agree = state.data.corrob.map(c => `<div class="card">
+    <h3>${esc(c.subject)}</h3>
+    <div class="members">${c.members.map(m => `<div class="member">
+      <span class="muted">${esc(m.source)}</span>
+      <span>${fact(m.claim_id, inr(m.value))}</span></div>`).join("")}</div>
+  </div>`).join("");
+
+  return `<h2>Conflicts (${state.data.conflicts.length})</h2>${cards || '<div class="empty">None.</div>'}
+    <h2>Independently corroborated (${state.data.corrob.length})</h2>
+    ${agree || '<div class="empty">None.</div>'}`;
+}
+
+function viewChanges() {
+  const byPair = {};
+  for (const c of state.data.changes)
+    (byPair[`${c.agency}|${c.from_date}|${c.to_date}`] ||= []).push(c);
+
+  return Object.entries(byPair).map(([key, items]) => {
+    const [agency, from, to] = key.split("|");
+    return `<h2>${esc(agency)} · ${day(from)} → ${day(to)}</h2>` + items.map(c => `
+      <div class="card"><h3>${esc(c.section)}
+        <span class="pill ${c.direction === "removed" ? "bad" : ""}">${c.direction}</span></h3>
+        <div class="chg">
+          <div>${c.from_claim_id
+            ? fact(c.from_claim_id, esc(c.from_text))
+            : '<span class="muted">not stated in the earlier report</span>'}</div>
+          <div class="arrow" style="background:none;padding-top:8px">→</div>
+          <div>${c.to_claim_id
+            ? fact(c.to_claim_id, esc(c.to_text))
+            : '<span class="muted">dropped from the later report</span>'}</div>
+        </div></div>`).join("");
+  }).join("") || '<div class="empty">No successive reports to compare.</div>';
+}
+
+function viewSources() {
+  return `<h2>Retrieved documents</h2>` + state.data.issuer.documents.map(d => `
+    <div class="card"><h3>${esc(d.title)}</h3>
+      <div class="muted" style="font-size:12px">
+        ${esc(d.source_name)} · ${esc(d.doc_type)} · ${d.page_count} pages ·
+        published ${day(d.published_date)} · retrieved ${day(d.retrieved_at)}<br>
+        <code>sha256 ${esc(d.sha256)}</code><br>
+        <a href="${esc(d.url)}" target="_blank" rel="noopener">original URL</a> ·
+        <a href="/api/pdf/${d.id}" target="_blank">stored copy</a>
+      </div></div>`).join("");
+}
+
+async function showClaim(claimId) {
+  document.querySelectorAll(".fact.sel").forEach(e => e.classList.remove("sel"));
+  document.querySelectorAll(`.fact[data-claim="${claimId}"]`)
+    .forEach(e => e.classList.add("sel"));
+
+  const c = await get(`/api/claim/${claimId}`);
+  const primary = c.anchors[0];
+  const value = c.value_numeric != null
+    ? `${inr(c.value_numeric)} <span class="muted">(${esc(c.value_unit ?? "")})</span>`
+    : esc(c.value_text);
+
+  $("#evidence").innerHTML = `
+    <div style="font-size:15px;margin-bottom:2px">${value}</div>
+    <div class="meta">${esc(c.subject)}</div>
+    <div class="meta">
+      <b>${esc(c.title)}</b> · ${esc(c.source_name)} · published ${day(c.published_date)}<br>
+      Page ${primary.page_no} of ${c.page_count} ·
+      chars ${primary.char_start}–${primary.char_end} ·
+      basis ${esc(c.basis)} · as at ${day(c.as_of_date)}<br>
+      <code>${esc(c.extractor)} v${esc(c.extractor_version)}</code> ·
+      <code>sha256 ${esc(c.sha256).slice(0, 16)}…</code> ·
+      retrieved ${day(c.retrieved_at)}<br>
+      <a href="${esc(c.url)}" target="_blank" rel="noopener">source URL</a> ·
+      <a href="/api/pdf/${c.document_id}#page=${primary.page_no}" target="_blank">open PDF</a>
+    </div>
+    ${c.anchors.map(a => `<blockquote>${esc(a.evidence_text)}</blockquote>`).join("")}
+    <img class="pageimg" id="pageimg"
+         src="/api/page.png?document_id=${c.document_id}&page_no=${primary.page_no}&claim_id=${c.id}">`;
+
+  const img = $("#pageimg");
+  img.onload = () => {
+    const rect = (primary.bbox_rects || [])[0];
+    if (!rect) return;
+    const scale = img.clientWidth / img.naturalWidth * 2.0;
+    const top = img.offsetTop + rect[1] * scale - 120;
+    $(".right").scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  };
+}
+
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest("#tabs button");
+  if (tab) { state.tab = tab.dataset.tab; render(); return; }
+  const f = e.target.closest(".fact");
+  if (f) showClaim(f.dataset.claim);
+});
+
+boot();
+</script>
+</body>
+</html>

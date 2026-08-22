@@ -1,0 +1,106 @@
+"""Rationale-to-rationale diff.
+
+Compares successive rationales from the *same* agency. Structural only: what
+appeared, what disappeared, what changed value. No sentiment scoring — the
+analyst reads both original texts, each anchored to its page.
+"""
+from __future__ import annotations
+
+import re
+
+QUARTER_SUFFIX = re.compile(r"\|\d{4}Q\d$")
+
+# Fact keys carrying a single tracked value per report.
+TRACKED_PREFIXES = ("liquidity_assessment|", "liquidity_detail|", "rating_grade|",
+                    "rating_outlook|", "rating_watch|", "rating_sensitivity|")
+SET_PREFIXES = ("rationale|",)
+
+SECTION_OF = {
+    "liquidity_assessment": "liquidity",
+    "liquidity_detail": "liquidity",
+    "rating_grade": "rating",
+    "rating_outlook": "rating",
+    "rating_watch": "rating",
+    "rating_sensitivity": "sensitivities",
+}
+
+
+def _diff_key(fact_key: str) -> str:
+    return QUARTER_SUFFIX.sub("", fact_key)
+
+
+def _section(fact_key: str) -> str:
+    head = fact_key.split("|", 1)[0]
+    if head == "rationale":
+        return fact_key.split("|")[2]      # strengths / weaknesses
+    return SECTION_OF.get(head, head)
+
+
+def _claims_for(conn, document_id: int) -> dict[str, dict]:
+    rows = conn.execute(
+        """
+        SELECT id, fact_key, value_text, subject FROM claim
+        WHERE document_id = %s AND value_text IS NOT NULL
+          AND (fact_key LIKE 'liquidity_assessment|%%' OR fact_key LIKE 'liquidity_detail|%%' OR fact_key LIKE 'rating_grade|%%'
+               OR fact_key LIKE 'rating_outlook|%%' OR fact_key LIKE 'rating_watch|%%'
+               OR fact_key LIKE 'rating_sensitivity|%%' OR fact_key LIKE 'rationale|%%')
+        ORDER BY id
+        """,
+        (document_id,),
+    ).fetchall()
+    return {_diff_key(r["fact_key"]): r for r in rows}
+
+
+def build_diffs(conn, issuer_id: int) -> int:
+    conn.execute("DELETE FROM rationale_diff WHERE issuer_id = %s", (issuer_id,))
+
+    agencies = conn.execute(
+        """
+        SELECT DISTINCT source_name FROM document
+        WHERE issuer_id = %s AND doc_type = 'rating_rationale' ORDER BY source_name
+        """,
+        (issuer_id,),
+    ).fetchall()
+
+    written = 0
+    for agency in agencies:
+        docs = conn.execute(
+            """
+            SELECT id, published_date FROM document
+            WHERE issuer_id = %s AND doc_type = 'rating_rationale' AND source_name = %s
+            ORDER BY published_date NULLS FIRST, id
+            """,
+            (issuer_id, agency["source_name"]),
+        ).fetchall()
+        if len(docs) < 2:
+            continue
+
+        for older, newer in zip(docs, docs[1:]):
+            before = _claims_for(conn, older["id"])
+            after = _claims_for(conn, newer["id"])
+
+            for key in sorted(set(before) | set(after)):
+                old, new = before.get(key), after.get(key)
+                if old and new and old["value_text"] == new["value_text"]:
+                    continue
+                if old and new:
+                    direction = "changed"
+                elif new:
+                    direction = "added"
+                else:
+                    direction = "removed"
+
+                conn.execute(
+                    """
+                    INSERT INTO rationale_diff
+                        (issuer_id, agency, from_document_id, to_document_id, from_date, to_date,
+                         section, direction, from_claim_id, to_claim_id, from_text, to_text)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """,
+                    (issuer_id, agency["source_name"], older["id"], newer["id"],
+                     older["published_date"], newer["published_date"], _section(key), direction,
+                     old["id"] if old else None, new["id"] if new else None,
+                     old["value_text"] if old else None, new["value_text"] if new else None),
+                )
+                written += 1
+    return written
