@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: issuergraph.com DNS. The zone is retained on delete - its nameservers are what the registrar points at.
+
+# Records that existed at GoDaddy before the move (Google Workspace mail,
+# site verification) are reproduced here; only the SPF include chain was
+# flattened. The App Runner records come from
+# "aws apprunner describe-custom-domains" and are static once issued.
+
+Resources:
+  Zone:
+    Type: AWS::Route53::HostedZone
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: issuergraph.com
+
+  # --- site ------------------------------------------------------------------
+  Apex:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: issuergraph.com.
+      Type: A
+      AliasTarget:
+        DNSName: gdmehx3zgr.ap-south-1.awsapprunner.com.
+        HostedZoneId: Z00855883LBHKTIC4ODF2   # App Runner, ap-south-1
+        EvaluateTargetHealth: true
+  Www:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: www.issuergraph.com.
+      Type: CNAME
+      TTL: 300
+      ResourceRecords: [gdmehx3zgr.ap-south-1.awsapprunner.com]
+  AcmValidation0:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: _f6f501d79d1875bb84c9e0210260c2de.issuergraph.com.
+      Type: CNAME
+      TTL: 300
+      ResourceRecords: [_ad05351209046b612a045330377eb78b.wzccmgtwzk.acm-validations.aws.]
+  AcmValidation1:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: _ee3101354864846335d5ff81d9423abd.qe914lqioj6di5ua6vg9bgaug0skndi.issuergraph.com.
+      Type: CNAME
+      TTL: 300
+      ResourceRecords: [_825b8bac1d4965c553dc201fc31f85c0.wzccmgtwzk.acm-validations.aws.]
+  AcmValidation2:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: _cd4cff912e8db726240b60a4ba953363.www.issuergraph.com.
+      Type: CNAME
+      TTL: 300
+      ResourceRecords: [_ac225a63b22251bdc08d9e2f44ae6512.wzccmgtwzk.acm-validations.aws.]
+
+  # --- mail (Google Workspace) -----------------------------------------------
+  Mx:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: issuergraph.com.
+      Type: MX
+      TTL: 3600
+      ResourceRecords:
+        - 1 aspmx.l.google.com.
+        - 5 alt1.aspmx.l.google.com.
+        - 5 alt2.aspmx.l.google.com.
+        - 10 alt3.aspmx.l.google.com.
+        - 10 alt4.aspmx.l.google.com.
+  ApexTxt:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: issuergraph.com.
+      Type: TXT
+      TTL: 3600
+      ResourceRecords:
+        - '"v=spf1 include:_spf.google.com ~all"'
+        - '"google-site-verification=2AemLF-ogJlMRoluxpDkCdmaAGiU4RnVvP1lGKUNScs"'
+  Dkim:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: google._domainkey.issuergraph.com.
+      Type: TXT
+      TTL: 3600
+      ResourceRecords:
+        - '"v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA03dKpxcgFu6N070OFMTHfVSFFmu4SsEoOkchPVoOTExhiD2IiK8TGD83YSwhWkePLysXVU1wrvLeiJYpkxRig4T0sTAcBv6o/EaRxCPGeor6gNDjhOa9mj0M8UEVG3K8hQ6ul2/riHiFotz9YiWuto7QCcSHsGojSR1j2PnTwUnZ761kC/mKNeR5xJcqrgAnL" "BhFM9qtOBW5rn8Ic8Tuu9R/DFJxO3+MH8HCWpnW6STUjXOCtpAW+najhpXzDxBb6IYocSCiIENs4gW8Svdw/plfq7XJutbmcQFYwqBjCrnkSHr+QkM/b2JNTsPvkEZOr7RNFG35Non5MMjLSU1lyQIDAQAB"'
+  Dmarc:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref Zone
+      Name: _dmarc.issuergraph.com.
+      Type: TXT
+      TTL: 3600
+      ResourceRecords:
+        - '"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"'
+
+Outputs:
+  NameServers:
+    Value: !Join [" ", !GetAtt Zone.NameServers]
