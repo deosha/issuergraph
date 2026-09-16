@@ -75,9 +75,16 @@ def test_total_is_the_sum_of_its_three_anchored_components(conn):
         "SELECT evidence_text FROM evidence_anchor WHERE claim_id = %s ORDER BY ordinal",
         (total["id"],),
     )
-    assert len(anchors) == 3
-    components = sum(Decimal(a["evidence_text"].replace(",", "")) for a in anchors)
-    assert components == total["value_numeric"]
+    # Four anchors, not three: the three component amounts that make up the sum,
+    # plus the statement's own unit declaration. The arithmetic is proved by the
+    # first three; the magnitude is proved by the fourth, and a number without
+    # its unit is not a verified fact.
+    amounts = [a["evidence_text"] for a in anchors
+               if a["evidence_text"].replace(",", "").replace(".", "").isdigit()]
+    units = [a["evidence_text"] for a in anchors if a["evidence_text"] not in amounts]
+    assert len(amounts) == 3, anchors
+    assert len(units) == 1 and "crore" in units[0].lower(), units
+    assert sum(Decimal(a.replace(",", "")) for a in amounts) == total["value_numeric"]
 
 
 # --- disagreement is preserved, never resolved ------------------------------

@@ -33,8 +33,19 @@ CREATE TABLE document (
     retrieved_at    TIMESTAMPTZ NOT NULL,   -- when WE fetched it
     published_date  DATE,                   -- what the document says about itself
     page_count      INT NOT NULL,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+    -- Extraction coverage: did the extractor find what this document was
+    -- declared to contain? Without this, a layout change and an issuer that
+    -- stopped disclosing a figure are indistinguishable. See sql/003.
+    extraction_status   TEXT NOT NULL DEFAULT 'unknown'
+                        CHECK (extraction_status IN ('complete', 'incomplete', 'unknown')),
+    extraction_expected INT,
+    extraction_found    INT,
+    extraction_missing  TEXT[] NOT NULL DEFAULT '{}',
+    extracted_at        TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CHECK (extraction_status <> 'incomplete' OR cardinality(extraction_missing) > 0)
 );
+CREATE INDEX ON document (issuer_id, extraction_status);
 CREATE INDEX ON document (issuer_id, published_date);
 
 CREATE TABLE document_page (

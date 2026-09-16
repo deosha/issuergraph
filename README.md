@@ -9,8 +9,10 @@ become conflict rows rather than a silently chosen number.
 > open IIFL Finance → see a debt/rating fact → click it → see the exact source
 > evidence → see when another document disagrees with it.
 
-`tests/test_evidence.py` asserts this end to end; `tests/test_reconcile_fixes.py`
-locks down the loader and reconciliation invariants (47 tests total).
+`tests/test_evidence.py` asserts this end to end; `test_reconcile_fixes.py`,
+`test_extraction_coverage.py` and `test_api_scope.py` lock down the loader,
+reconciliation, extraction coverage, declared units and issuer scoping
+(84 tests total).
 
 ## Run it
 
@@ -18,6 +20,9 @@ locks down the loader and reconciliation invariants (47 tests total).
 brew services start postgresql@14
 createdb issuergraph
 psql -d issuergraph -f sql/schema.sql
+# existing databases only — schema.sql already includes both:
+psql -d issuergraph -f sql/002_conflict_history.sql
+psql -d issuergraph -f sql/003_extraction_coverage.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -76,7 +81,7 @@ watch to a Negative outlook.
 
 Read `docs/SCHEMA.md` first — it explains the nine tables and the invariants.
 
-Three things are worth calling out:
+Five things are worth calling out:
 
 **Page text is built from word boxes, not `get_text()`.** Words are joined by
 spaces within a line and newlines between lines, and each word's char range and
@@ -92,10 +97,26 @@ raises `EvidenceMismatch` — aborting the whole ingest — on any drift.
 borrowings" line, so the total is computed from three rows; the claim carries
 three anchors and the UI highlights all three cells on page 438.
 
+**An anchor proves location, not meaning.** Change a statement's header from
+crores to lakhs and every digit stays where it was: every anchor still verifies
+and every value is wrong by a factor of 100. So the unit is read from the
+statement's own "(₹ in Crores)" declaration, converted if it is not crores, and
+anchored alongside each amount — the fourth highlight on a total borrowings
+claim is the unit that establishes its magnitude.
+
+**A fact that failed to parse is not a fact the issuer stopped reporting.**
+An extractor that matches nothing returns an empty list, and every claim it did
+return is still perfectly anchored, so silence is the dangerous failure. Each
+document therefore declares what it must yield — the annual report: two bases ×
+two comparative columns × (three components + a total) — and is stored
+`extraction_status = 'incomplete'` with named reasons when it falls short.
+`python -m issuergraph.pipeline --strict` turns that into a non-zero exit.
+
 ## Layout
 
 ```
 sql/schema.sql              nine tables
+sql/002_*.sql, 003_*.sql    conflict history; extraction coverage
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -103,6 +124,8 @@ issuergraph/
   loader.py                 persists claims, verifies every anchor
   extractors/
     common.py               offset-preserving parse helpers
+    units.py                the declared monetary scale, read and anchored
+    coverage.py             what each document must yield, and what it missed
     icra.py                 rating table, ISIN annexure, strengths/challenges,
                             liquidity, sensitivities
     care.py                 facilities table, liquidity, factors
@@ -124,8 +147,14 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
 
 ## Known limits of this slice
 
-- Four extractors, tuned to four publishers' current layouts. A format change
-  breaks parsing loudly (offset assertions fail) rather than silently.
+- Four extractors, tuned to four publishers' current layouts. A format change is
+  caught two ways, and an earlier version of this README overstated the first:
+  offset assertions fail loudly only when a pattern *matches* and the text has
+  moved. A pattern that stops matching raises nothing, so it is caught instead by
+  coverage — each document declares what it must yield and is stored
+  `extraction_incomplete`, with reasons, when it does not. Only the annual-report
+  extractor declares real requirements so far; the other three fall back to
+  "produced at least one claim", which proves very little.
 - Only ICRA has ≥2 reports here, so only ICRA produces diffs.
 - Rationale bullets are diffed on their headline text, so a reworded strength
   reads as one removal plus one addition.

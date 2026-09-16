@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from .corpus import ISSUER, SOURCES
 from .db import connect
 from .diff import build_diffs
+from .extractors import coverage as coverage_check
 from .ingest import RAW_DIR, ingest_document
 from .loader import load_claims
 from .reconcile import reconcile
@@ -53,9 +54,25 @@ def pages_of(conn, document_id: int) -> list[dict]:
     ).fetchall()
 
 
-def run(reset: bool = False) -> dict:
+class IncompleteExtraction(RuntimeError):
+    """Raised in strict mode when a document does not meet its own declaration."""
+
+
+def record_coverage(conn, document_id: int, cov) -> None:
+    conn.execute(
+        """
+        UPDATE document
+           SET extraction_status = %s, extraction_expected = %s,
+               extraction_found = %s, extraction_missing = %s, extracted_at = now()
+         WHERE id = %s
+        """,
+        (cov.status, cov.expected, cov.found, cov.missing, document_id),
+    )
+
+
+def run(reset: bool = False, strict: bool = False) -> dict:
     fetched = fetch_missing()
-    stats = {"fetched": fetched, "documents": [], "claims": 0}
+    stats = {"fetched": fetched, "documents": [], "claims": 0, "incomplete": []}
 
     with connect() as conn:
         if reset:
@@ -79,6 +96,13 @@ def run(reset: bool = False) -> dict:
 
             pages = pages_of(conn, document_id)
             claims = source.extractor.extract(source.meta, pages)
+            cov = coverage_check.check(source.extractor, source.meta, pages, claims)
+            record_coverage(conn, document_id, cov)
+            if not cov.complete:
+                stats["incomplete"].append({"file": source.filename, "id": document_id,
+                                            "missing": cov.missing})
+                if strict:
+                    raise IncompleteExtraction(f"{source.filename}: {cov.summary()}")
 
             # the document's own stated date, discovered during extraction
             dates = [c.as_of_date for c in claims if c.as_of_date]
@@ -88,7 +112,8 @@ def run(reset: bool = False) -> dict:
 
             load_claims(conn, issuer_id, document_id, claims)
             stats["documents"].append({"file": source.filename, "id": document_id,
-                                       "claims": len(claims), "status": "extracted"})
+                                       "claims": len(claims), "status": "extracted",
+                                       "coverage": cov.status})
             stats["claims"] += len(claims)
 
         stats.update(reconcile(conn, issuer_id))
@@ -99,9 +124,15 @@ def run(reset: bool = False) -> dict:
 
 
 if __name__ == "__main__":
-    result = run(reset="--reset" in sys.argv)
+    result = run(reset="--reset" in sys.argv, strict="--strict" in sys.argv)
     for doc in result["documents"]:
-        print(f"  {doc['status']:>9}  {doc['file']:<24} id={doc['id']:<3} claims={doc['claims']}")
+        note = "" if doc.get("coverage", "complete") == "complete" else "  INCOMPLETE"
+        print(f"  {doc['status']:>9}  {doc['file']:<24} id={doc['id']:<3} "
+              f"claims={doc['claims']}{note}")
+    for doc in result["incomplete"]:
+        print(f"\n  extraction incomplete: {doc['file']}")
+        for reason in doc["missing"]:
+            print(f"    - {reason}")
     print(f"\nclaims={result['claims']}  conflicts={result['conflicts']}  "
           f"corroborations={result['corroborations']}  resolved={result['resolved']}  "
           f"diffs={result['diffs']}")

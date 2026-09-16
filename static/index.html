@@ -121,6 +121,9 @@ async function boot() {
   $("#issuer-sub").textContent =
     `${issuer.documents.length} documents · ${issuer.claim_count} anchored claims · ` +
     `${open} open conflicts · CIN ${issuer.cin}`;
+  const incomplete = issuer.documents.filter(d => d.extraction_status === "incomplete");
+  if (incomplete.length) $("#issuer-sub").textContent +=
+    ` · ⚠️ ${incomplete.length} document(s) incompletely extracted`;
   $("#tabs").innerHTML = TABS.map(([id, label]) =>
     `<button data-tab="${id}">${label}${id === "conflicts" && open
       ? ` <span class="pill bad">${open}</span>` : ""}</button>`).join("");
@@ -259,9 +262,27 @@ function viewChanges() {
   }).join("") || '<div class="empty">No successive reports to compare.</div>';
 }
 
+// Extraction coverage is shown per document because "we did not parse this"
+// must never be readable as "the issuer did not report this".
+function coverageBadge(d) {
+  if (d.extraction_status === "complete")
+    return `<span class="pill ok">extraction complete
+      ${d.extraction_found}/${d.extraction_expected}</span>`;
+  if (d.extraction_status === "incomplete")
+    return `<span class="pill bad">extraction incomplete
+      ${d.extraction_found}/${d.extraction_expected}</span>`;
+  return `<span class="pill">coverage not checked</span>`;
+}
+
 function viewSources() {
   return `<h2>Retrieved documents</h2>` + state.data.issuer.documents.map(d => `
-    <div class="card"><h3>${esc(d.title)}</h3>
+    <div class="card"><h3>${esc(d.title)} ${coverageBadge(d)}</h3>
+      ${(d.extraction_missing || []).length ? `<div class="note">
+        Facts this document was expected to yield but did not:
+        <ul style="margin:6px 0 0 16px">${d.extraction_missing
+          .map(m => `<li>${esc(m)}</li>`).join("")}</ul>
+        <div style="margin-top:6px">Absent facts below reflect parsing, not disclosure.</div>
+      </div>` : ""}
       <div class="muted" style="font-size:12px">
         ${esc(d.source_name)} · ${esc(d.doc_type)} · ${d.page_count} pages ·
         published ${day(d.published_date)} · retrieved ${day(d.retrieved_at)}<br>

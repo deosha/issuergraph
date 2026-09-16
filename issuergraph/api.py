@@ -75,7 +75,8 @@ def issuer(issuer_id: int | None = None):
     row["documents"] = query(
         """
         SELECT id, doc_type, source_name, title, url, sha256, byte_size, page_count,
-               retrieved_at, published_date
+               retrieved_at, published_date, extraction_status, extraction_expected,
+               extraction_found, extraction_missing, extracted_at
         FROM document WHERE issuer_id = %s
         ORDER BY published_date NULLS FIRST, id
         """,
