@@ -1,10 +1,12 @@
--- IssuerGraph vertical slice schema. See docs/SCHEMA.md for rationale.
+-- IssuerGraph schema. See docs/SCHEMA.md for rationale.
+-- Includes migrations 002-005; existing databases apply those files instead.
 
 DROP TABLE IF EXISTS rationale_diff CASCADE;
 DROP TABLE IF EXISTS extraction_run CASCADE;
 DROP TABLE IF EXISTS conflict_member CASCADE;
 DROP TABLE IF EXISTS conflict CASCADE;
 DROP TABLE IF EXISTS debt_observation CASCADE;
+DROP TABLE IF EXISTS rating_state CASCADE;
 DROP TABLE IF EXISTS rating_action CASCADE;
 DROP TABLE IF EXISTS evidence_anchor CASCADE;
 DROP TABLE IF EXISTS claim CASCADE;
@@ -125,7 +127,13 @@ CREATE TABLE rating_action (
     id            BIGSERIAL PRIMARY KEY,
     claim_id      BIGINT NOT NULL UNIQUE REFERENCES claim(id) ON DELETE CASCADE,
     agency        TEXT NOT NULL,
-    instrument    TEXT NOT NULL,
+    instrument    TEXT NOT NULL,          -- the agency's own wording
+    -- What makes two agencies' ratings comparable: the same instrument class on
+    -- the same rating scale. Publisher wording differs for identical
+    -- instruments, and one action rates several. See sql/005.
+    instrument_class TEXT NOT NULL DEFAULT 'other',
+    term          TEXT NOT NULL DEFAULT 'long_term'
+                  CHECK (term IN ('long_term', 'short_term')),
     rated_amount_cr NUMERIC,
     rating        TEXT NOT NULL,
     outlook       TEXT,                     -- Stable / Negative / Positive
@@ -135,6 +143,26 @@ CREATE TABLE rating_action (
     action_date   DATE
 );
 CREATE INDEX ON rating_action (agency, action_date);
+
+-- Effective-dated rating timelines, derived from rating_action and rebuilt each
+-- run: a rating stands from its action date until the same agency next acts on
+-- the same instrument class. Replaces calendar-quarter bucketing. See sql/005.
+CREATE TABLE rating_state (
+    id               BIGSERIAL PRIMARY KEY,
+    issuer_id        BIGINT NOT NULL REFERENCES issuer(id) ON DELETE CASCADE,
+    claim_id         BIGINT NOT NULL REFERENCES claim(id) ON DELETE CASCADE,
+    agency           TEXT NOT NULL,
+    instrument_class TEXT NOT NULL,
+    term             TEXT NOT NULL,
+    instrument       TEXT NOT NULL,
+    grade            TEXT NOT NULL,
+    outlook          TEXT,
+    watch            TEXT,
+    effective_from   DATE NOT NULL,
+    effective_to     DATE,                 -- null = still in force
+    CHECK (effective_to IS NULL OR effective_to > effective_from)
+);
+CREATE INDEX ON rating_state (issuer_id, instrument_class, term, effective_from);
 
 CREATE TABLE debt_observation (
     id              BIGSERIAL PRIMARY KEY,
@@ -167,8 +195,12 @@ CREATE TABLE conflict (
 CREATE INDEX ON conflict (issuer_id, resolved_at, first_detected_at);
 
 CREATE TABLE conflict_member (
-    conflict_id BIGINT NOT NULL REFERENCES conflict(id) ON DELETE CASCADE,
-    claim_id    BIGINT NOT NULL REFERENCES claim(id) ON DELETE CASCADE,
+    conflict_id  BIGINT NOT NULL REFERENCES conflict(id) ON DELETE CASCADE,
+    claim_id     BIGINT NOT NULL REFERENCES claim(id) ON DELETE CASCADE,
+    -- What this member said about the disputed aspect, when that is narrower
+    -- than the claim's own verbatim text: 'Negative' out of the full rating
+    -- line the claim quotes. Null when the claim's value is the compared value.
+    stated_value TEXT,
     PRIMARY KEY (conflict_id, claim_id)
 );
 

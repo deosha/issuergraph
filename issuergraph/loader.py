@@ -114,11 +114,13 @@ def _load(conn, issuer_id: int, document_id: int, claims: list[ExtractedClaim]) 
             r = claim.rating
             conn.execute(
                 """
-                INSERT INTO rating_action (claim_id, agency, instrument, rated_amount_cr, rating,
+                INSERT INTO rating_action (claim_id, agency, instrument, instrument_class,
+                                           term, rated_amount_cr, rating,
                                            outlook, watch, action, previous_rating, action_date)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """,
-                (claim_id, r.agency, r.instrument, r.rated_amount_cr, r.rating, r.outlook,
+                (claim_id, r.agency, r.instrument, r.instrument_class, r.term,
+                 r.rated_amount_cr, r.rating, r.outlook,
                  r.watch, r.action, r.previous_rating, r.action_date),
             )
         if claim.debt:

@@ -133,15 +133,37 @@ def ratings(issuer_id: int | None = None):
     issuer_id = resolve_issuer(issuer_id)
     return query(
         """
-        SELECT c.id AS claim_id, r.agency, r.instrument, r.rated_amount_cr, r.rating,
-               r.outlook, r.watch, r.action, r.action_date, d.title, d.source_name
+        SELECT c.id AS claim_id, r.agency, r.instrument, r.instrument_class, r.term,
+               r.rated_amount_cr, r.rating, r.outlook, r.watch, r.action, r.action_date,
+               s.effective_from, s.effective_to, d.title, d.source_name
         FROM rating_action r
         JOIN claim c ON c.id = r.claim_id
         JOIN document d ON d.id = c.document_id
+        LEFT JOIN rating_state s ON s.claim_id = c.id
         WHERE c.fact_key LIKE 'rating_instrument|%%' AND c.issuer_id = %s
         ORDER BY r.action_date DESC, r.agency, r.rated_amount_cr DESC NULLS LAST
         """,
         (issuer_id,),
+    )
+
+
+@app.get("/api/rating-timeline")
+def rating_timeline(issuer_id: int | None = None):
+    """Each agency's rating of each instrument class, and when it was in force.
+
+    This is the structure conflicts are computed from, exposed so the windows
+    behind a disagreement can be read directly rather than inferred.
+    """
+    return query(
+        """
+        SELECT instrument_class, term, agency, instrument, grade, outlook, watch,
+               effective_from, effective_to, claim_id,
+               effective_to IS NULL AS current
+        FROM rating_state
+        WHERE issuer_id = %s
+        ORDER BY instrument_class, term, effective_from DESC, agency
+        """,
+        (resolve_issuer(issuer_id),),
     )
 
 
@@ -170,7 +192,8 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
     for row in rows:
         row["members"] = query(
             """
-            SELECT c.id AS claim_id, c.value_numeric, c.value_text, c.subject, c.basis,
+            SELECT c.id AS claim_id, c.value_numeric, c.value_text, m.stated_value,
+                   c.subject, c.basis,
                    c.as_of_date, d.source_name, d.title, d.published_date
             FROM conflict_member m
             JOIN claim c ON c.id = m.claim_id

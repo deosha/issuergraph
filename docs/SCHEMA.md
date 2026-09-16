@@ -5,7 +5,11 @@ Minimum model required by the acceptance test:
 > open IIFL Finance → see a debt/rating fact → click it → see the exact source
 > evidence → see when another document disagrees with it.
 
-Nine tables. Nothing speculative: no scores, no embeddings, no tenancy.
+Twelve tables. Nothing speculative: no scores, no embeddings, no tenancy. Nine
+carry the evidence graph; three exist because of what the first nine could not
+say — `extraction_run` (which parser produced these facts), `rating_state`
+(when each agency's view was in force), and the coverage columns on `document`
+(what this document was supposed to yield and did not).
 
 ## Core invariant
 
@@ -53,6 +57,33 @@ One immutable retrieved artifact. `sha256` is over the raw bytes and is
 `url` + `retrieved_at` answer "was this source available when the analyst
 decided?". `published_date` is the document's own stated date (parsed from its
 text), distinct from when we fetched it.
+
+`extraction_status` / `extraction_expected` / `extraction_found` /
+`extraction_missing` record whether the extractor found what this document was
+declared to contain. Without them, an extractor that stopped matching and an
+issuer that stopped disclosing produce identical database state — the claims
+that remain are all still perfectly anchored. The CHECK constraint refuses an
+`incomplete` status with no stated reasons.
+
+### `extraction_run`
+One row per extraction of a document: both extractor versions, why the run
+happened (`initial` / `version_changed` / `forced`), and how many claims were
+written and replaced. Claims are derived and get rewritten when an extractor is
+fixed; this is the history that rewriting would otherwise erase.
+
+### `rating_state`
+Effective-dated rating timelines, derived from `rating_action` and rebuilt each
+run: one row per (agency, instrument class, rating scale, period), where a
+rating stands from its action date until the same agency next acts on the same
+class. `effective_to IS NULL` means still in force.
+
+This table is what makes cross-agency comparison meaningful. Comparing on the
+publisher's own instrument wording cannot work — ICRA's "Non-convertible
+debenture programme", CARE's "Non Convertible Debentures" and Brickwork's "NCDs
+Public Issue" are one instrument class under three names — and comparing inside
+calendar quarters both merges an agency's successive actions and splits
+concurrent views that straddle a boundary. A conflict requires overlapping
+intervals, one instrument class and one rating scale.
 
 ### `document_page`
 Per-page canonical text and geometry. PK `(document_id, page_no)`.
@@ -141,6 +172,12 @@ signal:
 Claim ids are rewritten whenever a document is re-extracted, so each run
 refreshes `conflict_member` while the conflict's own identity and timestamps
 survive.
+
+`conflict_member.stated_value` holds what that member said about the disputed
+aspect when it is narrower than the claim's own text: the claim quotes the whole
+rating line (`[ICRA]AA (Negative); reaffirmed`), while the outlook conflict is
+`Negative` against `Stable`. The claim keeps the verbatim evidence; the column
+carries the compared value.
 
 ### `rationale_diff`
 Successive rationales from the same agency for the same issuer. One row per

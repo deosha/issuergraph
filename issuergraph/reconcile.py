@@ -15,16 +15,20 @@ Conflicts are durable. They are upserted, never deleted: first_detected_at
 answers "when did this appear", last_seen_at "is it still true", and resolved_at
 records a disagreement that stopped recurring — itself worth knowing.
 
-TODO(effective-dating): rating fact keys bucket by calendar quarter
-(rating_grade|long_term|2025Q3). That both merges actions that merely landed in
-the same quarter and splits genuinely concurrent views that straddle a quarter
-boundary. It needs replacing with effective-dated intervals per
-(agency, instrument) — an action is in force until the next action supersedes
-it — which is a separate piece of work, not a tweak here.
+Ratings are compared on effective-dated intervals, not calendar quarters. See
+effective.py: a rating stands from its action date until the same agency next
+acts on the same instrument class, and only agencies whose intervals overlap —
+on the same instrument class and the same rating scale — can be said to
+disagree. The quarter buckets this replaces both merged an agency's successive
+actions that landed in one quarter and split concurrent views that straddled a
+boundary.
 """
 from __future__ import annotations
 
 from decimal import Decimal
+
+from .effective import build_rating_states, concurrent_pairs
+from .models import normalize_value
 
 # Agreement is tested two ways, and failing EITHER makes it a conflict.
 #
@@ -125,9 +129,10 @@ def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
     conn.execute("DELETE FROM conflict_member WHERE conflict_id = %s", (row["id"],))
     for member in rows:
         conn.execute(
-            "INSERT INTO conflict_member (conflict_id, claim_id) VALUES (%s,%s) "
-            "ON CONFLICT DO NOTHING",
-            (row["id"], member["id"]),
+            "INSERT INTO conflict_member (conflict_id, claim_id, stated_value) "
+            "VALUES (%s,%s,%s) ON CONFLICT (conflict_id, claim_id) "
+            "DO UPDATE SET stated_value = EXCLUDED.stated_value",
+            (row["id"], member["id"], member.get("stated_value")),
         )
     return row["id"]
 
@@ -159,6 +164,116 @@ def _describe(rows: list[dict]) -> str:
         by_source.setdefault(row["source_name"], []).append(row["value_text"])
     return "; ".join(f"{source} says {' / '.join(values)}"
                      for source, values in sorted(by_source.items()))
+
+
+CLASS_LABELS = {
+    "ncd": "non-convertible debentures",
+    "subordinated_debt": "subordinated debt",
+    "perpetual_debt": "perpetual debt",
+    "bank_facility": "bank facilities",
+    "mld": "market-linked debentures",
+    "commercial_paper": "commercial paper",
+    "debt_securities": "debt securities",
+    "other": "other instruments",
+}
+
+# What two concurrent ratings of the same instrument can disagree about.
+RATING_ASPECTS = (("grade", "rating_grade", "grade"),
+                  ("outlook", "rating_outlook", "outlook"),
+                  ("watch", "rating_watch", "watch"))
+
+
+def _window_text(start, end) -> str:
+    return f"from {start}" + (f" to {end}" if end else " (still in force)")
+
+
+def _merge_runs(windows: list[dict]) -> list[dict]:
+    """Collapse consecutive windows of the same disagreement into one run.
+
+    Each of an agency's rating actions opens a new interval, so an unchanged
+    disagreement — Brickwork AA+ against ICRA AA on debentures — would otherwise
+    be re-detected as a fresh conflict every time either agency reaffirms. That
+    is the same defect the quarter buckets had, wearing a better hat: a
+    disagreement that has persisted since September is one fact about the
+    issuer, not three.
+
+    Windows are already grouped by aspect, instrument class, scale and the exact
+    pair of values, so merging is purely temporal: contiguous or overlapping
+    intervals become one, and a gap (someone agreed for a while) correctly
+    starts a new run.
+    """
+    ordered = sorted(windows, key=lambda w: w["start"])
+    runs: list[dict] = []
+    for window in ordered:
+        current = runs[-1] if runs else None
+        contiguous = (current is not None
+                      and (current["end"] is None or window["start"] <= current["end"]))
+        if not contiguous:
+            runs.append({**window, "members": dict(window["members"])})
+            continue
+        current["members"].update(window["members"])
+        if current["end"] is not None:
+            current["end"] = (None if window["end"] is None
+                              else max(current["end"], window["end"]))
+    return runs
+
+
+def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
+    """Disagreements between agencies whose ratings were in force together.
+
+    A conflict's identity is (aspect, instrument class, scale, start of the run).
+    Keying on the *start* is what makes the history durable: as the disagreement
+    extends forward the key does not move, so first_detected_at survives and
+    last_seen_at advances, which is the question an analyst actually asks —
+    how long have these two disagreed?
+    """
+    build_rating_states(conn, issuer_id)
+
+    grouped: dict[tuple, list[dict]] = {}
+    for instrument_class, term, a, b, (start, end) in concurrent_pairs(conn, issuer_id):
+        for field, prefix, label in RATING_ASPECTS:
+            left, right = a[field], b[field]
+            if left is None or right is None:
+                # One agency not assigning an outlook is not a counter-opinion.
+                continue
+            if normalize_value(left) == normalize_value(right):
+                continue
+            stated = tuple(sorted(((a["agency"], left, a["instrument"]),
+                                   (b["agency"], right, b["instrument"]))))
+            # The pair of agencies is part of the identity. CARE disagreeing
+            # with Brickwork about debentures and ICRA disagreeing with
+            # Brickwork about debentures are two disagreements, and collapsing
+            # them onto one key would hide whichever was recorded second.
+            pair = "~".join(agency for agency, _, _ in stated)
+            key = (prefix, label, instrument_class, term, pair,
+                   tuple((agency, normalize_value(value)) for agency, value, _ in stated))
+            grouped.setdefault(key, []).append({
+                "start": start, "end": end, "stated": stated,
+                "members": {a["claim_id"]: a["agency"], b["claim_id"]: b["agency"]},
+            })
+
+    found = 0
+    for (prefix, label, instrument_class, term, pair, _values), windows in sorted(
+            grouped.items(), key=lambda item: str(item[0])):
+        for run in _merge_runs(windows):
+            said = {agency: value for agency, value, _ in run["stated"]}
+            rows = [{"id": claim_id, "source_name": agency,
+                     "stated_value": said.get(agency)}
+                    for claim_id, agency in sorted(run["members"].items())]
+            scale = "Long-term" if term == "long_term" else "Short-term"
+            what = CLASS_LABELS.get(instrument_class, instrument_class)
+            subject = f"{scale} {label} on {what}, {_window_text(run['start'], run['end'])}"
+            note = " · ".join(f"{agency} says {value} ({instrument})"
+                              for agency, value, instrument in run["stated"])
+            conflict_id = _record(
+                conn, issuer_id,
+                f"{prefix}|{instrument_class}|{term}|{pair}|{run['start'].isoformat()}",
+                subject, "categorical_disagreement", None,
+                f"{note} — both in force {_window_text(run['start'], run['end'])}", rows)
+            if conflict_id:
+                found += 1
+                seen.append(conflict_id)
+    return found
 
 
 def reconcile(conn, issuer_id: int) -> dict:
@@ -197,6 +312,8 @@ def reconcile(conn, issuer_id: int) -> dict:
         if conflict_id:
             conflicts += 1
             seen.append(conflict_id)
+
+    conflicts += _rating_conflicts(conn, issuer_id, seen)
 
     # A conflict that stops recurring is stamped, not deleted.
     resolved = conn.execute(

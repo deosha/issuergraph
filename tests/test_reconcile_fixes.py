@@ -418,7 +418,7 @@ def test_normalization_keeps_the_raw_text_for_evidence(conn):
     row = one(
         """
         SELECT value_text, normalized_value FROM claim
-        WHERE fact_key = 'rating_outlook|long_term|2025Q3' LIMIT 1
+        WHERE claim_type = 'rating' AND value_text ~ '[A-Z]' LIMIT 1
         """
     )
     assert row["value_text"] != row["normalized_value"] or row["value_text"].islower()

@@ -12,10 +12,10 @@ import re
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook,
-                     parse_short_date, parse_watch, quarter_key)
+                     parse_short_date, parse_watch, quarter_key, rating_identity)
 
 EXTRACTOR = "icra_rationale"
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 
 AGENCY = "ICRA"
 SUMMARY_HEADS = ("Summary of rating action", "Summary of rating(s) outstanding")
@@ -174,7 +174,6 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
     first = pages[0]["text"]
     pub = doc_meta.published_date or find_published_date(first)
     qkey = quarter_key(pub)
-    issuer_rating_emitted = False
 
     for page in pages:
         pno, text = page["page_no"], page["text"]
@@ -193,6 +192,7 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                     anchors.insert(1, anchor(pno, text, *curr_span))
                 # the same label repeats across tranches; amounts disambiguate
                 slug = f"{label.lower()}|{prev_amt}|{curr_amt}"
+                identity = rating_identity(label, grade)
 
                 claims.append(ExtractedClaim(
                     claim_type="rating",
@@ -204,6 +204,7 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                     anchors=anchors,
                     rating=RatingDetail(
                         agency=AGENCY, instrument=label, rated_amount_cr=curr_amt,
+                        instrument_class=identity[0], term=identity[1],
                         rating=grade, outlook=outlook, watch=watch,
                         action=parse_action(rating_text), action_date=pub,
                     ),
@@ -225,38 +226,6 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                         ),
                     ))
 
-                if not issuer_rating_emitted and "commercial paper" not in label.lower():
-                    issuer_rating_emitted = True
-                    ranchor = anchor(pno, text, *rating_span)
-                    claims.append(ExtractedClaim(
-                        claim_type="rating",
-                        fact_key=f"rating_grade|long_term|{qkey}",
-                        subject="Long-term issuer rating (grade)",
-                        value_text=grade, as_of_date=pub,
-                        extractor=EXTRACTOR, extractor_version=VERSION,
-                        anchors=[ranchor],
-                        rating=RatingDetail(agency=AGENCY, instrument=label, rating=grade,
-                                            outlook=outlook, watch=watch,
-                                            action=parse_action(rating_text), action_date=pub),
-                    ))
-                    if outlook:
-                        claims.append(ExtractedClaim(
-                            claim_type="rating",
-                            fact_key=f"rating_outlook|long_term|{qkey}",
-                            subject="Long-term rating outlook",
-                            value_text=outlook, as_of_date=pub,
-                            extractor=EXTRACTOR, extractor_version=VERSION,
-                            anchors=[ranchor],
-                        ))
-                    if watch:
-                        claims.append(ExtractedClaim(
-                            claim_type="rating",
-                            fact_key=f"rating_watch|long_term|{qkey}",
-                            subject="Long-term rating watch",
-                            value_text=watch, as_of_date=pub,
-                            extractor=EXTRACTOR, extractor_version=VERSION,
-                            anchors=[ranchor],
-                        ))
 
         if "Annexure I: Instrument details" in text or "ISIN" in text[:400]:
             for row in _annexure_rows(pno, text):

@@ -99,6 +99,29 @@ def classify_instrument(name: str) -> str:
     return "other"
 
 
+# Instrument classes that are rated on the short-term scale (A1+ … A4), where a
+# long-term grade (AA, AA+) is not a comparable quantity at all.
+SHORT_TERM_CLASSES = ("commercial_paper",)
+
+
+def rating_identity(instrument_name: str, grade: str | None = None) -> tuple[str, str]:
+    """(instrument_class, term) — what makes two agencies' ratings comparable.
+
+    Agencies name the same instrument differently and rate several instruments
+    in one action, so neither the publisher's wording nor "the first row in the
+    table" identifies what is being rated. The class does, and the term keeps
+    the two rating scales apart: ICRA's A1+ on commercial paper and its AA on
+    debentures are not a disagreement with anybody, they are different scales.
+    """
+    instrument_class = classify_instrument(instrument_name)
+    if instrument_class in SHORT_TERM_CLASSES:
+        return instrument_class, "short_term"
+    # A grade on the short-term scale settles it even when the name does not.
+    if grade and re.fullmatch(r"A[1-4]\+?", grade.strip()):
+        return instrument_class, "short_term"
+    return instrument_class, "long_term"
+
+
 RATING_GRADE_RE = re.compile(
     r"(?:PP-MLD)?\[ICRA\]\s*(?P<grade>A[1-4]\+?|A{1,3}\+?-?|BBB[+-]?|BB[+-]?|B[+-]?|C|D)"
     r"|CARE\s+(?P<grade2>A[1-4]\+?|A{1,3}\+?-?|BBB[+-]?)"

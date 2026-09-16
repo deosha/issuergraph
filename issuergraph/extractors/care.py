@@ -6,10 +6,10 @@ import re
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook, parse_watch,
-                     quarter_key)
+                     quarter_key, rating_identity)
 
 EXTRACTOR = "care_press_release"
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 AGENCY = "CARE"
 
 TABLE_HEAD = "Facilities/Instruments"
@@ -79,7 +79,6 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
     claims: list[ExtractedClaim] = []
     pub = doc_meta.published_date or find_published_date(pages[0]["text"])
     qkey = quarter_key(pub)
-    issuer_emitted = False
 
     for page in pages:
         pno, text = page["page_no"], page["text"]
@@ -104,6 +103,8 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                 extractor=EXTRACTOR, extractor_version=VERSION, anchors=anchors,
                 rating=RatingDetail(agency=AGENCY, instrument=label,
                                     rated_amount_cr=row["amount"], rating=grade,
+                                    instrument_class=rating_identity(label, grade)[0],
+                                    term=rating_identity(label, grade)[1],
                                     outlook=outlook, watch=watch,
                                     action=parse_action(row["rating_text"]), action_date=pub),
             ))
@@ -121,27 +122,6 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                                     amount_cr=row["amount"], as_of_date=pub),
                 ))
 
-            if not issuer_emitted:
-                issuer_emitted = True
-                ranchor = anchor(pno, text, *row["rating_span"])
-                claims.append(ExtractedClaim(
-                    claim_type="rating", fact_key=f"rating_grade|long_term|{qkey}",
-                    subject="Long-term issuer rating (grade)", value_text=grade, as_of_date=pub,
-                    extractor=EXTRACTOR, extractor_version=VERSION, anchors=[ranchor],
-                    rating=RatingDetail(agency=AGENCY, instrument=label, rating=grade,
-                                        outlook=outlook, watch=watch,
-                                        action=parse_action(row["rating_text"]), action_date=pub),
-                ))
-                if outlook:
-                    claims.append(ExtractedClaim(
-                        claim_type="rating", fact_key=f"rating_outlook|long_term|{qkey}",
-                        subject="Long-term rating outlook", value_text=outlook, as_of_date=pub,
-                        extractor=EXTRACTOR, extractor_version=VERSION, anchors=[ranchor]))
-                if watch:
-                    claims.append(ExtractedClaim(
-                        claim_type="rating", fact_key=f"rating_watch|long_term|{qkey}",
-                        subject="Long-term rating watch", value_text=watch, as_of_date=pub,
-                        extractor=EXTRACTOR, extractor_version=VERSION, anchors=[ranchor]))
 
         for m in LIQUIDITY_RE.finditer(text):
             claims.append(ExtractedClaim(

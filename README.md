@@ -12,7 +12,7 @@ become conflict rows rather than a silently chosen number.
 `tests/test_evidence.py` asserts this end to end; `test_reconcile_fixes.py`,
 `test_extraction_coverage.py` and `test_api_scope.py` lock down the loader,
 reconciliation, extraction coverage, declared units and issuer scoping
-(94 tests total).
+(124 tests total).
 
 ## Run it
 
@@ -24,6 +24,7 @@ psql -d issuergraph -f sql/schema.sql
 psql -d issuergraph -f sql/002_conflict_history.sql
 psql -d issuergraph -f sql/003_extraction_coverage.sql
 psql -d issuergraph -f sql/004_extraction_runs.sql
+psql -d issuergraph -f sql/005_rating_states.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -50,21 +51,29 @@ uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[bi
 Fetched over HTTP from the publishers' own URLs; each stored with its SHA-256,
 URL and retrieval timestamp. Re-running the pipeline is idempotent on the hash.
 
-**324 claims** extracted, every one anchored.
+**314 claims** extracted, every one anchored.
 
 ## What it found
 
-Five conflicts, all real:
+Seven conflicts, all real, all like-for-like:
 
 | Fact | Disagreement |
 |---|---|
-| `rating_outlook\|long_term\|2025Q3` | Brickwork says **Stable**, ICRA says **Negative** — two weeks apart |
-| `rating_grade\|long_term\|2025Q3` | Brickwork **AA+**, ICRA **AA** — one notch |
-| `rating_watch\|long_term\|2024Q1` | On the *same day*, ICRA said Watch with **Negative** Implications, CARE said Watch with **Developing** Implications |
+| `rating_grade\|ncd\|long_term\|Brickwork~ICRA` | Brickwork **AA+**, ICRA **AA** on debentures — one notch, continuously since 15 Sep 2025 |
+| `rating_grade\|ncd\|long_term\|Brickwork~CARE` | Brickwork **AA+**, CARE **AA** on debentures — CARE's last action was Mar 2024 and still stands |
+| `rating_outlook\|ncd\|long_term\|Brickwork~ICRA` | Brickwork **Stable**, ICRA **Negative** on debentures, since ICRA's action of 24 Sep 2025 |
+| `rating_watch\|ncd\|long_term\|CARE~ICRA` | 12 Mar 2024, same day: ICRA **Negative** Implications, CARE **Developing** — on debentures |
+| `rating_watch\|bank_facility\|long_term\|CARE~ICRA` | the same split, on bank facilities — a second instrument, so a second conflict |
 | `total_borrowings\|standalone\|2024-03-31` | Brickwork ₹20,011 Cr vs annual report ₹19,985.90 Cr — ₹25.10 Cr, 0.126% |
 | `total_borrowings\|consolidated\|2024-03-31` | Brickwork ₹46,699 Cr vs annual report ₹46,674.20 Cr — ₹24.80 Cr, 0.053% |
 
-The last two are one definitional difference in Brickwork's "Total Debt". They
+Each rating conflict names one instrument class, one rating scale, one pair of
+agencies and the period during which both views were in force. The two watch
+rows are the same disagreement about two different instruments, which is two
+facts, not one: an earlier version compared CARE's *bank facilities* against
+ICRA's *debenture programme* and reported a single conflict.
+
+The two numeric ones are a single definitional difference in Brickwork's "Total Debt". They
 are caught only because agreement is tested two ways: a relative band (0.10%)
 *and* an absolute floor (₹5 crore). A percentage-only test flags the standalone
 gap and passes the consolidated one, which is ₹0.30 crore smaller.
@@ -73,7 +82,7 @@ Two facts independently corroborated (consolidated and standalone FY25 total
 borrowings, residual variance ₹0.03 Cr and ₹0.16 Cr — reported rather than
 rendered as an exact match).
 
-Nine tracked changes between successive ICRA reports, including the Sept 2025 →
+Seventeen tracked changes between successive ICRA reports, including the Sept 2025 →
 Feb 2026 liquidity narrative moving from ₹3,791 Cr unencumbered cash (Jul 2025)
 to ₹5,971 Cr (Dec 2025), and the Mar 2024 → Sep 2025 transition from a rating
 watch to a Negative outlook.
@@ -82,7 +91,7 @@ watch to a Negative outlook.
 
 Read `docs/SCHEMA.md` first — it explains the nine tables and the invariants.
 
-Five things are worth calling out:
+Six things are worth calling out:
 
 **Page text is built from word boxes, not `get_text()`.** Words are joined by
 spaces within a line and newlines between lines, and each word's char range and
@@ -113,11 +122,22 @@ two comparative columns × (three components + a total) — and is stored
 `extraction_status = 'incomplete'` with named reasons when it falls short.
 `python -m issuergraph.pipeline --strict` turns that into a non-zero exit.
 
+**Two agencies disagree only about the same instrument, at the same time.**
+Ratings used to be compared inside calendar quarters, on a value taken from
+whichever row of the agency's table was read first — so one agency's view of
+bank facilities could be reported as contradicting another's view of debentures,
+and two agencies rating five days apart across a quarter boundary never met. Now
+a rating stands from its action date until the same agency next acts on the same
+instrument class (`effective.py`), and a conflict needs an overlap of those
+periods, the same instrument class and the same rating scale. Consecutive
+windows of an unchanged disagreement merge into one run, so reaffirming a
+difference does not mint a new conflict.
+
 ## Layout
 
 ```
 sql/schema.sql              nine tables
-sql/002..004_*.sql           conflict history; extraction coverage; reprocessing
+sql/002..005_*.sql          conflict history; coverage; reprocessing; rating states
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -132,6 +152,7 @@ issuergraph/
     care.py                 facilities table, liquidity, factors
     brickwork.py            particulars table, Total Debt rows, bullets
     annual_report.py        consolidated + standalone balance sheets
+  effective.py              rating timelines: what each agency says, and when
   reconcile.py              conflict detection (0.10% and ₹5 crore tolerances)
   diff.py                   rationale-to-rationale diff
   corpus.py                 the six sources, declared
@@ -163,6 +184,15 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   erase, and conflicts keep `first_detected_at` because they are upserted on
   the fact key rather than rebuilt from claim ids.
 - Only ICRA has ≥2 reports here, so only ICRA produces diffs.
+- A rating is treated as in force until the same agency acts again, with no
+  staleness horizon. CARE last acted in March 2024, so its AA still counts as
+  concurrent with Brickwork's September 2025 AA+ and is reported as an open
+  conflict. That is faithful to what the documents say and probably not what an
+  analyst wants after two years; a maximum age per agency is the missing piece.
+- ICRA's Feb 2026 rationale carries no market-linked-debenture rating, so the
+  change feed reports one removed. Whether the ratings were withdrawn or merely
+  not parsed cannot be settled here: only the annual-report extractor declares
+  coverage, and until ICRA's does, that distinction stays open.
 - Rationale bullets are diffed on their headline text, so a reworded strength
   reads as one removal plus one addition.
 - Both numeric tolerances (0.10% and ₹5 crore) are single declared constants

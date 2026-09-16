@@ -36,6 +36,48 @@ def _section(fact_key: str) -> str:
     return SECTION_OF.get(head, head)
 
 
+def _rating_rows(conn, document_id: int) -> dict[str, dict]:
+    """One agency's rating of one instrument class, keyed so reports line up.
+
+    The rating claims themselves are keyed per tranche, with the rated amount in
+    the key, so they never match across two reports of the same programme. The
+    comparable identity is the instrument class and the rating scale — the same
+    identity reconciliation uses — so the change feed is built from that rather
+    than from fact keys.
+
+    A class rated inconsistently within one report has no single value to track,
+    so it is left out of the diff instead of being represented by whichever row
+    was read first. That guess is what this work exists to remove.
+    """
+    rows = conn.execute(
+        """
+        SELECT c.id, r.instrument_class, r.term, r.rating, r.outlook, r.watch
+        FROM rating_action r JOIN claim c ON c.id = r.claim_id
+        WHERE c.document_id = %s
+        ORDER BY c.id
+        """,
+        (document_id,),
+    ).fetchall()
+
+    tracked: dict[str, dict] = {}
+    ambiguous: set[str] = set()
+    for row in rows:
+        for field, prefix in (("rating", "rating_grade"), ("outlook", "rating_outlook"),
+                              ("watch", "rating_watch")):
+            if row[field] is None:
+                continue
+            key = f"{prefix}|{row['instrument_class']}|{row['term']}"
+            existing = tracked.get(key)
+            if existing is None:
+                tracked[key] = {"id": row["id"], "value_text": row[field],
+                                "subject": f"{row['instrument_class']} ({row['term']})"}
+            elif existing["value_text"] != row[field]:
+                ambiguous.add(key)
+    for key in ambiguous:
+        tracked.pop(key, None)
+    return tracked
+
+
 def _claims_for(conn, document_id: int) -> dict[str, dict]:
     rows = conn.execute(
         """
@@ -48,7 +90,8 @@ def _claims_for(conn, document_id: int) -> dict[str, dict]:
         """,
         (document_id,),
     ).fetchall()
-    return {_diff_key(r["fact_key"]): r for r in rows}
+    return {**{_diff_key(r["fact_key"]): r for r in rows},
+            **_rating_rows(conn, document_id)}
 
 
 def build_diffs(conn, issuer_id: int) -> int:

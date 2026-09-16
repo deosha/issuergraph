@@ -184,16 +184,38 @@ function viewDebt() {
     <tbody>${instRows}</tbody></table>`;
 }
 
+// The instrument class, not the agency's wording, is what two ratings are
+// compared on — so the table shows it next to the wording it was derived from.
+const CLASS_LABEL = {
+  ncd: "NCD", subordinated_debt: "sub. debt", perpetual_debt: "perpetual",
+  bank_facility: "bank", mld: "MLD", commercial_paper: "CP",
+  debt_securities: "debt sec.", other: "other",
+};
+
+function inForce(r) {
+  if (!r.effective_from) return "";
+  return r.effective_to
+    ? `${day(r.effective_from)} → ${day(r.effective_to)}`
+    : `${day(r.effective_from)} → current`;
+}
+
 function viewRatings() {
   const rows = state.data.ratings.map(r => `<tr>
     <td class="muted">${day(r.action_date)}</td>
     <td>${esc(r.agency)}</td>
-    <td>${fact(r.claim_id, esc(r.instrument))}</td>
+    <td>${fact(r.claim_id, esc(r.instrument))}
+      <div class="muted" style="font-size:11px">
+        ${esc(CLASS_LABEL[r.instrument_class] ?? r.instrument_class)} ·
+        ${r.term === "short_term" ? "short-term scale" : "long-term scale"}</div></td>
     <td class="num">${r.rated_amount_cr == null ? "—" : inr(r.rated_amount_cr)}</td>
     <td><b>${esc(r.rating)}</b>${r.outlook ? ` <span class="pill">${esc(r.outlook)}</span>` : ""}
-        ${r.watch ? ` <span class="pill bad">${esc(r.watch)}</span>` : ""}</td>
+        ${r.watch ? ` <span class="pill bad">${esc(r.watch)}</span>` : ""}
+        <div class="muted" style="font-size:11px">${inForce(r)}</div></td>
     <td class="muted">${esc(r.action ?? "")}</td></tr>`).join("");
   return `<h2>Rating actions across agencies</h2>
+    <div class="muted" style="font-size:12px;margin:-6px 0 10px">
+      A rating stands from its action date until the same agency next acts on the
+      same instrument class. Agencies are compared only where those periods overlap.</div>
     <table><thead><tr><th>Date</th><th>Agency</th><th>Instrument</th>
       <th class="num">Rated amount</th><th>Rating</th><th>Action</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
@@ -212,9 +234,12 @@ function viewConflicts() {
     <div class="note">${esc(c.note)}</div>
     <div class="members">${c.members.map(m => `<div class="member">
       <span><b>${esc(m.source_name)}</b>
-        <span class="muted">· ${esc(m.title)} · ${day(m.published_date)}</span></span>
-      <span>${fact(m.claim_id, m.value_numeric != null ? inr(m.value_numeric)
-        : esc(m.value_text))}</span></div>`).join("")}</div>
+        <span class="muted">· ${esc(m.title)} · ${day(m.published_date)}</span>
+        ${m.stated_value ? `<div class="muted" style="font-size:11px">
+          quoting: ${esc(m.value_text ?? "")}</div>` : ""}</span>
+      <span>${fact(m.claim_id, m.stated_value ? esc(m.stated_value)
+        : (m.value_numeric != null ? inr(m.value_numeric) : esc(m.value_text)))}</span>
+      </div>`).join("")}</div>
     <div class="muted" style="margin-top:8px;font-size:12px">
       IssuerGraph does not choose between these. <code>${esc(c.fact_key)}</code></div>
   </div>`;

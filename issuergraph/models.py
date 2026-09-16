@@ -47,8 +47,20 @@ class Anchor(BaseModel):
 
 
 class RatingDetail(BaseModel):
+    """One agency's rating of one instrument on one date.
+
+    `instrument_class` and `term` exist so two agencies' ratings can be compared
+    only where they are ratings *of the same thing*. Comparing on the publisher's
+    own wording cannot work — "Non-convertible debenture programme" (ICRA),
+    "Non Convertible Debentures" (CARE) and "NCDs Public Issue" (Brickwork) are
+    the same instrument class under three names, while "Long Term Bank
+    Facilities" is a different class that happens to sit in the same table.
+    """
+
     agency: str
     instrument: str
+    instrument_class: str = "other"
+    term: Literal["long_term", "short_term"] = "long_term"
     rated_amount_cr: Decimal | None = None
     rating: str
     outlook: str | None = None

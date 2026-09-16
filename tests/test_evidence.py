@@ -90,27 +90,47 @@ def test_total_is_the_sum_of_its_three_anchored_components(conn):
 # --- disagreement is preserved, never resolved ------------------------------
 
 def test_agencies_disagree_on_the_outlook_and_we_say_so(conn):
+    """The same real disagreement the quarter key used to express, now dated.
+
+    The key is (aspect, instrument class, scale, agency pair, start of the run)
+    rather than a calendar quarter: Brickwork and ICRA differ on the outlook for
+    non-convertible debentures, and have done since ICRA's action of 24
+    September 2025.
+    """
     conflict = one(
-        "SELECT id, note FROM conflict WHERE fact_key = 'rating_outlook|long_term|2025Q3'"
+        "SELECT id, note, subject FROM conflict "
+        "WHERE fact_key = 'rating_outlook|ncd|long_term|Brickwork~ICRA|2025-09-24'"
     )
     assert conflict, "Sept 2025: ICRA said Negative, Brickwork said Stable"
+    assert "non-convertible debentures" in conflict["subject"]
     members = query(
         """
-        SELECT c.value_text, d.source_name FROM conflict_member m
+        SELECT m.stated_value, c.value_text, d.source_name FROM conflict_member m
         JOIN claim c ON c.id = m.claim_id JOIN document d ON d.id = c.document_id
         WHERE m.conflict_id = %s
         """,
         (conflict["id"],),
     )
-    assert {(m["source_name"], m["value_text"]) for m in members} == {
+    # stated_value is what each side said about *the outlook*; the claim keeps
+    # the whole rating line it was read from, which is the evidence.
+    assert {(m["source_name"], m["stated_value"]) for m in members} == {
         ("ICRA", "Negative"), ("Brickwork", "Stable")}
+    assert all(m["stated_value"] in m["value_text"] for m in members)
 
 
-def test_watch_direction_disagreement_on_the_same_day(conn):
+@pytest.mark.parametrize("instrument_class", ["ncd", "bank_facility"])
+def test_watch_direction_disagreement_on_the_same_day(conn, instrument_class):
+    """12 March 2024: ICRA said Negative watch, CARE said Developing.
+
+    Once per instrument class, because that is what each agency actually rated.
+    The old key compared CARE's bank facilities against ICRA's debenture
+    programme and called it one conflict.
+    """
     conflict = one(
-        "SELECT id FROM conflict WHERE fact_key = 'rating_watch|long_term|2024Q1'"
+        "SELECT id, subject FROM conflict WHERE fact_key = %s",
+        (f"rating_watch|{instrument_class}|long_term|CARE~ICRA|2024-03-12",),
     )
-    assert conflict, "12 March 2024: ICRA said Negative watch, CARE said Developing"
+    assert conflict, f"no {instrument_class} watch conflict on 12 March 2024"
 
 
 def test_numeric_conflict_is_above_tolerance_and_names_both_sides(conn):
