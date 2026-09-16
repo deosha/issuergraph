@@ -48,6 +48,7 @@
   .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
           margin-bottom: 12px; background: var(--panel2); }
   .card.conflict { border-color: #4a2731; }
+  .card.conflict.resolved { border-color: #2c3a2c; opacity: .72; }
   .card h3 { margin: 0 0 4px; font-size: 13px; }
   .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }
   .members { display: grid; gap: 6px; }
@@ -110,16 +111,19 @@ async function get(path) { const r = await fetch(path); return r.json(); }
 async function boot() {
   const [issuer, debt, ratings, conflicts, corrob, changes] = await Promise.all([
     get("/api/issuer"), get("/api/debt"), get("/api/ratings"),
-    get("/api/conflicts"), get("/api/corroborations"), get("/api/changes"),
+    get("/api/conflicts?include_resolved=true"), get("/api/corroborations"),
+    get("/api/changes"),
   ]);
   state.data = { issuer, debt, ratings, conflicts, corrob, changes };
+  // Only open conflicts are counted. A resolved one is history, not a to-do.
+  const open = conflicts.filter(c => c.status === "open").length;
   $("#issuer-name").textContent = issuer.name;
   $("#issuer-sub").textContent =
     `${issuer.documents.length} documents · ${issuer.claim_count} anchored claims · ` +
-    `${conflicts.length} conflicts · CIN ${issuer.cin}`;
+    `${open} open conflicts · CIN ${issuer.cin}`;
   $("#tabs").innerHTML = TABS.map(([id, label]) =>
-    `<button data-tab="${id}">${label}${id === "conflicts" && conflicts.length
-      ? ` <span class="pill bad">${conflicts.length}</span>` : ""}</button>`).join("");
+    `<button data-tab="${id}">${label}${id === "conflicts" && open
+      ? ` <span class="pill bad">${open}</span>` : ""}</button>`).join("");
   render();
 }
 
@@ -193,8 +197,15 @@ function viewRatings() {
 }
 
 function viewConflicts() {
-  const cards = state.data.conflicts.map(c => `<div class="card conflict">
-    <h3>⚠️ ${esc(c.subject)}</h3>
+  const open = state.data.conflicts.filter(c => c.status === "open");
+  const resolved = state.data.conflicts.filter(c => c.status === "resolved");
+
+  const card = c => `<div class="card conflict${c.status === "resolved" ? " resolved" : ""}">
+    <h3>${c.status === "resolved" ? "✔️" : "⚠️"} ${esc(c.subject)}</h3>
+    <div class="muted" style="font-size:12px;margin-bottom:6px">
+      ${c.status === "resolved"
+        ? `no longer detected as of ${day(c.resolved_at)} · first seen ${day(c.first_detected_at)}`
+        : `first seen ${day(c.first_detected_at)} · still present ${day(c.last_seen_at)}`}</div>
     <div class="note">${esc(c.note)}</div>
     <div class="members">${c.members.map(m => `<div class="member">
       <span><b>${esc(m.source_name)}</b>
@@ -203,7 +214,7 @@ function viewConflicts() {
         : esc(m.value_text))}</span></div>`).join("")}</div>
     <div class="muted" style="margin-top:8px;font-size:12px">
       IssuerGraph does not choose between these. <code>${esc(c.fact_key)}</code></div>
-  </div>`).join("");
+  </div>`;
 
   const agree = state.data.corrob.map(c => `<div class="card">
     <h3>${esc(c.subject)}</h3>
@@ -215,7 +226,13 @@ function viewConflicts() {
       <span>${fact(m.claim_id, inr(m.value))}</span></div>`).join("")}</div>
   </div>`).join("");
 
-  return `<h2>Conflicts (${state.data.conflicts.length})</h2>${cards || '<div class="empty">None.</div>'}
+  return `<h2>Open conflicts (${open.length})</h2>
+    ${open.map(card).join("") || '<div class="empty">None.</div>'}
+    ${resolved.length ? `<h2>Resolved (${resolved.length})</h2>
+      <div class="muted" style="font-size:12px;margin:-6px 0 10px">
+        Detected previously, not seen in the latest run. Kept because a
+        disagreement disappearing is itself a signal.</div>
+      ${resolved.map(card).join("")}` : ""}
     <h2>Independently corroborated (${state.data.corrob.length})</h2>
     ${agree || '<div class="empty">None.</div>'}`;
 }

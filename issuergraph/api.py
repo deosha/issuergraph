@@ -3,6 +3,13 @@
 Every endpoint that returns a fact returns the claim id needed to open its
 evidence. /api/claim/{id} and /api/page.png are the two halves of the
 click-through: the first says where the fact came from, the second draws it.
+
+Every fact endpoint is issuer-scoped. Reconciliation has always been scoped
+(reconcile() takes an issuer_id); the read layer was not, so a second issuer
+would have blended two companies' debt, ratings and changes into one page
+without any error. Scoping is `resolve_issuer`: explicit ?issuer_id wins, a
+single loaded issuer is assumed, and two or more without a parameter is a 400
+rather than a silent pick of the lowest id.
 """
 from __future__ import annotations
 
@@ -22,11 +29,49 @@ STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
 RENDER_ZOOM = 2.0
 
 
-@app.get("/api/issuer")
-def issuer():
-    row = one("SELECT id, name, aliases, cin FROM issuer ORDER BY id LIMIT 1")
-    if not row:
+def resolve_issuer(issuer_id: int | None) -> int:
+    """The issuer every fact query filters on.
+
+    Defaulting to "the only issuer" keeps the single-issuer slice working
+    without a parameter, but the moment a second issuer is loaded an unscoped
+    call becomes ambiguous — and answering an ambiguous question with the
+    lowest id is exactly the silent cross-contamination this guards against.
+    """
+    if issuer_id is not None:
+        if not one("SELECT id FROM issuer WHERE id = %s", (issuer_id,)):
+            raise HTTPException(404, f"no issuer {issuer_id}")
+        return issuer_id
+    rows = query("SELECT id FROM issuer ORDER BY id")
+    if not rows:
         raise HTTPException(404, "no issuer loaded — run python -m issuergraph.pipeline")
+    if len(rows) > 1:
+        raise HTTPException(
+            400,
+            f"{len(rows)} issuers loaded — pass ?issuer_id=; see /api/issuers",
+        )
+    return rows[0]["id"]
+
+
+@app.get("/api/issuers")
+def issuers():
+    return query(
+        """
+        SELECT i.id, i.name, i.cin,
+               count(DISTINCT d.id) AS document_count,
+               count(c.id) AS claim_count
+        FROM issuer i
+        LEFT JOIN document d ON d.issuer_id = i.id
+        LEFT JOIN claim c ON c.issuer_id = i.id
+        GROUP BY i.id, i.name, i.cin
+        ORDER BY i.name
+        """
+    )
+
+
+@app.get("/api/issuer")
+def issuer(issuer_id: int | None = None):
+    issuer_id = resolve_issuer(issuer_id)
+    row = one("SELECT id, name, aliases, cin FROM issuer WHERE id = %s", (issuer_id,))
     row["documents"] = query(
         """
         SELECT id, doc_type, source_name, title, url, sha256, byte_size, page_count,
@@ -34,23 +79,25 @@ def issuer():
         FROM document WHERE issuer_id = %s
         ORDER BY published_date NULLS FIRST, id
         """,
-        (row["id"],),
+        (issuer_id,),
     )
-    counts = one("SELECT count(*) AS claims FROM claim WHERE issuer_id = %s", (row["id"],))
+    counts = one("SELECT count(*) AS claims FROM claim WHERE issuer_id = %s", (issuer_id,))
     row["claim_count"] = counts["claims"]
     return row
 
 
 @app.get("/api/debt")
-def debt():
+def debt(issuer_id: int | None = None):
+    issuer_id = resolve_issuer(issuer_id)
     totals = query(
         """
         SELECT c.id AS claim_id, c.fact_key, c.basis, c.as_of_date, c.value_numeric,
-               c.subject, d.source_name, d.title, d.published_date
+               c.value_unit, c.subject, d.source_name, d.title, d.published_date
         FROM claim c JOIN document d ON d.id = c.document_id
-        WHERE c.claim_type = 'total_borrowings'
+        WHERE c.claim_type = 'total_borrowings' AND c.issuer_id = %s
         ORDER BY c.basis, c.as_of_date DESC, d.source_name
-        """
+        """,
+        (issuer_id,),
     )
     for row in totals:
         row["conflict"] = one(
@@ -69,16 +116,20 @@ def debt():
         JOIN claim c ON c.id = o.claim_id
         JOIN document d ON d.id = c.document_id
         WHERE o.instrument_type <> 'total' AND o.maturity_date IS NOT NULL
+          AND c.issuer_id = %s
           AND d.published_date = (SELECT max(published_date) FROM document
-                                  WHERE source_name = d.source_name)
+                                  WHERE source_name = d.source_name
+                                    AND issuer_id = d.issuer_id)
         ORDER BY o.maturity_date, o.amount_cr DESC
-        """
+        """,
+        (issuer_id,),
     )
     return {"totals": totals, "instruments": instruments}
 
 
 @app.get("/api/ratings")
-def ratings():
+def ratings(issuer_id: int | None = None):
+    issuer_id = resolve_issuer(issuer_id)
     return query(
         """
         SELECT c.id AS claim_id, r.agency, r.instrument, r.rated_amount_cr, r.rating,
@@ -86,17 +137,34 @@ def ratings():
         FROM rating_action r
         JOIN claim c ON c.id = r.claim_id
         JOIN document d ON d.id = c.document_id
-        WHERE c.fact_key LIKE 'rating_instrument|%%'
+        WHERE c.fact_key LIKE 'rating_instrument|%%' AND c.issuer_id = %s
         ORDER BY r.action_date DESC, r.agency, r.rated_amount_cr DESC NULLS LAST
-        """
+        """,
+        (issuer_id,),
     )
 
 
 @app.get("/api/conflicts")
-def conflicts():
+def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
+    """Disagreements, open by default.
+
+    reconcile() stamps resolved_at on a conflict that stopped recurring and
+    keeps the row, because a disagreement disappearing is itself a signal. That
+    history is only useful if the two states are told apart: an open conflict is
+    something to act on, a resolved one is something that happened. Returning
+    both undifferentiated made every historical conflict read as current, so
+    `status` is explicit and resolved rows are excluded unless asked for.
+    """
     rows = query(
-        "SELECT id, fact_key, subject, kind, tolerance_pct, spread_pct, note "
-        "FROM conflict ORDER BY kind, fact_key"
+        """
+        SELECT id, fact_key, subject, kind, tolerance_pct, spread_pct, note,
+               first_detected_at, last_seen_at, resolved_at,
+               CASE WHEN resolved_at IS NULL THEN 'open' ELSE 'resolved' END AS status
+        FROM conflict
+        WHERE issuer_id = %s AND (resolved_at IS NULL OR %s)
+        ORDER BY resolved_at NULLS FIRST, kind, fact_key
+        """,
+        (resolve_issuer(issuer_id), include_resolved),
     )
     for row in rows:
         row["members"] = query(
@@ -115,7 +183,7 @@ def conflicts():
 
 
 @app.get("/api/corroborations")
-def corroborations():
+def corroborations(issuer_id: int | None = None):
     """Facts two or more independent sources agree on, within both tolerances.
 
     `variance_cr` is the residual gap. It is usually zero-ish rounding, but it is
@@ -134,7 +202,7 @@ def corroborations():
                                           'value', c.value_numeric)
                         ORDER BY d.source_name) AS members
         FROM claim c JOIN document d ON d.id = c.document_id
-        WHERE c.value_numeric IS NOT NULL
+        WHERE c.value_numeric IS NOT NULL AND c.issuer_id = %s
         GROUP BY c.fact_key
         HAVING count(DISTINCT c.document_id) > 1
            AND count(DISTINCT d.source_name) > 1
@@ -143,21 +211,23 @@ def corroborations():
            AND max(c.value_numeric) - min(c.value_numeric) <= %s
         ORDER BY c.fact_key
         """,
-        (TOLERANCE_PCT, TOLERANCE_ABS_CR),
+        (resolve_issuer(issuer_id), TOLERANCE_PCT, TOLERANCE_ABS_CR),
     )
     # same exclusions reconcile() applies, so the two views cannot drift apart
     return [row for row in rows if not _excluded(row["fact_key"])]
 
 
 @app.get("/api/changes")
-def changes():
+def changes(issuer_id: int | None = None):
     return query(
         """
         SELECT id, agency, from_date, to_date, section, direction,
                from_claim_id, to_claim_id, from_text, to_text
         FROM rationale_diff
+        WHERE issuer_id = %s
         ORDER BY to_date DESC, agency, section, direction
-        """
+        """,
+        (resolve_issuer(issuer_id),),
     )
 
 
