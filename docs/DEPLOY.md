@@ -90,3 +90,39 @@ served with `Cache-Control: no-cache` so a redeploy is visible immediately.
 
 The pilot database is the only state a public deployment creates. The snapshot,
 the schema and everything else live in git.
+
+## AWS (the current public deployment)
+
+Account 173639292018, region ap-south-1, CLI profile `issuergraph-deploy`. Two
+CloudFormation stacks under `infra/`:
+
+- `issuergraph-ecr` — the image repository. Separate because App Runner cannot
+  create a service until an image exists.
+- `issuergraph-site` — VPC with two private subnets, RDS Postgres
+  (`issuergraph-pilot`, db.t4g.micro, deletion-protected, 7-day backups),
+  three Secrets Manager secrets (`issuergraph/db-credentials`,
+  `issuergraph/dsn`, `issuergraph/rate-salt`, all generated — nobody types a
+  password), and the App Runner service `issuergraph-site` reading the DSN and
+  salt as runtime secrets. Health check is `GET /healthz`.
+
+The database is private; the container applies `sql/006_pilot_requests.sql`
+itself at startup (`scripts/migrate.py`, idempotent, non-fatal) because nothing
+else can reach it.
+
+Release a new build:
+
+```bash
+export AWS_PROFILE=issuergraph-deploy AWS_REGION=ap-south-1
+TAG=$(git rev-parse --short HEAD)
+URI=173639292018.dkr.ecr.ap-south-1.amazonaws.com/issuergraph
+
+docker build --platform linux/amd64 -t $URI:$TAG .
+aws ecr get-login-password | docker login --username AWS --password-stdin ${URI%%/*}
+docker push $URI:$TAG
+aws cloudformation deploy --stack-name issuergraph-site --template-file infra/site.yaml \
+    --capabilities CAPABILITY_NAMED_IAM --parameter-overrides ImageTag=$TAG
+```
+
+Changing the tag is what triggers an App Runner deployment (auto-deploy is
+off). Read leads with `aws apprunner` logs or by querying `pilot_request`
+from inside the VPC; the instance is not publicly reachable.

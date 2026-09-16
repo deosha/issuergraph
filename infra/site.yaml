@@ -1,0 +1,249 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: IssuerGraph public site - App Runner service over a private RDS Postgres holding pilot requests.
+
+Parameters:
+  ImageTag:
+    Type: String
+    Description: Tag in the issuergraph ECR repository to run.
+  ContactEmail:
+    Type: String
+    Default: deo@issuergraph.com
+  BookingUrl:
+    Type: String
+    Default: https://cal.com/deo-shankar-yjzpnf/issuergraph-pilot
+  FounderBio:
+    Type: String
+    Default: More than 14 years in fintech, building large-scale systems at Fortune 500 companies. MS from IIT Indore and IIM Indore.
+  DbInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+
+Resources:
+  # --- network: three private subnets (one per AZ - small RDS classes are not
+  # always available in every Mumbai AZ), no internet route -----------------------
+  # The service reaches only the database through the VPC connector; outbound
+  # internet is not needed (no CRM webhook, analytics is browser-side).
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.40.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{Key: Name, Value: issuergraph}]
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Tags: [{Key: Name, Value: issuergraph-private-a}]
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      Tags: [{Key: Name, Value: issuergraph-private-b}]
+  SubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.3.0/24
+      AvailabilityZone: !Select [2, !GetAZs ""]
+      Tags: [{Key: Name, Value: issuergraph-private-c}]
+
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: IssuerGraph App Runner VPC connector
+      VpcId: !Ref Vpc
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: IssuerGraph pilot database - reachable only from the app
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+
+  # --- secrets ---------------------------------------------------------------
+  DbCredentials:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: issuergraph/db-credentials
+      Description: Master credentials for the IssuerGraph pilot database
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "issuergraph"}'
+        GenerateStringKey: password
+        PasswordLength: 40
+        ExcludePunctuation: true
+  RateSalt:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: issuergraph/rate-salt
+      Description: Salt for hashing client addresses in the pilot-form rate limiter
+      GenerateSecretString:
+        PasswordLength: 64
+        ExcludePunctuation: true
+
+  # --- database --------------------------------------------------------------
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: IssuerGraph private subnets
+      SubnetIds: [!Ref SubnetA, !Ref SubnetB, !Ref SubnetC]
+  Db:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: issuergraph-pilot
+      Engine: postgres
+      EngineVersion: "16"
+      DBInstanceClass: !Ref DbInstanceClass
+      AllocatedStorage: "20"
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: issuergraph
+      MasterUsername: !Sub "{{resolve:secretsmanager:${DbCredentials}:SecretString:username}}"
+      MasterUserPassword: !Sub "{{resolve:secretsmanager:${DbCredentials}:SecretString:password}}"
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      VPCSecurityGroups: [!Ref DbSecurityGroup]
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: 7
+      DeletionProtection: true
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+
+  # The app reads one DSN. Composed here so the password never appears in a
+  # template, a parameter or a shell history.
+  Dsn:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: issuergraph/dsn
+      Description: ISSUERGRAPH_DSN for the public site
+      SecretString: !Sub
+        - "postgresql://issuergraph:${Password}@${Host}:${Port}/issuergraph?sslmode=require"
+        - Password: !Sub "{{resolve:secretsmanager:${DbCredentials}:SecretString:password}}"
+          Host: !GetAtt Db.Endpoint.Address
+          Port: !GetAtt Db.Endpoint.Port
+
+  # --- App Runner ------------------------------------------------------------
+  EcrAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: issuergraph-apprunner-ecr-access
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: build.apprunner.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: issuergraph-apprunner-instance
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: tasks.apprunner.amazonaws.com}
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: read-site-secrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: [!Ref Dsn, !Ref RateSalt]
+
+  VpcConnector:
+    Type: AWS::AppRunner::VpcConnector
+    Properties:
+      VpcConnectorName: issuergraph
+      Subnets: [!Ref SubnetA, !Ref SubnetB, !Ref SubnetC]
+      SecurityGroups: [!Ref AppSecurityGroup]
+
+  Service:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: issuergraph-site
+      SourceConfiguration:
+        AutoDeploymentsEnabled: false
+        AuthenticationConfiguration:
+          AccessRoleArn: !GetAtt EcrAccessRole.Arn
+        ImageRepository:
+          ImageRepositoryType: ECR
+          ImageIdentifier: !Sub
+            - "${Uri}:${ImageTag}"
+            - Uri: !ImportValue issuergraph-ecr-uri
+          ImageConfiguration:
+            Port: "8080"
+            RuntimeEnvironmentVariables:
+              - Name: ISSUERGRAPH_DEMO_ONLY
+                Value: "1"
+              - Name: ISSUERGRAPH_PRODUCT_NAME
+                Value: IssuerGraph
+              - Name: ISSUERGRAPH_CONTACT_EMAIL
+                Value: !Ref ContactEmail
+              - Name: ISSUERGRAPH_FOUNDER_NAME
+                Value: Deo Shankar
+              - Name: ISSUERGRAPH_FOUNDER_ROLE
+                Value: Founder
+              - Name: ISSUERGRAPH_FOUNDER_BIO
+                Value: !Ref FounderBio
+              - Name: ISSUERGRAPH_BOOKING_URL
+                Value: !Ref BookingUrl
+              - Name: ISSUERGRAPH_PILOT_LENGTH
+                Value: four weeks
+              - Name: ISSUERGRAPH_PILOT_RATE_MAX
+                Value: "5"
+              - Name: ISSUERGRAPH_PILOT_RATE_WINDOW
+                Value: "3600"
+              - Name: POSTHOG_HOST
+                Value: https://eu.i.posthog.com
+            RuntimeEnvironmentSecrets:
+              - Name: ISSUERGRAPH_DSN
+                Value: !Ref Dsn
+              - Name: ISSUERGRAPH_RATE_SALT
+                Value: !Ref RateSalt
+      InstanceConfiguration:
+        Cpu: "0.25 vCPU"
+        Memory: "0.5 GB"
+        InstanceRoleArn: !GetAtt InstanceRole.Arn
+      HealthCheckConfiguration:
+        Protocol: HTTP
+        Path: /healthz
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 1
+        UnhealthyThreshold: 5
+      NetworkConfiguration:
+        EgressConfiguration:
+          EgressType: VPC
+          VpcConnectorArn: !GetAtt VpcConnector.VpcConnectorArn
+        IngressConfiguration:
+          IsPubliclyAccessible: true
+      AutoScalingConfigurationArn: !GetAtt AutoScaling.AutoScalingConfigurationArn
+
+  AutoScaling:
+    Type: AWS::AppRunner::AutoScalingConfiguration
+    Properties:
+      AutoScalingConfigurationName: issuergraph-site
+      MinSize: 1
+      MaxSize: 2
+      MaxConcurrency: 100
+
+Outputs:
+  ServiceUrl:
+    Value: !Sub "https://${Service.ServiceUrl}"
+  ServiceArn:
+    Value: !GetAtt Service.ServiceArn
+  DbEndpoint:
+    Value: !GetAtt Db.Endpoint.Address

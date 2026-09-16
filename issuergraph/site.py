@@ -76,6 +76,13 @@ def register(app) -> None:
     def robots():
         return FileResponse(STATIC / "robots.txt", media_type="text/plain")
 
+    @app.get("/healthz", include_in_schema=False)
+    def healthz():
+        # Liveness only. The database is deliberately not checked: /demo works
+        # without it, and a storage outage should surface as 503s from the
+        # pilot form (which is monitored), not as the whole site being pulled.
+        return JSONResponse({"ok": True}, headers={"Cache-Control": "no-cache"})
+
     # --- configuration ------------------------------------------------------
 
     @app.get("/api/config")
