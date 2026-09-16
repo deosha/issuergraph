@@ -7,12 +7,21 @@ from contextlib import contextmanager
 import psycopg
 from psycopg.rows import dict_row
 
-DSN = os.environ.get("ISSUERGRAPH_DSN", "postgresql:///issuergraph")
+DEFAULT_DSN = "postgresql:///issuergraph"
+
+
+def dsn() -> str:
+    """Resolved per call, not at import.
+
+    A process-lifetime constant made the DSN untestable and surprising: setting
+    ISSUERGRAPH_DSN after this module was imported silently did nothing.
+    """
+    return os.environ.get("ISSUERGRAPH_DSN") or DEFAULT_DSN
 
 
 @contextmanager
 def connect():
-    with psycopg.connect(DSN, row_factory=dict_row) as conn:
+    with psycopg.connect(dsn(), row_factory=dict_row) as conn:
         yield conn
 
 

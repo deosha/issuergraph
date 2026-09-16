@@ -116,8 +116,8 @@ def test_failed_load_rolls_back_earlier_claims(conn, sandbox):
 
 def test_autocommit_connection_is_refused(sandbox):
     import psycopg
-    from issuergraph.db import DSN
-    with psycopg.connect(DSN, autocommit=True) as autoconn:
+    from issuergraph.db import dsn
+    with psycopg.connect(dsn(), autocommit=True) as autoconn:
         with pytest.raises(EvidenceMismatch, match="autocommit"):
             load_claims(autoconn, sandbox["issuer_id"], sandbox["document_id"], [_claim()])
 

@@ -1,6 +1,8 @@
 -- IssuerGraph schema. See docs/SCHEMA.md for rationale.
--- Includes migrations 002-005; existing databases apply those files instead.
+-- Includes migrations 002-006; existing databases apply those files instead.
 
+DROP TABLE IF EXISTS pilot_submission_log CASCADE;
+DROP TABLE IF EXISTS pilot_request CASCADE;
 DROP TABLE IF EXISTS rationale_diff CASCADE;
 DROP TABLE IF EXISTS extraction_run CASCADE;
 DROP TABLE IF EXISTS conflict_member CASCADE;
@@ -221,3 +223,33 @@ CREATE TABLE rationale_diff (
     to_text       TEXT
 );
 CREATE INDEX ON rationale_diff (issuer_id, agency, to_date);
+
+
+-- Lead capture for the public site. Narrow by design: what a pilot
+-- conversation needs, and nothing more. See sql/006.
+CREATE TABLE pilot_request (
+    id            BIGSERIAL PRIMARY KEY,
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    email_key     TEXT NOT NULL UNIQUE,   -- lower-cased, for duplicate handling
+    organisation  TEXT NOT NULL,
+    role          TEXT NOT NULL,
+    issuers       TEXT NOT NULL,
+    workflow      TEXT NOT NULL,
+    notes         TEXT,
+    source        TEXT,
+    submissions   INT NOT NULL DEFAULT 1,
+    crm_forwarded BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ON pilot_request (created_at DESC);
+
+-- Rate-limiting state, keyed by a salted hash of the client address rather than
+-- the address, because throttling does not require a log of who visited.
+CREATE TABLE pilot_submission_log (
+    id          BIGSERIAL PRIMARY KEY,
+    client_hash TEXT NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ON pilot_submission_log (client_hash, created_at DESC);

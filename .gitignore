@@ -6,3 +6,4 @@ __pycache__/
 .claude/settings.local.json
 CLAUDE.md
 CLAUDE.local.md
+.env

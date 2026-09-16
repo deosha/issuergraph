@@ -1,4 +1,6 @@
-# IssuerGraph — IIFL Finance vertical slice
+# IssuerGraph
+
+Issuer debt and rating changes, with the source behind every figure.
 
 One issuer, six real public documents, end to end. Every extracted fact carries a
 character-exact anchor into the page it came from; disagreements between sources
@@ -12,7 +14,7 @@ become conflict rows rather than a silently chosen number.
 `tests/test_evidence.py` asserts this end to end; `test_reconcile_fixes.py`,
 `test_extraction_coverage.py` and `test_api_scope.py` lock down the loader,
 reconciliation, extraction coverage, declared units and issuer scoping
-(124 tests total).
+(178 tests total, including the public site).
 
 ## Run it
 
@@ -25,6 +27,7 @@ psql -d issuergraph -f sql/002_conflict_history.sql
 psql -d issuergraph -f sql/003_extraction_coverage.sql
 psql -d issuergraph -f sql/004_extraction_runs.sql
 psql -d issuergraph -f sql/005_rating_states.sql
+psql -d issuergraph -f sql/006_pilot_requests.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -35,7 +38,23 @@ uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[bi
 .venv/bin/uvicorn issuergraph.api:app --port 8077    # open http://localhost:8077
 ```
 
-`ISSUERGRAPH_DSN` overrides the default `postgresql:///issuergraph`.
+| Route | What it is | Needs a database? |
+|---|---|---|
+| `/` | Landing page | no |
+| `/demo` | Interactive demo over a committed snapshot | no |
+| `/pilot` | Pilot request form | yes, for storage |
+| `/app` | The live workspace over the pipeline's data | yes |
+
+The demo is served from `static/demo/snapshot.json` plus the page images beside
+it, so a public deployment needs neither the PDFs nor the document database.
+Re-export it with `python -m scripts.export_demo`; the exporter verifies every
+anchor against the live page text before writing. Set `ISSUERGRAPH_DEMO_ONLY=1`
+to serve the site and demo and 404 `/app`. Configuration is in `.env.example`
+and deployment in `docs/DEPLOY.md`.
+
+`ISSUERGRAPH_DSN` overrides the default `postgresql:///issuergraph`. Everything
+else the site needs — contact details, optional analytics, optional CRM
+forwarding, pilot pricing — is optional and documented in `.env.example`.
 
 ## The corpus
 
@@ -137,7 +156,8 @@ difference does not mint a new conflict.
 
 ```
 sql/schema.sql              nine tables
-sql/002..005_*.sql          conflict history; coverage; reprocessing; rating states
+sql/002..006_*.sql          conflict history; coverage; reprocessing;
+                            rating states; pilot requests
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -158,7 +178,17 @@ issuergraph/
   corpus.py                 the six sources, declared
   pipeline.py               the ordered run
   api.py                    read-only API + highlighted page renderer
-static/index.html           the UI
+static/index.html           landing page
+static/demo.html            the demo (snapshot-backed)
+static/pilot.html           pilot request form
+static/app.html             the live workspace
+static/app.js, app.css      the product UI, shared by /app and /demo
+static/demo/               committed snapshot + rendered page images
+issuergraph/site.py         public routes (pages, demo API, pilot endpoint)
+issuergraph/demo.py         the snapshot, and the guided tour built from it
+issuergraph/pilot.py        validate, throttle, store, optionally forward
+issuergraph/settings.py     environment-backed configuration
+scripts/export_demo.py      reproducible demo snapshot export
 scripts/tryextract.py       dry-run an extractor against a PDF, no database
 ```
 

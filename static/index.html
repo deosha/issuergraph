@@ -3,367 +3,372 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IssuerGraph</title>
-<style>
-  :root {
-    --bg: #10131a; --panel: #171b24; --panel2: #1d2230; --line: #2a3040;
-    --text: #e6e9f0; --muted: #8b93a7; --accent: #6aa6ff; --warn: #ffb020;
-    --bad: #ff6b6b; --ok: #4ec9a0; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  header { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex;
-           align-items: baseline; gap: 14px; }
-  header h1 { font-size: 16px; margin: 0; letter-spacing: .3px; }
-  header .sub { color: var(--muted); font-size: 12px; }
-  main { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr);
-         height: calc(100vh - 53px); }
-  .left { overflow: auto; border-right: 1px solid var(--line); }
-  .right { overflow: auto; background: var(--panel); }
-  nav { display: flex; gap: 2px; padding: 10px 14px 0; position: sticky; top: 0;
-        background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; }
-  nav button { background: none; border: 0; border-bottom: 2px solid transparent;
-               color: var(--muted); padding: 8px 12px; cursor: pointer; font-size: 13px; }
-  nav button.on { color: var(--text); border-bottom-color: var(--accent); }
-  section { padding: 16px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .09em;
-       color: var(--muted); margin: 22px 0 8px; font-weight: 600; }
-  h2:first-child { margin-top: 4px; }
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
-       color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-  td { padding: 7px 8px; border-bottom: 1px solid #21273400; border-top: 1px solid var(--line); }
-  tr:hover td { background: var(--panel2); }
-  .fact { color: var(--accent); cursor: pointer; font-family: var(--mono);
-          text-decoration: underline dotted var(--line); text-underline-offset: 3px; }
-  .fact:hover { text-decoration-color: var(--accent); }
-  .fact.sel { background: rgba(106,166,255,.16); border-radius: 3px; }
-  .num { font-family: var(--mono); text-align: right; white-space: nowrap; }
-  .muted { color: var(--muted); }
-  .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px;
-          border: 1px solid var(--line); color: var(--muted); }
-  .pill.bad { color: var(--bad); border-color: #4a2731; background: #2a1a1e; }
-  .pill.ok { color: var(--ok); border-color: #234238; background: #16241f; }
-  .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
-          margin-bottom: 12px; background: var(--panel2); }
-  .card.conflict { border-color: #4a2731; }
-  .card.conflict.resolved { border-color: #2c3a2c; opacity: .72; }
-  .card h3 { margin: 0 0 4px; font-size: 13px; }
-  .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }
-  .members { display: grid; gap: 6px; }
-  .member { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
-            padding: 6px 8px; background: var(--panel); border-radius: 6px; }
-  .arrow { color: var(--muted); }
-  .evidence { padding: 16px; }
-  .evidence .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
-  .evidence .meta b { color: var(--text); font-weight: 600; }
-  blockquote { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--warn);
-               background: #221d12; font-family: var(--mono); font-size: 12.5px;
-               white-space: pre-wrap; word-break: break-word; }
-  .pageimg { width: 100%; border: 1px solid var(--line); border-radius: 6px; display: block; }
-  .empty { color: var(--muted); padding: 30px 16px; }
-  code { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .chg { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: start; }
-  .chg > div { background: var(--panel); padding: 8px 10px; border-radius: 6px; font-size: 12.5px; }
-  a { color: var(--accent); }
-</style>
+<title>IssuerGraph — issuer debt and rating changes, with the source behind every figure</title>
+<meta name="description" content="Review an issuer's debt and rating actions, see where two documents disagree, and click any figure to read the exact sentence and page it came from. Built for credit-research and private-credit teams.">
+<link rel="canonical" href="/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="IssuerGraph — issuer facts, with the evidence attached">
+<meta property="og:description" content="Debt figures, rating timelines and documented differences between sources — every fact anchored to the page it came from. Explore a sample issuer, no signup.">
+<meta property="og:image" content="/static/og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="IssuerGraph — issuer facts, with the evidence attached">
+<meta name="twitter:description" content="Every figure links to the page and sentence it came from. Explore a sample issuer, no signup.">
+<link rel="icon" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/site.css">
 </head>
 <body>
-<header>
-  <h1 id="issuer-name">IssuerGraph</h1>
-  <span class="sub" id="issuer-sub"></span>
-</header>
-<main>
-  <div class="left">
-    <nav id="tabs"></nav>
-    <section id="view"><div class="empty">Loading…</div></section>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img class="mark" src="/static/favicon.svg" alt="" width="22" height="22">
+      <span data-cfg="product_name">IssuerGraph</span>
+    </a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#workflow">Workflow</a>
+      <a href="#preview">Product</a>
+      <a href="#coverage">Coverage</a>
+      <a href="#pilot">Pilot</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn small" href="/demo" data-cta="demo" data-where="header">Explore sample issuer</a>
+      <a class="btn small primary" href="/pilot" data-cta="pilot" data-where="header">Request a pilot</a>
+    </div>
   </div>
-  <div class="right"><div class="evidence" id="evidence">
-    <div class="empty">Click any underlined figure or statement to see the source document,
-    the page it came from, and the exact text behind it.</div>
-  </div></div>
+</header>
+
+<main id="main">
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">For credit-research and private-credit teams</p>
+    <h1>Issuer debt and rating changes,<br>with the source behind every figure.</h1>
+    <p class="lede">
+      IssuerGraph reads an issuer's annual report and rating rationales, extracts the
+      debt and rating facts, and keeps each one attached to the exact characters on the
+      page it came from. Where two documents state different things, it shows both,
+      dated, side by side — and does not pick a winner.
+    </p>
+    <div class="hero-actions">
+      <a class="btn primary" href="/demo" data-cta="demo" data-where="hero">Explore sample issuer →</a>
+      <a class="btn" href="/pilot" data-cta="pilot" data-where="hero">Request a pilot</a>
+      <a class="btn" id="booking-link" href="#" hidden data-cta="booking">Book a 20-minute call</a>
+    </div>
+    <p class="hero-note">
+      The demo opens immediately — no signup, no email, no calendar. It is a fixed
+      sample dataset built from <span data-count="documents">six</span> public documents.
+    </p>
+
+    <figure class="shot hero-shot">
+      <img src="/static/shots/product.png" width="2200" height="1350" loading="lazy"
+           alt="The IssuerGraph workspace. On the left, a table of total borrowings by basis and date, each figure underlined as a link, with two rows badged as conflicts and two as agreeing within tolerance. On the right, page 438 of the annual report with four highlights: the three balance-sheet rows that make up the selected total, and the statement's own rupees-in-crores header.">
+      <figcaption>
+        The workspace: every figure on the left is a link; the right pane is the page it
+        came from. The selected total is not printed anywhere in the report — it is the
+        three highlighted rows added together, and the fourth highlight is the header
+        that establishes they are crores.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="who">
+  <div class="wrap">
+    <h2>Built for the people who have to be able to show their working</h2>
+    <p class="lede">
+      If your note has to survive an investment committee, a "the model says so" answer
+      is not usable. IssuerGraph is built for the part of the job where a number has to
+      be traceable to a document.
+    </p>
+    <div class="grid three" style="margin-top:30px">
+      <div class="card">
+        <h3>Credit research</h3>
+        <p>Surveillance across an issuer's disclosure and its rating agencies, where the
+        question is usually "has anything changed, and who says so".</p>
+      </div>
+      <div class="card">
+        <h3>Private credit</h3>
+        <p>Diligence on issuers whose figures are spread across an annual report and
+        several agencies' rationales that do not agree on definitions.</p>
+      </div>
+      <div class="card">
+        <h3>Risk and monitoring</h3>
+        <p>Teams that need a dated record of when a difference between sources first
+        appeared, and whether it is still there.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow">
+  <div class="wrap">
+    <p class="eyebrow">The workflow</p>
+    <h2>Four things, each of which is checkable</h2>
+    <div class="grid four" style="margin-top:30px">
+      <div class="card">
+        <span class="n">01</span>
+        <h3>Review facts</h3>
+        <p>Total borrowings by basis and date, rated instruments with maturities, rating
+        actions by agency. Derived figures state their arithmetic.</p>
+      </div>
+      <div class="card">
+        <span class="n">02</span>
+        <h3>Inspect evidence</h3>
+        <p>Click any figure to open the page it came from, with the exact characters
+        highlighted — including the header that establishes the unit.</p>
+      </div>
+      <div class="card">
+        <span class="n">03</span>
+        <h3>Compare sources</h3>
+        <p>Where documents disagree, both values are shown with their own evidence,
+        the tolerance that was applied, and the period both views were in force.</p>
+      </div>
+      <div class="card">
+        <span class="n">04</span>
+        <h3>Track changes</h3>
+        <p>Successive rationales from one agency, diffed structurally: what appeared,
+        what went, what moved — both sides anchored to their own document.</p>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:28px">
+      <h3>A difference between sources is not an error</h3>
+      <p style="margin-bottom:0">
+        Most differences are definitional. In the sample dataset, a rating agency's
+        "Total Debt" exceeds the annual report's by ₹24.80 crore on one basis and
+        ₹25.10 crore on another — almost certainly one definitional difference, not a
+        mistake by either party. IssuerGraph flags it for an analyst to judge, records
+        when it was first seen, and never silently picks one number.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="preview">
+  <div class="wrap">
+    <p class="eyebrow">The actual product</p>
+    <h2>Live excerpt from the sample dataset</h2>
+    <p class="lede">
+      Not a mockup: the rows below are rendered from the same snapshot the demo uses,
+      through the same code. Counts come from the data.
+    </p>
+
+    <div id="preview-mount" style="margin-top:26px">
+      <p class="muted small">Loading sample…</p>
+    </div>
+
+    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn primary" href="/demo" data-cta="demo" data-where="preview">Open the full demo →</a>
+      <a class="btn" href="/demo?tour=1" data-cta="demo" data-where="preview-tour">Take the guided tour</a>
+    </div>
+  </div>
+</section>
+
+<section id="coverage">
+  <div class="wrap">
+    <p class="eyebrow">Coverage and limits</p>
+    <h2>What it reads today, stated plainly</h2>
+    <p class="lede">
+      This is an early system with a deliberately narrow scope. Being precise about
+      the edges is more useful to you than a longer list would be.
+    </p>
+
+    <div class="grid two" style="margin-top:28px;align-items:start">
+      <div>
+        <h3>What works now</h3>
+        <ul class="plain">
+          <li>Indian NBFC annual reports — Ind AS balance sheets, consolidated and standalone.</li>
+          <li>Rating rationales from ICRA, CARE and Brickwork: rating tables, instrument
+              annexures, liquidity sections, strengths and challenges.</li>
+          <li>Debt figures, rated instruments and maturities, rating grade, outlook and watch.</li>
+          <li>Cross-document comparison with two tolerances, and effective-dated rating
+              comparison per instrument class.</li>
+          <li>Every stored fact carries verified character offsets and page geometry.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>What it does not do yet</h3>
+        <ul class="plain">
+          <li>One issuer is loaded in the public sample. It is a vertical slice, not a universe.</li>
+          <li>Four extractors, tuned to four publishers' current layouts. A new publisher
+              needs a new extractor.</li>
+          <li>Only the annual-report extractor declares full coverage checks; the other three
+              currently prove only that they produced something.</li>
+          <li>A rating is treated as in force until that agency acts again, with no staleness
+              horizon — so a two-year-old action still counts as current.</li>
+          <li>No score, no recommendation, no chat interface, and no document upload.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="small muted" style="margin-top:22px">
+      The sample dataset is fixed, with documents published up to
+      <b id="cutoff-inline">its stated cutoff</b>. It is not updated as new filings appear.
+    </p>
+  </div>
+</section>
+
+<section id="pilot">
+  <div class="wrap">
+    <p class="eyebrow">Paid pilot</p>
+    <h2>Bring your issuers; we build the slice around them</h2>
+    <p class="lede">
+      A pilot is scoped work on issuers you actually cover, run over
+      <b data-cfg="pilot_length">four weeks</b>, ending with something your team can
+      use or reject on evidence.
+    </p>
+
+    <div class="grid two" style="margin-top:28px;align-items:start">
+      <div class="card">
+        <h3>What you get</h3>
+        <ul class="plain">
+          <li>Your issuers loaded from their own public documents, with every fact anchored.</li>
+          <li>Extractors written or adapted for the publishers your issuers use.</li>
+          <li>A differences report: where your sources disagree, dated, with evidence.</li>
+          <li>A hosted workspace for your team, and the export of the underlying data.</li>
+          <li>A written account of what could not be extracted, and why.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What we need from you</h3>
+        <ul class="plain">
+          <li>Five to ten issuers, and the documents you consider authoritative for them.</li>
+          <li>One workflow to target — surveillance, diligence, or a recurring report.</li>
+          <li>An analyst who will check the output against their own reading.</li>
+          <li>A named person who can say whether it was worth doing.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:26px">
+      <p style="margin-bottom:0" id="pricing-line">
+        <b>Pricing is scoped per pilot</b> — it depends on how many publishers need new
+        extractors, which is the part that takes real work. Tell us your issuers and the
+        workflow, and you will get a fixed price and a schedule rather than a quote range.
+      </p>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn primary" href="/pilot" data-cta="pilot" data-where="pilot-section">Request a pilot →</a>
+      <a class="btn" href="/demo" data-cta="demo" data-where="pilot-section">See the sample first</a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap narrow">
+    <p class="eyebrow">Questions</p>
+    <h2>FAQ</h2>
+
+    <details class="faq" open>
+      <summary>Where do the facts come from?</summary>
+      <div class="body">
+        <p>Public documents, fetched over HTTP from the publisher's own URL: the issuer's
+        annual report and the rating agencies' published rationales. Each document is
+        stored with its SHA-256, its source URL and the time it was retrieved, all of
+        which are shown in the demo under Sources.</p>
+        <p>Nothing is generated. If a figure is not printed in a document we hold, it does
+        not appear — and a figure computed from several rows, like total borrowings,
+        states its own arithmetic and carries one anchor per component.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>How do I verify a number?</summary>
+      <div class="body">
+        <p>Click it. The panel shows the document, the page, the character range, the
+        extractor and version that produced it, and the page image with those exact
+        characters highlighted. The highlight is drawn from geometry recorded at
+        extraction time, so it cannot land on a different occurrence of the same text on
+        the page.</p>
+        <p>Before anything is stored, the loader re-reads the page and asserts that the
+        quoted evidence equals the characters at those offsets. If it does not, the whole
+        document fails to load rather than storing a fact it cannot prove.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>What happens when two sources disagree?</summary>
+      <div class="body">
+        <p>Both are kept and shown together with their own evidence. Numbers are compared
+        with two tolerances — a relative band and an absolute floor — because a
+        percentage-only test treats the same rupee difference differently depending on
+        the size of the number it sits on.</p>
+        <p>Ratings are compared only between agencies rating the same instrument class on
+        the same rating scale, over periods that actually overlap. A difference records
+        when it was first detected and whether it is still present; one that stops
+        recurring is marked resolved rather than deleted.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Which issuers and documents are supported?</summary>
+      <div class="body">
+        <p>Today: Indian NBFC annual reports with Ind AS balance sheets, and rating
+        rationales from ICRA, CARE and Brickwork. The public sample is one issuer, IIFL
+        Finance, across six documents.</p>
+        <p>A new publisher needs an extractor written for its layout — that is the honest
+        unit of work in a pilot, and it is why scoping asks which documents you treat as
+        authoritative.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>What does onboarding involve?</summary>
+      <div class="body">
+        <p>You send a list of issuers and the documents you consider authoritative. We load
+        them, write or adapt the extractors, and give you a workspace plus a written note
+        on what could not be extracted and why. No integration, no data from your systems
+        and no credentials are required to start — everything in the pilot comes from
+        public documents.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>What happens to what I submit?</summary>
+      <div class="body">
+        <p>The pilot form stores what you type so we can reply about a pilot. You are not
+        added to a mailing list and no outreach sequence is triggered. Analytics, when
+        enabled, records that a page was viewed or a form submitted — never your name,
+        your email address, what you typed, or any document content.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap narrow">
+    <p class="eyebrow">Who is behind this</p>
+    <h2 data-cfg="founder_name">—</h2>
+    <p class="lede" id="founder-line"><span data-cfg="founder_role">Founder</span></p>
+    <p id="founder-bio" hidden data-cfg="founder_bio"></p>
+    <p>
+      Questions, or something in the sample that looks wrong?
+      Write to <a id="contact-email" href="#" data-cta="email">the address below</a> — a
+      specific correction about a specific figure is the most useful thing you can send.
+    </p>
+    <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn primary" href="/pilot" data-cta="pilot" data-where="contact">Request a pilot</a>
+      <a class="btn" href="/demo" data-cta="demo" data-where="contact">Explore sample issuer</a>
+    </div>
+  </div>
+</section>
+
 </main>
 
-<script>
-const $ = (sel) => document.querySelector(sel);
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const inr = (v) => v == null ? "—" : "₹" + Number(v).toLocaleString("en-IN",
-  { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Cr";
-const day = (d) => d ? new Date(d).toLocaleDateString("en-GB",
-  { day: "2-digit", month: "short", year: "numeric" }) : "—";
+<footer class="site-footer">
+  <div class="wrap">
+    <span data-cfg="product_name">IssuerGraph</span>
+    <span class="spacer"></span>
+    <a href="/demo">Sample issuer</a>
+    <a href="/pilot">Request a pilot</a>
+    <a id="footer-email" href="#">Contact</a>
+  </div>
+</footer>
 
-const fact = (claimId, label, cls = "") =>
-  `<span class="fact ${cls}" data-claim="${claimId}">${label}</span>`;
-
-const TABS = [
-  ["debt", "Debt"],
-  ["ratings", "Ratings"],
-  ["conflicts", "Conflicts"],
-  ["changes", "What changed"],
-  ["sources", "Sources"],
-];
-let state = { tab: "debt", data: {} };
-
-async function get(path) { const r = await fetch(path); return r.json(); }
-
-async function boot() {
-  const [issuer, debt, ratings, conflicts, corrob, changes] = await Promise.all([
-    get("/api/issuer"), get("/api/debt"), get("/api/ratings"),
-    get("/api/conflicts?include_resolved=true"), get("/api/corroborations"),
-    get("/api/changes"),
-  ]);
-  state.data = { issuer, debt, ratings, conflicts, corrob, changes };
-  // Only open conflicts are counted. A resolved one is history, not a to-do.
-  const open = conflicts.filter(c => c.status === "open").length;
-  $("#issuer-name").textContent = issuer.name;
-  $("#issuer-sub").textContent =
-    `${issuer.documents.length} documents · ${issuer.claim_count} anchored claims · ` +
-    `${open} open conflicts · CIN ${issuer.cin}`;
-  const incomplete = issuer.documents.filter(d => d.extraction_status === "incomplete");
-  if (incomplete.length) $("#issuer-sub").textContent +=
-    ` · ⚠️ ${incomplete.length} document(s) incompletely extracted`;
-  $("#tabs").innerHTML = TABS.map(([id, label]) =>
-    `<button data-tab="${id}">${label}${id === "conflicts" && open
-      ? ` <span class="pill bad">${open}</span>` : ""}</button>`).join("");
-  render();
-}
-
-function render() {
-  document.querySelectorAll("#tabs button").forEach(b =>
-    b.classList.toggle("on", b.dataset.tab === state.tab));
-  $("#view").innerHTML = ({
-    debt: viewDebt, ratings: viewRatings, conflicts: viewConflicts,
-    changes: viewChanges, sources: viewSources,
-  })[state.tab]();
-}
-
-// Agreement within tolerance is not the same claim as an exact match. If the
-// sources differ at all, say by how much rather than rendering a bare "agree".
-function agreeBadge(items) {
-  const values = items.map(i => Number(i.value_numeric));
-  const gap = Math.max(...values) - Math.min(...values);
-  const label = `${items.length} sources agree`;
-  return gap === 0
-    ? `<span class="pill ok">${label}</span>`
-    : `<span class="pill ok">${label} ±${inr(gap)}</span>`;
-}
-
-function viewDebt() {
-  const { totals, instruments } = state.data.debt;
-  const groups = {};
-  for (const t of totals) (groups[`${t.basis}|${t.as_of_date}`] ||= []).push(t);
-
-  const rows = Object.entries(groups).sort().reverse().map(([key, items]) => {
-    const [basis, asOf] = key.split("|");
-    const conflicted = items.find(i => i.conflict);
-    return `<tr>
-      <td>${esc(basis)}<div class="muted" style="font-size:12px">as at ${day(asOf)}</div></td>
-      ${items.map(i => `<td class="num">${fact(i.claim_id, inr(i.value_numeric))}
-        <div class="muted" style="font-size:11px">${esc(i.source_name)}</div></td>`).join("")}
-      <td>${conflicted
-        ? `<span class="pill bad">conflict ${Number(conflicted.conflict.spread_pct).toFixed(3)}%</span>`
-        : items.length > 1 ? agreeBadge(items)
-        : `<span class="pill">single source</span>`}</td></tr>`;
-  }).join("");
-
-  const instRows = instruments.map(i => `<tr>
-      <td>${fact(i.claim_id, esc(i.instrument_name))}</td>
-      <td><span class="pill">${esc(i.instrument_type)}</span></td>
-      <td class="num">${inr(i.amount_cr)}</td>
-      <td class="num">${day(i.maturity_date)}</td>
-      <td class="muted">${esc(i.source_name)}</td></tr>`).join("");
-
-  return `<h2>Total borrowings — every figure is a link to its source</h2>
-    <table><thead><tr><th>Basis</th><th colspan="9"></th></tr></thead>
-    <tbody>${rows}</tbody></table>
-    <h2>Rated instruments with stated maturity (${instruments.length})</h2>
-    <table><thead><tr><th>Instrument</th><th>Type</th><th class="num">Amount</th>
-      <th class="num">Maturity</th><th>Source</th></tr></thead>
-    <tbody>${instRows}</tbody></table>`;
-}
-
-// The instrument class, not the agency's wording, is what two ratings are
-// compared on — so the table shows it next to the wording it was derived from.
-const CLASS_LABEL = {
-  ncd: "NCD", subordinated_debt: "sub. debt", perpetual_debt: "perpetual",
-  bank_facility: "bank", mld: "MLD", commercial_paper: "CP",
-  debt_securities: "debt sec.", other: "other",
-};
-
-function inForce(r) {
-  if (!r.effective_from) return "";
-  return r.effective_to
-    ? `${day(r.effective_from)} → ${day(r.effective_to)}`
-    : `${day(r.effective_from)} → current`;
-}
-
-function viewRatings() {
-  const rows = state.data.ratings.map(r => `<tr>
-    <td class="muted">${day(r.action_date)}</td>
-    <td>${esc(r.agency)}</td>
-    <td>${fact(r.claim_id, esc(r.instrument))}
-      <div class="muted" style="font-size:11px">
-        ${esc(CLASS_LABEL[r.instrument_class] ?? r.instrument_class)} ·
-        ${r.term === "short_term" ? "short-term scale" : "long-term scale"}</div></td>
-    <td class="num">${r.rated_amount_cr == null ? "—" : inr(r.rated_amount_cr)}</td>
-    <td><b>${esc(r.rating)}</b>${r.outlook ? ` <span class="pill">${esc(r.outlook)}</span>` : ""}
-        ${r.watch ? ` <span class="pill bad">${esc(r.watch)}</span>` : ""}
-        <div class="muted" style="font-size:11px">${inForce(r)}</div></td>
-    <td class="muted">${esc(r.action ?? "")}</td></tr>`).join("");
-  return `<h2>Rating actions across agencies</h2>
-    <div class="muted" style="font-size:12px;margin:-6px 0 10px">
-      A rating stands from its action date until the same agency next acts on the
-      same instrument class. Agencies are compared only where those periods overlap.</div>
-    <table><thead><tr><th>Date</th><th>Agency</th><th>Instrument</th>
-      <th class="num">Rated amount</th><th>Rating</th><th>Action</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
-}
-
-function viewConflicts() {
-  const open = state.data.conflicts.filter(c => c.status === "open");
-  const resolved = state.data.conflicts.filter(c => c.status === "resolved");
-
-  const card = c => `<div class="card conflict${c.status === "resolved" ? " resolved" : ""}">
-    <h3>${c.status === "resolved" ? "✔️" : "⚠️"} ${esc(c.subject)}</h3>
-    <div class="muted" style="font-size:12px;margin-bottom:6px">
-      ${c.status === "resolved"
-        ? `no longer detected as of ${day(c.resolved_at)} · first seen ${day(c.first_detected_at)}`
-        : `first seen ${day(c.first_detected_at)} · still present ${day(c.last_seen_at)}`}</div>
-    <div class="note">${esc(c.note)}</div>
-    <div class="members">${c.members.map(m => `<div class="member">
-      <span><b>${esc(m.source_name)}</b>
-        <span class="muted">· ${esc(m.title)} · ${day(m.published_date)}</span>
-        ${m.stated_value ? `<div class="muted" style="font-size:11px">
-          quoting: ${esc(m.value_text ?? "")}</div>` : ""}</span>
-      <span>${fact(m.claim_id, m.stated_value ? esc(m.stated_value)
-        : (m.value_numeric != null ? inr(m.value_numeric) : esc(m.value_text)))}</span>
-      </div>`).join("")}</div>
-    <div class="muted" style="margin-top:8px;font-size:12px">
-      IssuerGraph does not choose between these. <code>${esc(c.fact_key)}</code></div>
-  </div>`;
-
-  const agree = state.data.corrob.map(c => `<div class="card">
-    <h3>${esc(c.subject)}</h3>
-    ${Number(c.variance_cr) > 0 ? `<div class="muted" style="font-size:12px;margin-bottom:6px">
-      agree within tolerance, residual variance ${inr(c.variance_cr)}
-      (${Number(c.spread_pct).toFixed(3)}%)</div>` : ""}
-    <div class="members">${c.members.map(m => `<div class="member">
-      <span class="muted">${esc(m.source)}</span>
-      <span>${fact(m.claim_id, inr(m.value))}</span></div>`).join("")}</div>
-  </div>`).join("");
-
-  return `<h2>Open conflicts (${open.length})</h2>
-    ${open.map(card).join("") || '<div class="empty">None.</div>'}
-    ${resolved.length ? `<h2>Resolved (${resolved.length})</h2>
-      <div class="muted" style="font-size:12px;margin:-6px 0 10px">
-        Detected previously, not seen in the latest run. Kept because a
-        disagreement disappearing is itself a signal.</div>
-      ${resolved.map(card).join("")}` : ""}
-    <h2>Independently corroborated (${state.data.corrob.length})</h2>
-    ${agree || '<div class="empty">None.</div>'}`;
-}
-
-function viewChanges() {
-  const byPair = {};
-  for (const c of state.data.changes)
-    (byPair[`${c.agency}|${c.from_date}|${c.to_date}`] ||= []).push(c);
-
-  return Object.entries(byPair).map(([key, items]) => {
-    const [agency, from, to] = key.split("|");
-    return `<h2>${esc(agency)} · ${day(from)} → ${day(to)}</h2>` + items.map(c => `
-      <div class="card"><h3>${esc(c.section)}
-        <span class="pill ${c.direction === "removed" ? "bad" : ""}">${c.direction}</span></h3>
-        <div class="chg">
-          <div>${c.from_claim_id
-            ? fact(c.from_claim_id, esc(c.from_text))
-            : '<span class="muted">not stated in the earlier report</span>'}</div>
-          <div class="arrow" style="background:none;padding-top:8px">→</div>
-          <div>${c.to_claim_id
-            ? fact(c.to_claim_id, esc(c.to_text))
-            : '<span class="muted">dropped from the later report</span>'}</div>
-        </div></div>`).join("");
-  }).join("") || '<div class="empty">No successive reports to compare.</div>';
-}
-
-// Extraction coverage is shown per document because "we did not parse this"
-// must never be readable as "the issuer did not report this".
-function coverageBadge(d) {
-  if (d.extraction_status === "complete")
-    return `<span class="pill ok">extraction complete
-      ${d.extraction_found}/${d.extraction_expected}</span>`;
-  if (d.extraction_status === "incomplete")
-    return `<span class="pill bad">extraction incomplete
-      ${d.extraction_found}/${d.extraction_expected}</span>`;
-  return `<span class="pill">coverage not checked</span>`;
-}
-
-function viewSources() {
-  return `<h2>Retrieved documents</h2>` + state.data.issuer.documents.map(d => `
-    <div class="card"><h3>${esc(d.title)} ${coverageBadge(d)}</h3>
-      ${(d.extraction_missing || []).length ? `<div class="note">
-        Facts this document was expected to yield but did not:
-        <ul style="margin:6px 0 0 16px">${d.extraction_missing
-          .map(m => `<li>${esc(m)}</li>`).join("")}</ul>
-        <div style="margin-top:6px">Absent facts below reflect parsing, not disclosure.</div>
-      </div>` : ""}
-      <div class="muted" style="font-size:12px">
-        ${esc(d.source_name)} · ${esc(d.doc_type)} · ${d.page_count} pages ·
-        published ${day(d.published_date)} · retrieved ${day(d.retrieved_at)}<br>
-        <code>sha256 ${esc(d.sha256)}</code><br>
-        <a href="${esc(d.url)}" target="_blank" rel="noopener">original URL</a> ·
-        <a href="/api/pdf/${d.id}" target="_blank">stored copy</a>
-      </div></div>`).join("");
-}
-
-async function showClaim(claimId) {
-  document.querySelectorAll(".fact.sel").forEach(e => e.classList.remove("sel"));
-  document.querySelectorAll(`.fact[data-claim="${claimId}"]`)
-    .forEach(e => e.classList.add("sel"));
-
-  const c = await get(`/api/claim/${claimId}`);
-  const primary = c.anchors[0];
-  const value = c.value_numeric != null
-    ? `${inr(c.value_numeric)} <span class="muted">(${esc(c.value_unit ?? "")})</span>`
-    : esc(c.value_text);
-
-  $("#evidence").innerHTML = `
-    <div style="font-size:15px;margin-bottom:2px">${value}</div>
-    <div class="meta">${esc(c.subject)}</div>
-    <div class="meta">
-      <b>${esc(c.title)}</b> · ${esc(c.source_name)} · published ${day(c.published_date)}<br>
-      Page ${primary.page_no} of ${c.page_count} ·
-      chars ${primary.char_start}–${primary.char_end} ·
-      basis ${esc(c.basis)} · as at ${day(c.as_of_date)}<br>
-      <code>${esc(c.extractor)} v${esc(c.extractor_version)}</code> ·
-      <code>sha256 ${esc(c.sha256).slice(0, 16)}…</code> ·
-      retrieved ${day(c.retrieved_at)}<br>
-      <a href="${esc(c.url)}" target="_blank" rel="noopener">source URL</a> ·
-      <a href="/api/pdf/${c.document_id}#page=${primary.page_no}" target="_blank">open PDF</a>
-    </div>
-    ${c.anchors.map(a => `<blockquote>${esc(a.evidence_text)}</blockquote>`).join("")}
-    <img class="pageimg" id="pageimg"
-         src="/api/page.png?document_id=${c.document_id}&page_no=${primary.page_no}&claim_id=${c.id}">`;
-
-  const img = $("#pageimg");
-  img.onload = () => {
-    const rect = (primary.bbox_rects || [])[0];
-    if (!rect) return;
-    const scale = img.clientWidth / img.naturalWidth * 2.0;
-    const top = img.offsetTop + rect[1] * scale - 120;
-    $(".right").scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  };
-}
-
-document.addEventListener("click", (e) => {
-  const tab = e.target.closest("#tabs button");
-  if (tab) { state.tab = tab.dataset.tab; render(); return; }
-  const f = e.target.closest(".fact");
-  if (f) showClaim(f.dataset.claim);
-});
-
-boot();
-</script>
+<script src="/static/analytics.js"></script>
+<script src="/static/site.js"></script>
 </body>
 </html>

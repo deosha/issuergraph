@@ -1,0 +1,123 @@
+  :root {
+    --bg: #10131a; --panel: #171b24; --panel2: #1d2230; --line: #2a3040;
+    --text: #e6e9f0; --muted: #8b93a7; --accent: #6aa6ff; --warn: #ffb020;
+    --bad: #ff6b6b; --ok: #4ec9a0; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex;
+           align-items: baseline; gap: 14px; }
+  header h1 { font-size: 16px; margin: 0; letter-spacing: .3px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  main { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr);
+         height: calc(100vh - 53px); }
+  .left { overflow: auto; border-right: 1px solid var(--line); }
+  .right { overflow: auto; background: var(--panel); }
+  nav { display: flex; gap: 2px; padding: 10px 14px 0; position: sticky; top: 0;
+        background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; }
+  nav button { background: none; border: 0; border-bottom: 2px solid transparent;
+               color: var(--muted); padding: 8px 12px; cursor: pointer; font-size: 13px; }
+  nav button.on { color: var(--text); border-bottom-color: var(--accent); }
+  section { padding: 16px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .09em;
+       color: var(--muted); margin: 22px 0 8px; font-weight: 600; }
+  h2:first-child { margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+       color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 7px 8px; border-bottom: 1px solid #21273400; border-top: 1px solid var(--line); }
+  tr:hover td { background: var(--panel2); }
+  .fact { color: var(--accent); cursor: pointer; font-family: var(--mono);
+          text-decoration: underline dotted var(--line); text-underline-offset: 3px; }
+  .fact:hover { text-decoration-color: var(--accent); }
+  .fact.sel { background: rgba(106,166,255,.16); border-radius: 3px; }
+  .num { font-family: var(--mono); text-align: right; white-space: nowrap; }
+  .muted { color: var(--muted); }
+  .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px;
+          border: 1px solid var(--line); color: var(--muted); }
+  .pill.bad { color: var(--bad); border-color: #4a2731; background: #2a1a1e; }
+  .pill.ok { color: var(--ok); border-color: #234238; background: #16241f; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+          margin-bottom: 12px; background: var(--panel2); }
+  .card.conflict { border-color: #4a2731; }
+  .card.conflict.resolved { border-color: #2c3a2c; opacity: .72; }
+  .card h3 { margin: 0 0 4px; font-size: 13px; }
+  .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }
+  .members { display: grid; gap: 6px; }
+  .member { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+            padding: 6px 8px; background: var(--panel); border-radius: 6px; }
+  .arrow { color: var(--muted); }
+  .evidence { padding: 16px; }
+  .evidence .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .evidence .meta b { color: var(--text); font-weight: 600; }
+  blockquote { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--warn);
+               background: #221d12; font-family: var(--mono); font-size: 12.5px;
+               white-space: pre-wrap; word-break: break-word; }
+  .pageimg { width: 100%; border: 1px solid var(--line); border-radius: 6px; display: block; }
+  .empty { color: var(--muted); padding: 30px 16px; }
+  code { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .chg { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: start; }
+  .chg > div { background: var(--panel); padding: 8px 10px; border-radius: 6px; font-size: 12.5px; }
+  a { color: var(--accent); }
+
+/* --- Facts are buttons ---------------------------------------------------
+   Styled inline, but real controls: keyboard-reachable, with a focus ring
+   that is visible against the dark panel. */
+.fact { font: inherit; background: none; border: 0; padding: 0; margin: 0;
+        color: var(--accent); cursor: pointer; font-family: var(--mono);
+        text-decoration: underline dotted var(--line); text-underline-offset: 3px;
+        text-align: inherit; }
+.fact:hover { text-decoration-color: var(--accent); }
+.fact.sel { background: rgba(106,166,255,.16); border-radius: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+/* --- Snapshot evidence ---------------------------------------------------
+   The demo draws highlights over a plain page image using the rectangles the
+   pipeline stored, positioned as percentages of the page's own point size, so
+   the geometry survives any render resolution. */
+.pagewrap { position: relative; display: block; line-height: 0; }
+.pagewrap .hl { position: absolute; background: rgba(255,176,32,.32);
+                outline: 1px solid rgba(255,176,32,.65); border-radius: 2px;
+                pointer-events: none; }
+
+.skip { position: absolute; left: -9999px; top: 0; background: var(--panel2);
+        color: var(--text); padding: 10px 14px; z-index: 10; border-radius: 0 0 6px 0; }
+.skip:focus { left: 0; }
+
+/* --- Demo chrome --------------------------------------------------------- */
+.demobar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+           padding: 9px 20px; background: #1a2030; border-bottom: 1px solid var(--line);
+           font-size: 12px; color: var(--muted); }
+.demobar b { color: var(--text); font-weight: 600; }
+.demobar .spacer { flex: 1 1 auto; }
+.btn { display: inline-block; font: inherit; font-size: 12px; padding: 6px 12px;
+       border-radius: 6px; border: 1px solid var(--line); background: var(--panel2);
+       color: var(--text); cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #0b1220;
+               font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.08); }
+
+/* --- Guided tour --------------------------------------------------------- */
+.tour { position: fixed; right: 18px; bottom: 18px; width: min(360px, calc(100vw - 36px));
+        background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px;
+        padding: 14px 16px; box-shadow: 0 18px 40px rgba(0,0,0,.45); z-index: 20; }
+.tour h3 { margin: 0 0 6px; font-size: 13px; }
+.tour p { margin: 0 0 12px; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.tour .row { display: flex; align-items: center; gap: 8px; }
+.tour .step { font-size: 11px; color: var(--muted); margin-right: auto;
+              font-family: var(--mono); }
+
+/* --- Small screens -------------------------------------------------------
+   The two-pane layout becomes one column: the evidence panel follows the
+   fact rather than sitting beside it. */
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; height: auto; }
+  .left { border-right: 0; border-bottom: 1px solid var(--line); }
+  .right { position: sticky; bottom: 0; max-height: 70vh; }
+  header { flex-wrap: wrap; gap: 4px 12px; }
+  nav { overflow-x: auto; }
+  table { font-size: 13px; }
+  .member { flex-direction: column; align-items: flex-start; gap: 2px; }
+}

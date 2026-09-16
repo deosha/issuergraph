@@ -19,7 +19,6 @@ import pathlib
 import pymupdf
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from .db import one, query
 from .reconcile import TOLERANCE_ABS_CR, TOLERANCE_PCT, _excluded
@@ -312,4 +311,8 @@ def pdf(document_id: int):
     return FileResponse(row["local_path"], media_type="application/pdf")
 
 
-app.mount("/", StaticFiles(directory=STATIC, html=True), name="static")
+# The public site (landing page, demo, pilot form) registers onto this same app:
+# one process, one deployment. The live API above is unchanged.
+from . import site  # noqa: E402  (imported here to avoid a circular import)
+
+site.register(app)

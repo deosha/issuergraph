@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request a pilot — IssuerGraph</title>
+<meta name="description" content="Tell us which issuers you cover and which workflow you want help with, and we will come back with a scoped pilot: fixed price, fixed schedule, and a written account of what could not be extracted.">
+<link rel="canonical" href="/pilot">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Request an IssuerGraph pilot">
+<meta property="og:description" content="Your issuers, loaded from their own public documents, with every fact anchored to its source.">
+<meta property="og:image" content="/static/og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/site.css">
+</head>
+<body>
+<a class="skip" href="#form">Skip to the form</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img class="mark" src="/static/favicon.svg" alt="" width="22" height="22">
+      <span data-cfg="product_name">IssuerGraph</span>
+    </a>
+    <div class="header-cta">
+      <a class="btn small" href="/demo" data-cta="demo" data-where="pilot-header">Explore sample issuer</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section style="padding-top:52px">
+  <div class="wrap" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:52px;align-items:start" id="pilot-layout">
+
+    <div>
+      <p class="eyebrow">Paid pilot</p>
+      <h1 style="font-size:clamp(26px,3.4vw,38px)">Request a pilot</h1>
+      <p class="lede">
+        Tell us which issuers you cover and what you want the workflow to do. You will
+        get a scoped reply — a fixed price and a schedule — not a brochure.
+      </p>
+
+      <form class="form" id="form" style="margin-top:28px" novalidate>
+        <div class="form-status" id="status" role="status" aria-live="polite"></div>
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required
+                 aria-describedby="name-err">
+          <span class="err" id="name-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="email">Work email
+            <span class="hint">We reply here. A work address helps us understand the context.</span>
+          </label>
+          <input id="email" name="email" type="email" autocomplete="email" required
+                 inputmode="email" aria-describedby="email-err">
+          <span class="err" id="email-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="organisation">Organisation</label>
+          <input id="organisation" name="organisation" type="text"
+                 autocomplete="organization" required aria-describedby="organisation-err">
+          <span class="err" id="organisation-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="role">Role
+            <span class="hint">For example: credit analyst, PM, head of research.</span>
+          </label>
+          <input id="role" name="role" type="text" autocomplete="organization-title"
+                 required aria-describedby="role-err">
+          <span class="err" id="role-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="issuers">Issuers of interest
+            <span class="hint">Five to ten names is the right size for a pilot. Sectors are
+            fine if you would rather not name them yet.</span>
+          </label>
+          <textarea id="issuers" name="issuers" required aria-describedby="issuers-err"
+                    style="min-height:88px"></textarea>
+          <span class="err" id="issuers-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="workflow">The workflow you want help with
+            <span class="hint">What you do today, how often, and where it costs you time —
+            surveillance, diligence, a recurring report.</span>
+          </label>
+          <textarea id="workflow" name="workflow" required aria-describedby="workflow-err"></textarea>
+          <span class="err" id="workflow-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="notes">Anything else <span class="optional">(optional)</span>
+            <span class="hint">Documents you treat as authoritative, timing constraints,
+            or something in the sample that looked wrong.</span>
+          </label>
+          <textarea id="notes" name="notes" style="min-height:80px"
+                    aria-describedby="notes-err"></textarea>
+          <span class="err" id="notes-err"></span>
+        </div>
+
+        <div>
+          <button class="btn primary" type="submit" id="submit">Send request</button>
+          <p class="small muted" style="margin:12px 0 0">
+            Used to reply about a pilot. You are not added to a mailing list and no
+            outreach sequence is triggered.
+          </p>
+        </div>
+      </form>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h3>What a pilot delivers</h3>
+        <ul class="plain small">
+          <li>Your issuers loaded from their own public documents.</li>
+          <li>Extractors written or adapted for your publishers.</li>
+          <li>A dated differences report with evidence.</li>
+          <li>A hosted workspace, plus an export of the data.</li>
+          <li>A written note on what could not be extracted.</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Before you send</h3>
+        <p class="small">The sample issuer is open with no signup — it is the fastest way
+        to tell whether this is worth a conversation.</p>
+        <a class="btn small" href="/demo" data-cta="demo" data-where="pilot-aside">Explore sample issuer →</a>
+      </div>
+      <p class="small muted" style="margin-top:18px">
+        Prefer email? <a id="contact-email" href="#">Write to us</a> and it reaches the
+        same place.
+      </p>
+    </aside>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span data-cfg="product_name">IssuerGraph</span>
+    <span class="spacer"></span>
+    <a href="/">Home</a>
+    <a href="/demo">Sample issuer</a>
+    <a id="footer-email" href="#">Contact</a>
+  </div>
+</footer>
+
+<script src="/static/analytics.js"></script>
+<script src="/static/pilot.js"></script>
+</body>
+</html>

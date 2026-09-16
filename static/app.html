@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IssuerGraph — live workspace</title>
+<meta name="description" content="The IssuerGraph workspace over the live database: issuer debt, rating actions, differences between sources, and the evidence behind every fact.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<a class="skip" href="#view">Skip to content</a>
+<header>
+  <h1 id="issuer-name">IssuerGraph</h1>
+  <span class="sub" id="issuer-sub"></span>
+  <span style="margin-left:auto"><a class="btn" href="/">Site</a></span>
+</header>
+<main>
+  <div class="left">
+    <nav id="tabs" role="tablist" aria-label="Views"></nav>
+    <section id="view" role="tabpanel" tabindex="-1"><div class="empty">Loading…</div></section>
+  </div>
+  <div class="right"><div class="evidence" id="evidence" aria-live="polite">
+    <div class="empty">Click any underlined figure or statement to see the source document,
+    the page it came from, and the exact text behind it.</div>
+  </div></div>
+</main>
+<script>window.IG = { demo: false, api: "/api" };</script>
+<script src="/static/app.js"></script>
+</body>
+</html>

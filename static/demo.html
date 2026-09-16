@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IssuerGraph demo — IIFL Finance sample dataset</title>
+<meta name="description" content="Explore a sample issuer: debt figures, rating actions and documented differences between sources — click any figure to read the exact source text on the page it came from. No signup.">
+<link rel="canonical" href="/demo">
+<meta property="og:type" content="website">
+<meta property="og:title" content="IssuerGraph demo — a sample issuer, with the evidence">
+<meta property="og:description" content="Click any figure to see the page and sentence it came from. Sample dataset, six public documents, no signup.">
+<meta property="og:image" content="/static/og-demo.svg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<a class="skip" href="#view">Skip to content</a>
+
+<header>
+  <h1 id="issuer-name">IssuerGraph</h1>
+  <span class="sub" id="issuer-sub"></span>
+  <span style="margin-left:auto;display:flex;gap:8px">
+    <a class="btn" href="/">Back to site</a>
+    <a class="btn primary" href="/pilot?from=demo" data-cta="pilot">Request a pilot</a>
+  </span>
+</header>
+
+<!-- Said plainly and kept on screen: this is a fixed sample, and it has a date
+     after which it knows nothing. -->
+<div class="demobar">
+  <span><b>Sample dataset</b> · IIFL Finance Limited · read-only</span>
+  <span><b id="doccount">—</b> public documents, latest published <b id="cutoff">—</b></span>
+  <span id="snapcounts"></span>
+  <span class="spacer"></span>
+  <button type="button" class="btn" id="tour-start">Take the guided tour</button>
+</div>
+
+<main>
+  <div class="left">
+    <nav id="tabs" role="tablist" aria-label="Views"></nav>
+    <section id="view" role="tabpanel" tabindex="-1"><div class="empty">Loading…</div></section>
+  </div>
+  <div class="right"><div class="evidence" id="evidence" aria-live="polite">
+    <div class="empty">Click any underlined figure or statement to see the source document,
+    the page it came from, and the exact text behind it.</div>
+  </div></div>
+</main>
+
+<div class="tour" id="tour" hidden role="dialog" aria-labelledby="tour-title"
+     aria-describedby="tour-body">
+  <h3 id="tour-title"></h3>
+  <p id="tour-body"></p>
+  <div class="row">
+    <span class="step" id="tour-step"></span>
+    <button type="button" class="btn" id="tour-skip">Close</button>
+    <button type="button" class="btn primary" id="tour-next">Next</button>
+  </div>
+</div>
+
+<script>window.IG = { demo: true, api: "/api/demo" };</script>
+<script src="/static/analytics.js"></script>
+<script src="/static/app.js"></script>
+<script>
+// --- demo chrome ------------------------------------------------------------
+document.addEventListener("ig:loaded", (e) => {
+  const d = e.detail;
+  document.getElementById("cutoff").textContent = d.cutoff
+    ? new Date(d.cutoff).toLocaleDateString("en-GB",
+        { day: "2-digit", month: "short", year: "numeric" })
+    : "—";
+  const c = d.counts || {};
+  document.getElementById("doccount").textContent = c.documents;
+  // Every number here is computed from the snapshot by the exporter.
+  document.getElementById("snapcounts").textContent =
+    `${c.claims} anchored facts · ${c.conflicts_open} open differences · ` +
+    `${c.conflicts_resolved} resolved · ${c.changes} tracked changes`;
+  track("demo_started", { demo: true });
+});
+
+document.addEventListener("ig:evidence", (e) => {
+  track("evidence_opened", {
+    claim_type: e.detail.claim_type, source: e.detail.source,
+    page_no: e.detail.page_no, anchors: e.detail.anchors, demo: true,
+  });
+});
+
+document.addEventListener("ig:tab", (e) => {
+  track("demo_tab_viewed", { tab: e.detail.tab, demo: true });
+  if (e.detail.tab === "conflicts") track("sources_compared", { demo: true });
+});
+
+document.addEventListener("click", (e) => {
+  const cta = e.target.closest("[data-cta]");
+  if (cta) track("pilot_cta_clicked", { page: "demo" });
+});
+
+// --- guided tour ------------------------------------------------------------
+// Steps come from /api/demo/tour, which builds them from the snapshot, so a
+// step never points at a fact the dataset does not contain.
+let steps = [], at = 0;
+
+async function startTour() {
+  if (!steps.length) steps = await (await fetch("/api/demo/tour")).json();
+  at = 0;
+  track("tour_started", { steps: steps.length, demo: true });
+  showStep();
+}
+
+function showStep() {
+  const step = steps[at];
+  if (!step) return endTour("completed");
+  const panel = document.getElementById("tour");
+  panel.hidden = false;
+  document.getElementById("tour-title").textContent = step.title;
+  document.getElementById("tour-body").textContent = step.body;
+  document.getElementById("tour-step").textContent = `${at + 1} / ${steps.length}`;
+  document.getElementById("tour-next").textContent =
+    at === steps.length - 1 ? "Finish" : "Next";
+
+  if (step.tab) window.IGApp.selectTab(step.tab);
+  if (step.claim_id && step.open_evidence) window.IGApp.showClaim(step.claim_id);
+  if (step.conflict_id) {
+    const card = document.getElementById(`conflict-${step.conflict_id}`);
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  document.getElementById("tour-next").focus();
+}
+
+function endTour(outcome) {
+  document.getElementById("tour").hidden = true;
+  track("tour_ended", { outcome, step: at + 1, demo: true });
+}
+
+document.getElementById("tour-start").addEventListener("click", startTour);
+document.getElementById("tour-next").addEventListener("click", () => { at++; showStep(); });
+document.getElementById("tour-skip").addEventListener("click", () => endTour("dismissed"));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !document.getElementById("tour").hidden) endTour("dismissed");
+});
+
+// Deep links: /demo?claim=799 and /demo#claim-799 open that fact's evidence
+// directly, which is what the landing page's preview rows link to.
+function deepLinkClaim() {
+  const params = new URLSearchParams(location.search);
+  const fromQuery = params.get("claim");
+  const fromHash = (location.hash.match(/^#claim-(\d+)$/) || [])[1];
+  return fromQuery || fromHash;
+}
+
+document.addEventListener("ig:loaded", () => {
+  const claimId = deepLinkClaim();
+  if (claimId) window.IGApp.showClaim(claimId);
+  if (new URLSearchParams(location.search).get("tour") === "1") startTour();
+}, { once: true });
+
+window.addEventListener("hashchange", () => {
+  const claimId = deepLinkClaim();
+  if (claimId) window.IGApp.showClaim(claimId);
+});
+</script>
+</body>
+</html>
