@@ -12,7 +12,7 @@ become conflict rows rather than a silently chosen number.
 `tests/test_evidence.py` asserts this end to end; `test_reconcile_fixes.py`,
 `test_extraction_coverage.py` and `test_api_scope.py` lock down the loader,
 reconciliation, extraction coverage, declared units and issuer scoping
-(84 tests total).
+(94 tests total).
 
 ## Run it
 
@@ -23,6 +23,7 @@ psql -d issuergraph -f sql/schema.sql
 # existing databases only — schema.sql already includes both:
 psql -d issuergraph -f sql/002_conflict_history.sql
 psql -d issuergraph -f sql/003_extraction_coverage.sql
+psql -d issuergraph -f sql/004_extraction_runs.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -116,7 +117,7 @@ two comparative columns × (three components + a total) — and is stored
 
 ```
 sql/schema.sql              nine tables
-sql/002_*.sql, 003_*.sql    conflict history; extraction coverage
+sql/002..004_*.sql           conflict history; extraction coverage; reprocessing
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -155,6 +156,12 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   `extraction_incomplete`, with reasons, when it does not. Only the annual-report
   extractor declares real requirements so far; the other three fall back to
   "produced at least one claim", which proves very little.
+- An extractor fix reaches already-ingested documents: the pipeline compares
+  each document's stored `extractor_version` against the version shipped and
+  re-extracts on a mismatch (`--reprocess` forces it). Claims are replaced, not
+  stacked; `extraction_run` keeps the version history that replacement would
+  erase, and conflicts keep `first_detected_at` because they are upserted on
+  the fact key rather than rebuilt from claim ids.
 - Only ICRA has ≥2 reports here, so only ICRA produces diffs.
 - Rationale bullets are diffed on their headline text, so a reworded strength
   reads as one removal plus one addition.

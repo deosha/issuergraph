@@ -1,6 +1,7 @@
 -- IssuerGraph vertical slice schema. See docs/SCHEMA.md for rationale.
 
 DROP TABLE IF EXISTS rationale_diff CASCADE;
+DROP TABLE IF EXISTS extraction_run CASCADE;
 DROP TABLE IF EXISTS conflict_member CASCADE;
 DROP TABLE IF EXISTS conflict CASCADE;
 DROP TABLE IF EXISTS debt_observation CASCADE;
@@ -84,6 +85,24 @@ CREATE INDEX ON claim (issuer_id, claim_type);
 CREATE INDEX ON claim (issuer_id, normalized_value);
 CREATE INDEX ON claim (fact_key);
 CREATE INDEX ON claim (document_id);
+
+-- One row per extraction of a document. Claims are derived and get replaced
+-- when an extractor is fixed; this is the history that replacement would
+-- otherwise erase — which parser version produced a document's facts, and when
+-- that changed. See sql/004.
+CREATE TABLE extraction_run (
+    id                BIGSERIAL PRIMARY KEY,
+    document_id       BIGINT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
+    extractor         TEXT NOT NULL,
+    extractor_version TEXT NOT NULL,
+    reason            TEXT NOT NULL,        -- initial / version_changed / forced
+    previous_version  TEXT,
+    claims_written    INT NOT NULL,
+    claims_replaced   INT NOT NULL DEFAULT 0,
+    coverage_status   TEXT NOT NULL,
+    ran_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ON extraction_run (document_id, ran_at DESC);
 
 CREATE TABLE evidence_anchor (
     id            BIGSERIAL PRIMARY KEY,
