@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-16T23:34:23+05:30",
+ "generated_at": "2026-09-16T23:59:07+05:30",
  "document_cutoff": "2026-02-11",
  "sample": true,
  "issuer": {
@@ -27,8 +27,7 @@
     "extraction_status": "complete",
     "extraction_expected": 7,
     "extraction_found": 7,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:27:46.951450+05:30"
+    "extraction_missing": []
    },
    {
     "id": 2,
@@ -44,8 +43,7 @@
     "extraction_status": "complete",
     "extraction_expected": 1,
     "extraction_found": 1,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:21:20.218513+05:30"
+    "extraction_missing": []
    },
    {
     "id": 5,
@@ -61,8 +59,7 @@
     "extraction_status": "complete",
     "extraction_expected": 1,
     "extraction_found": 1,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:21:20.218513+05:30"
+    "extraction_missing": []
    },
    {
     "id": 6,
@@ -78,8 +75,7 @@
     "extraction_status": "complete",
     "extraction_expected": 1,
     "extraction_found": 1,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:21:20.218513+05:30"
+    "extraction_missing": []
    },
    {
     "id": 3,
@@ -95,8 +91,7 @@
     "extraction_status": "complete",
     "extraction_expected": 1,
     "extraction_found": 1,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:21:20.218513+05:30"
+    "extraction_missing": []
    },
    {
     "id": 4,
@@ -112,8 +107,7 @@
     "extraction_status": "complete",
     "extraction_expected": 1,
     "extraction_found": 1,
-    "extraction_missing": [],
-    "extracted_at": "2026-09-16T23:21:20.218513+05:30"
+    "extraction_missing": []
    }
   ],
   "claim_count": 314
@@ -147,7 +141,7 @@
     "conflict": null
    },
    {
-    "claim_id": 1455,
+    "claim_id": 2109,
     "fact_key": "total_borrowings|consolidated|2025-03-31",
     "basis": "consolidated",
     "as_of_date": "2025-03-31",
@@ -178,7 +172,7 @@
     }
    },
    {
-    "claim_id": 1459,
+    "claim_id": 2113,
     "fact_key": "total_borrowings|consolidated|2024-03-31",
     "basis": "consolidated",
     "as_of_date": "2024-03-31",
@@ -235,7 +229,7 @@
     "conflict": null
    },
    {
-    "claim_id": 1447,
+    "claim_id": 2101,
     "fact_key": "total_borrowings|standalone|2025-03-31",
     "basis": "standalone",
     "as_of_date": "2025-03-31",
@@ -266,7 +260,7 @@
     }
    },
    {
-    "claim_id": 1451,
+    "claim_id": 2105,
     "fact_key": "total_borrowings|standalone|2024-03-31",
     "basis": "standalone",
     "as_of_date": "2024-03-31",
@@ -2164,7 +2158,7 @@
    "spread_pct": null,
    "note": "Brickwork says AA+ (NCDs Public Issue) \u00b7 CARE says AA (Non Convertible Debentures) \u2014 both in force from 2025-09-15 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2215,7 +2209,7 @@
    "spread_pct": null,
    "note": "Brickwork says AA+ (NCDs Public Issue) \u00b7 ICRA says AA (Non-convertible debenture programme) \u2014 both in force from 2025-09-15 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2386,7 +2380,7 @@
    "spread_pct": null,
    "note": "Brickwork says Stable (NCDs Public Issue) \u00b7 ICRA says Negative (Non-convertible debenture programme (NCD)) \u2014 both in force from 2025-09-24 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2521,7 +2515,7 @@
    "spread_pct": null,
    "note": "CARE says Watch with Developing Implications (Long Term Bank Facilities) \u00b7 ICRA says Watch with Negative Implications (Long-term bank lines) \u2014 both in force from 2024-03-12 to 2025-09-24",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2560,7 +2554,7 @@
    "spread_pct": null,
    "note": "CARE says Watch with Developing Implications (Non Convertible Debentures) \u00b7 ICRA says Watch with Negative Implications (Non-convertible debenture programme) \u2014 both in force from 2024-03-12 to 2025-09-24",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2623,7 +2617,7 @@
    "spread_pct": 0.05313427975198289,
    "note": "Brickwork vs Company differ by \u20b924.80 crore \u2014 above the \u20b95 crore tolerance, though only 0.053% of the reported figure",
    "first_detected_at": "2026-09-16T23:15:05.327226+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2640,7 +2634,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 1459,
+     "claim_id": 2113,
      "value_numeric": 46674.2,
      "value_text": null,
      "stated_value": null,
@@ -2662,7 +2656,7 @@
    "spread_pct": 0.12558853992064406,
    "note": "Brickwork vs Company differ by \u20b925.10 crore (0.126%) \u2014 over both the 0.10% and \u20b95 crore tolerances",
    "first_detected_at": "2026-09-16T23:15:05.327226+05:30",
-   "last_seen_at": "2026-09-16T23:27:47.023175+05:30",
+   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
    "resolved_at": null,
    "status": "open",
    "members": [
@@ -2679,7 +2673,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 1451,
+     "claim_id": 2105,
      "value_numeric": 19985.9,
      "value_text": null,
      "stated_value": null,
@@ -2709,7 +2703,7 @@
      "value": 51068
     },
     {
-     "claim_id": 1455,
+     "claim_id": 2109,
      "source": "Company",
      "value": 51068.03
     }
@@ -2730,7 +2724,7 @@
      "value": 24524
     },
     {
-     "claim_id": 1447,
+     "claim_id": 2101,
      "source": "Company",
      "value": 24524.16
     }
@@ -2739,7 +2733,7 @@
  ],
  "changes": [
   {
-   "id": 1176,
+   "id": 2188,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
@@ -2751,7 +2745,7 @@
    "to_text": "As on December 31, 2025, IIFL Finance (consolidated) had an unencumbered cash and liquid balance of around Rs. 5,971 crore"
   },
   {
-   "id": 1177,
+   "id": 2189,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
@@ -2763,7 +2757,7 @@
    "to_text": null
   },
   {
-   "id": 1178,
+   "id": 2190,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
@@ -2775,7 +2769,7 @@
    "to_text": null
   },
   {
-   "id": 1162,
+   "id": 2174,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2787,7 +2781,7 @@
    "to_text": "Adequate"
   },
   {
-   "id": 1163,
+   "id": 2175,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2799,7 +2793,7 @@
    "to_text": "As on July 31, 2025, IIFL Finance (consolidated) had an unencumbered cash and liquid balance of around Rs. 3,791 crore along"
   },
   {
-   "id": 1167,
+   "id": 2179,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2811,7 +2805,7 @@
    "to_text": "Negative"
   },
   {
-   "id": 1166,
+   "id": 2178,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2823,7 +2817,7 @@
    "to_text": "Negative"
   },
   {
-   "id": 1165,
+   "id": 2177,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2835,7 +2829,7 @@
    "to_text": "Negative"
   },
   {
-   "id": 1164,
+   "id": 2176,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2847,7 +2841,7 @@
    "to_text": "Negative"
   },
   {
-   "id": 1171,
+   "id": 2183,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2859,7 +2853,7 @@
    "to_text": null
   },
   {
-   "id": 1172,
+   "id": 2184,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2871,7 +2865,7 @@
    "to_text": null
   },
   {
-   "id": 1173,
+   "id": 2185,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2883,7 +2877,7 @@
    "to_text": null
   },
   {
-   "id": 1170,
+   "id": 2182,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2895,7 +2889,7 @@
    "to_text": null
   },
   {
-   "id": 1168,
+   "id": 2180,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2907,7 +2901,7 @@
    "to_text": "A prolonged delay in resolving the net vulnerable portfolio in relation to the net worth or weakening in the"
   },
   {
-   "id": 1169,
+   "id": 2181,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2919,7 +2913,7 @@
    "to_text": "ICRA could revise the outlook to Stable on an improvement in the net vulnerable portfolio in relation to the"
   },
   {
-   "id": 1174,
+   "id": 2186,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -2931,7 +2925,7 @@
    "to_text": "Diversified lending book with focus on retail lending provides comfort"
   },
   {
-   "id": 1175,
+   "id": 2187,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
@@ -10724,8 +10718,8 @@
     }
    ]
   },
-  "1447": {
-   "id": 1447,
+  "2101": {
+   "id": 2101,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2025-03-31",
    "subject": "Total borrowings (standalone, as at 2025-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -10831,8 +10825,8 @@
     }
    ]
   },
-  "1451": {
-   "id": 1451,
+  "2105": {
+   "id": 2105,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2024-03-31",
    "subject": "Total borrowings (standalone, as at 2024-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -10938,8 +10932,8 @@
     }
    ]
   },
-  "1455": {
-   "id": 1455,
+  "2109": {
+   "id": 2109,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2025-03-31",
    "subject": "Total borrowings (consolidated, as at 2025-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -11045,8 +11039,8 @@
     }
    ]
   },
-  "1459": {
-   "id": 1459,
+  "2113": {
+   "id": 2113,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2024-03-31",
    "subject": "Total borrowings (consolidated, as at 2024-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",

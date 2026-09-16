@@ -89,8 +89,17 @@ def render_page(document_id: int, page_no: int) -> dict:
             "height": float(page_row["height"])}
 
 
+# Internal bookkeeping the demo never displays. Exporting it put a timestamp
+# diff in every re-export — a test run re-extracts a document on purpose — which
+# buries the changes worth reviewing. retrieved_at stays: the demo shows it.
+UNDISPLAYED = ("extracted_at",)
+
+
 def main() -> int:
     issuer = api.issuer()
+    for document in issuer["documents"]:
+        for field in UNDISPLAYED:
+            document.pop(field, None)
     issuer_id = issuer["id"]
     debt = api.debt(issuer_id=issuer_id)
     ratings = api.ratings(issuer_id=issuer_id)
