@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .db import one, query
+from .reconcile import TOLERANCE_ABS_CR, TOLERANCE_PCT, _excluded
 
 app = FastAPI(title="IssuerGraph", version="0.1.0")
 STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
@@ -115,22 +116,37 @@ def conflicts():
 
 @app.get("/api/corroborations")
 def corroborations():
-    """Facts that two or more independent documents agree on."""
-    return query(
+    """Facts two or more independent sources agree on, within both tolerances.
+
+    `variance_cr` is the residual gap. It is usually zero-ish rounding, but it is
+    reported rather than hidden: agreement within tolerance is not the same claim
+    as an exact match, and the UI must not render them identically.
+    """
+    rows = query(
         """
-        SELECT c.fact_key, min(c.subject) AS subject, count(DISTINCT c.document_id) AS sources,
+        SELECT c.fact_key, min(c.subject) AS subject,
+               count(DISTINCT d.source_name) AS sources,
                min(c.value_numeric) AS low, max(c.value_numeric) AS high,
+               max(c.value_numeric) - min(c.value_numeric) AS variance_cr,
+               (max(c.value_numeric) - min(c.value_numeric))
+                   / nullif(min(c.value_numeric), 0) * 100 AS spread_pct,
                json_agg(json_build_object('claim_id', c.id, 'source', d.source_name,
                                           'value', c.value_numeric)
                         ORDER BY d.source_name) AS members
         FROM claim c JOIN document d ON d.id = c.document_id
-        WHERE c.claim_type = 'total_borrowings'
+        WHERE c.value_numeric IS NOT NULL
         GROUP BY c.fact_key
         HAVING count(DISTINCT c.document_id) > 1
-           AND (max(c.value_numeric) - min(c.value_numeric)) / min(c.value_numeric) * 100 <= 0.10
+           AND count(DISTINCT d.source_name) > 1
+           AND (max(c.value_numeric) - min(c.value_numeric))
+                   / nullif(min(c.value_numeric), 0) * 100 <= %s
+           AND max(c.value_numeric) - min(c.value_numeric) <= %s
         ORDER BY c.fact_key
-        """
+        """,
+        (TOLERANCE_PCT, TOLERANCE_ABS_CR),
     )
+    # same exclusions reconcile() applies, so the two views cannot drift apart
+    return [row for row in rows if not _excluded(row["fact_key"])]
 
 
 @app.get("/api/changes")

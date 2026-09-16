@@ -59,7 +59,8 @@ CREATE TABLE claim (
     subject           TEXT NOT NULL,        -- human label, e.g. 'Total borrowings'
     value_numeric     NUMERIC,
     value_unit        TEXT,                 -- 'INR_CRORE'
-    value_text        TEXT,
+    value_text        TEXT,                 -- verbatim, for evidence display
+    normalized_value  TEXT,                 -- casefolded/whitespace-collapsed, for comparison
     basis             TEXT NOT NULL DEFAULT 'unknown'
                       CHECK (basis IN ('standalone', 'consolidated', 'unknown')),
     as_of_date        DATE,
@@ -69,6 +70,7 @@ CREATE TABLE claim (
     CHECK (value_numeric IS NOT NULL OR value_text IS NOT NULL)
 );
 CREATE INDEX ON claim (issuer_id, claim_type);
+CREATE INDEX ON claim (issuer_id, normalized_value);
 CREATE INDEX ON claim (fact_key);
 CREATE INDEX ON claim (document_id);
 
@@ -126,9 +128,13 @@ CREATE TABLE conflict (
     tolerance_pct NUMERIC,
     spread_pct    NUMERIC,
     note          TEXT,
-    detected_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    -- History: a conflict is a durable observation, not a per-run rendering.
+    first_detected_at TIMESTAMPTZ NOT NULL DEFAULT now(),  -- never updated
+    last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now(),  -- refreshed each run
+    resolved_at       TIMESTAMPTZ,                         -- set when it stops recurring
     UNIQUE (issuer_id, fact_key, kind)
 );
+CREATE INDEX ON conflict (issuer_id, resolved_at, first_detected_at);
 
 CREATE TABLE conflict_member (
     conflict_id BIGINT NOT NULL REFERENCES conflict(id) ON DELETE CASCADE,

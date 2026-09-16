@@ -12,6 +12,18 @@ from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 Basis = Literal["standalone", "consolidated", "unknown"]
+
+
+def normalize_value(value_text: str | None) -> str | None:
+    """The comparison form of a textual value.
+
+    "Negative", "NEGATIVE" and "Negative " are the same rating outlook; only
+    the raw text is kept for evidence display. Reconciliation compares this.
+    Mirrored in sql/002_conflict_history.sql for the backfill.
+    """
+    if value_text is None:
+        return None
+    return " ".join(value_text.split()).casefold() or None
 ClaimType = Literal["total_borrowings", "debt_instrument", "rating", "rationale_point"]
 
 

@@ -9,7 +9,8 @@ become conflict rows rather than a silently chosen number.
 > open IIFL Finance → see a debt/rating fact → click it → see the exact source
 > evidence → see when another document disagrees with it.
 
-`tests/test_evidence.py` asserts this end to end (14 tests).
+`tests/test_evidence.py` asserts this end to end; `tests/test_reconcile_fixes.py`
+locks down the loader and reconciliation invariants (47 tests total).
 
 ## Run it
 
@@ -47,7 +48,7 @@ URL and retrieval timestamp. Re-running the pipeline is idempotent on the hash.
 
 ## What it found
 
-Four conflicts, all real:
+Five conflicts, all real:
 
 | Fact | Disagreement |
 |---|---|
@@ -55,9 +56,16 @@ Four conflicts, all real:
 | `rating_grade\|long_term\|2025Q3` | Brickwork **AA+**, ICRA **AA** — one notch |
 | `rating_watch\|long_term\|2024Q1` | On the *same day*, ICRA said Watch with **Negative** Implications, CARE said Watch with **Developing** Implications |
 | `total_borrowings\|standalone\|2024-03-31` | Brickwork ₹20,011 Cr vs annual report ₹19,985.90 Cr — ₹25.10 Cr, 0.126% |
+| `total_borrowings\|consolidated\|2024-03-31` | Brickwork ₹46,699 Cr vs annual report ₹46,674.20 Cr — ₹24.80 Cr, 0.053% |
 
-Three facts independently corroborated (consolidated FY24/FY25 and standalone
-FY25 total borrowings, agreeing within tolerance).
+The last two are one definitional difference in Brickwork's "Total Debt". They
+are caught only because agreement is tested two ways: a relative band (0.10%)
+*and* an absolute floor (₹5 crore). A percentage-only test flags the standalone
+gap and passes the consolidated one, which is ₹0.30 crore smaller.
+
+Two facts independently corroborated (consolidated and standalone FY25 total
+borrowings, residual variance ₹0.03 Cr and ₹0.16 Cr — reported rather than
+rendered as an exact match).
 
 Nine tracked changes between successive ICRA reports, including the Sept 2025 →
 Feb 2026 liquidity narrative moving from ₹3,791 Cr unencumbered cash (Jul 2025)
@@ -100,7 +108,7 @@ issuergraph/
     care.py                 facilities table, liquidity, factors
     brickwork.py            particulars table, Total Debt rows, bullets
     annual_report.py        consolidated + standalone balance sheets
-  reconcile.py              conflict detection (0.10% numeric tolerance)
+  reconcile.py              conflict detection (0.10% and ₹5 crore tolerances)
   diff.py                   rationale-to-rationale diff
   corpus.py                 the six sources, declared
   pipeline.py               the ordered run
@@ -121,7 +129,7 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
 - Only ICRA has ≥2 reports here, so only ICRA produces diffs.
 - Rationale bullets are diffed on their headline text, so a reworded strength
   reads as one removal plus one addition.
-- The numeric tolerance (0.10%) is a single declared constant in
-  `reconcile.py`, not a per-fact policy.
+- Both numeric tolerances (0.10% and ₹5 crore) are single declared constants
+  in `reconcile.py`, not a per-fact policy.
 - CARE and Brickwork publish no instrument-level maturity table, so the maturity
   ladder comes from ICRA's Annexure I only.

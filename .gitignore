@@ -1,3 +1,8 @@
 .venv/
 data/raw/*.pdf
 __pycache__/
+.DS_Store
+.pytest_cache/
+.claude/settings.local.json
+CLAUDE.md
+CLAUDE.local.md

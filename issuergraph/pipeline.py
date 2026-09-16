@@ -103,4 +103,7 @@ if __name__ == "__main__":
     for doc in result["documents"]:
         print(f"  {doc['status']:>9}  {doc['file']:<24} id={doc['id']:<3} claims={doc['claims']}")
     print(f"\nclaims={result['claims']}  conflicts={result['conflicts']}  "
-          f"corroborations={result['corroborations']}  diffs={result['diffs']}")
+          f"corroborations={result['corroborations']}  resolved={result['resolved']}  "
+          f"diffs={result['diffs']}")
+    for fact_key, reason in result["excluded_keys"]:
+        print(f"  not reconciled: {fact_key} — {reason}")
