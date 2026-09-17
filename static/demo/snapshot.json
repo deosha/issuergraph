@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-16T23:59:07+05:30",
+ "generated_at": "2026-09-17T23:12:11+05:30",
  "document_cutoff": "2026-02-11",
  "sample": true,
  "issuer": {
@@ -57,8 +57,8 @@
     "retrieved_at": "2026-08-23T00:11:46.046350+05:30",
     "published_date": "2024-03-12",
     "extraction_status": "complete",
-    "extraction_expected": 1,
-    "extraction_found": 1,
+    "extraction_expected": 4,
+    "extraction_found": 4,
     "extraction_missing": []
    },
    {
@@ -73,8 +73,8 @@
     "retrieved_at": "2026-08-23T00:11:46.936054+05:30",
     "published_date": "2025-09-15",
     "extraction_status": "complete",
-    "extraction_expected": 1,
-    "extraction_found": 1,
+    "extraction_expected": 5,
+    "extraction_found": 5,
     "extraction_missing": []
    },
    {
@@ -89,8 +89,8 @@
     "retrieved_at": "2026-08-23T00:11:45.015216+05:30",
     "published_date": "2025-09-24",
     "extraction_status": "complete",
-    "extraction_expected": 1,
-    "extraction_found": 1,
+    "extraction_expected": 6,
+    "extraction_found": 6,
     "extraction_missing": []
    },
    {
@@ -105,8 +105,8 @@
     "retrieved_at": "2026-08-23T00:11:45.774156+05:30",
     "published_date": "2026-02-11",
     "extraction_status": "complete",
-    "extraction_expected": 1,
-    "extraction_found": 1,
+    "extraction_expected": 6,
+    "extraction_found": 6,
     "extraction_missing": []
    }
   ],
@@ -115,7 +115,7 @@
  "debt": {
   "totals": [
    {
-    "claim_id": 799,
+    "claim_id": 3046,
     "fact_key": "total_borrowings|consolidated|2025-06-30",
     "basis": "consolidated",
     "as_of_date": "2025-06-30",
@@ -128,7 +128,7 @@
     "conflict": null
    },
    {
-    "claim_id": 798,
+    "claim_id": 3045,
     "fact_key": "total_borrowings|consolidated|2025-03-31",
     "basis": "consolidated",
     "as_of_date": "2025-03-31",
@@ -141,7 +141,7 @@
     "conflict": null
    },
    {
-    "claim_id": 2109,
+    "claim_id": 3157,
     "fact_key": "total_borrowings|consolidated|2025-03-31",
     "basis": "consolidated",
     "as_of_date": "2025-03-31",
@@ -154,7 +154,7 @@
     "conflict": null
    },
    {
-    "claim_id": 797,
+    "claim_id": 3044,
     "fact_key": "total_borrowings|consolidated|2024-03-31",
     "basis": "consolidated",
     "as_of_date": "2024-03-31",
@@ -172,7 +172,7 @@
     }
    },
    {
-    "claim_id": 2113,
+    "claim_id": 3161,
     "fact_key": "total_borrowings|consolidated|2024-03-31",
     "basis": "consolidated",
     "as_of_date": "2024-03-31",
@@ -190,7 +190,7 @@
     }
    },
    {
-    "claim_id": 796,
+    "claim_id": 3043,
     "fact_key": "total_borrowings|consolidated|2023-03-31",
     "basis": "consolidated",
     "as_of_date": "2023-03-31",
@@ -203,7 +203,7 @@
     "conflict": null
    },
    {
-    "claim_id": 805,
+    "claim_id": 3052,
     "fact_key": "total_borrowings|standalone|2025-06-30",
     "basis": "standalone",
     "as_of_date": "2025-06-30",
@@ -216,7 +216,7 @@
     "conflict": null
    },
    {
-    "claim_id": 804,
+    "claim_id": 3051,
     "fact_key": "total_borrowings|standalone|2025-03-31",
     "basis": "standalone",
     "as_of_date": "2025-03-31",
@@ -229,7 +229,7 @@
     "conflict": null
    },
    {
-    "claim_id": 2101,
+    "claim_id": 3149,
     "fact_key": "total_borrowings|standalone|2025-03-31",
     "basis": "standalone",
     "as_of_date": "2025-03-31",
@@ -242,7 +242,7 @@
     "conflict": null
    },
    {
-    "claim_id": 803,
+    "claim_id": 3050,
     "fact_key": "total_borrowings|standalone|2024-03-31",
     "basis": "standalone",
     "as_of_date": "2024-03-31",
@@ -260,7 +260,7 @@
     }
    },
    {
-    "claim_id": 2105,
+    "claim_id": 3153,
     "fact_key": "total_borrowings|standalone|2024-03-31",
     "basis": "standalone",
     "as_of_date": "2024-03-31",
@@ -278,7 +278,7 @@
     }
    },
    {
-    "claim_id": 802,
+    "claim_id": 3049,
     "fact_key": "total_borrowings|standalone|2023-03-31",
     "basis": "standalone",
     "as_of_date": "2023-03-31",
@@ -293,7 +293,7 @@
   ],
   "instruments": [
    {
-    "claim_id": 725,
+    "claim_id": 2972,
     "instrument_name": "Non-convertible debenture programme 8.75% (INE530B07294)",
     "instrument_type": "ncd",
     "amount_cr": 57.21,
@@ -303,7 +303,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 726,
+    "claim_id": 2973,
     "instrument_name": "Non-convertible debenture programme 8.75% (INE530B07286)",
     "instrument_type": "ncd",
     "amount_cr": 24.13,
@@ -313,7 +313,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 755,
+    "claim_id": 3002,
     "instrument_name": "Commercial paper 8.45% (INE530B14FR2)",
     "instrument_type": "commercial_paper",
     "amount_cr": 150.0,
@@ -323,7 +323,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 750,
+    "claim_id": 2997,
     "instrument_name": "Commercial paper 8.35% (INE530B14FR2)",
     "instrument_type": "commercial_paper",
     "amount_cr": 150.0,
@@ -333,7 +333,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 744,
+    "claim_id": 2991,
     "instrument_name": "Commercial paper 8.30% (INE530B14FN1)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -343,7 +343,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 754,
+    "claim_id": 3001,
     "instrument_name": "Commercial paper 8.25% (INE530B14FN1)",
     "instrument_type": "commercial_paper",
     "amount_cr": 10.0,
@@ -353,7 +353,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 751,
+    "claim_id": 2998,
     "instrument_name": "Commercial paper 8.45% (INE530B14FY8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 400.0,
@@ -363,7 +363,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 758,
+    "claim_id": 3005,
     "instrument_name": "Commercial paper 8.45% (INE530B14GA6)",
     "instrument_type": "commercial_paper",
     "amount_cr": 50.0,
@@ -373,7 +373,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 760,
+    "claim_id": 3007,
     "instrument_name": "Commercial paper 8.40% (INE530B14GA6)",
     "instrument_type": "commercial_paper",
     "amount_cr": 30.0,
@@ -383,7 +383,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 759,
+    "claim_id": 3006,
     "instrument_name": "Commercial paper 8.40% (INE530B14GA6)",
     "instrument_type": "commercial_paper",
     "amount_cr": 20.0,
@@ -393,7 +393,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 735,
+    "claim_id": 2982,
     "instrument_name": "Commercial paper 9.40% (INE530B14EB9)",
     "instrument_type": "commercial_paper",
     "amount_cr": 250.0,
@@ -403,7 +403,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 745,
+    "claim_id": 2992,
     "instrument_name": "Commercial paper 8.35% (INE530B14FT8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -413,7 +413,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 761,
+    "claim_id": 3008,
     "instrument_name": "Commercial paper 8.10% (INE530B14FT8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 5.0,
@@ -423,7 +423,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 756,
+    "claim_id": 3003,
     "instrument_name": "Commercial paper 8.25% (INE530B14FT8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 5.0,
@@ -433,7 +433,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 736,
+    "claim_id": 2983,
     "instrument_name": "Commercial paper 9.40% (INE530B14EE3)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -443,7 +443,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 739,
+    "claim_id": 2986,
     "instrument_name": "Commercial paper 8.50% (INE530B14DL0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 250.0,
@@ -453,7 +453,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 764,
+    "claim_id": 3011,
     "instrument_name": "Commercial paper 8.45% (INE530B14DL0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 150.0,
@@ -463,7 +463,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 746,
+    "claim_id": 2993,
     "instrument_name": "Commercial paper 8.35% (INE530B14DL0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -473,7 +473,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 734,
+    "claim_id": 2981,
     "instrument_name": "Commercial paper 9.90% (INE530B14DO4)",
     "instrument_type": "commercial_paper",
     "amount_cr": 50.0,
@@ -483,7 +483,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 757,
+    "claim_id": 3004,
     "instrument_name": "Commercial paper 8.35% (INE530B14DO4)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -493,7 +493,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 733,
+    "claim_id": 2980,
     "instrument_name": "Commercial paper 8.50% (INE530B14CZ2)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -503,7 +503,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 767,
+    "claim_id": 3014,
     "instrument_name": "Commercial paper 8.45% (INE530B14EZ8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 300.0,
@@ -513,7 +513,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 768,
+    "claim_id": 3015,
     "instrument_name": "Commercial paper 8.45% (INE530B14EZ8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 150.0,
@@ -523,7 +523,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 772,
+    "claim_id": 3019,
     "instrument_name": "Commercial paper 8.45% (INE530B14EZ8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -533,7 +533,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 740,
+    "claim_id": 2987,
     "instrument_name": "Commercial paper 8.50% (INE530B14EZ8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 52.1,
@@ -543,7 +543,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 741,
+    "claim_id": 2988,
     "instrument_name": "Commercial paper 8.50% (INE530B14EZ8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 52.1,
@@ -553,7 +553,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 766,
+    "claim_id": 3013,
     "instrument_name": "Commercial paper 8.45% (INE530B14GF5)",
     "instrument_type": "commercial_paper",
     "amount_cr": 525.0,
@@ -563,7 +563,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 747,
+    "claim_id": 2994,
     "instrument_name": "Commercial paper 8.40% (INE530B14FS0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -573,7 +573,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 770,
+    "claim_id": 3017,
     "instrument_name": "Commercial paper 8.35% (INE530B14FS0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -583,7 +583,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 771,
+    "claim_id": 3018,
     "instrument_name": "Commercial paper 8.25% (INE530B14FS0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 10.0,
@@ -593,7 +593,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 769,
+    "claim_id": 3016,
     "instrument_name": "Commercial paper 7.75% (INE530B14FS0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 5.0,
@@ -603,7 +603,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 742,
+    "claim_id": 2989,
     "instrument_name": "Commercial paper 8.30% (INE530B14FG5)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -613,7 +613,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 748,
+    "claim_id": 2995,
     "instrument_name": "Commercial paper 8.40% (INE530B14FM3)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -623,7 +623,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 749,
+    "claim_id": 2996,
     "instrument_name": "Commercial paper 8.40% (INE530B14FK7)",
     "instrument_type": "commercial_paper",
     "amount_cr": 100.0,
@@ -633,7 +633,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 743,
+    "claim_id": 2990,
     "instrument_name": "Commercial paper 8.25% (INE530B14FJ9)",
     "instrument_type": "commercial_paper",
     "amount_cr": 130.0,
@@ -643,7 +643,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 763,
+    "claim_id": 3010,
     "instrument_name": "Commercial paper 8.45% (INE530B14GB4)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -653,7 +653,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 737,
+    "claim_id": 2984,
     "instrument_name": "Commercial paper 8.90% (INE530B14EG8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -663,7 +663,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 738,
+    "claim_id": 2985,
     "instrument_name": "Commercial paper 8.00% (INE530B14EG8)",
     "instrument_type": "commercial_paper",
     "amount_cr": 5.0,
@@ -673,7 +673,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 765,
+    "claim_id": 3012,
     "instrument_name": "Commercial paper 8.45% (INE530B14GD0)",
     "instrument_type": "commercial_paper",
     "amount_cr": 25.0,
@@ -683,7 +683,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 711,
+    "claim_id": 2958,
     "instrument_name": "Non-convertible debenture programme 8.50% (INE530B07344)",
     "instrument_type": "ncd",
     "amount_cr": 123.58,
@@ -693,7 +693,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 712,
+    "claim_id": 2959,
     "instrument_name": "Non-convertible debenture programme 8.50% (INE530B07351)",
     "instrument_type": "ncd",
     "amount_cr": 8.91,
@@ -703,7 +703,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 716,
+    "claim_id": 2963,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07559)",
     "instrument_type": "ncd",
     "amount_cr": 146.1,
@@ -713,7 +713,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 717,
+    "claim_id": 2964,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07542)",
     "instrument_type": "ncd",
     "amount_cr": 14.38,
@@ -723,7 +723,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 752,
+    "claim_id": 2999,
     "instrument_name": "Commercial paper 8.60% (INE530B14FV4)",
     "instrument_type": "commercial_paper",
     "amount_cr": 214.15,
@@ -733,7 +733,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 753,
+    "claim_id": 3000,
     "instrument_name": "Commercial paper 8.25% (INE530B14FV4)",
     "instrument_type": "commercial_paper",
     "amount_cr": 10.0,
@@ -743,7 +743,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 762,
+    "claim_id": 3009,
     "instrument_name": "Commercial paper 8.25% (INE530B14GC2)",
     "instrument_type": "commercial_paper",
     "amount_cr": 5.4,
@@ -753,7 +753,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 718,
+    "claim_id": 2965,
     "instrument_name": "Non-convertible debenture programme 9.30% (INE530B07534)",
     "instrument_type": "ncd",
     "amount_cr": 102.61,
@@ -763,7 +763,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 719,
+    "claim_id": 2966,
     "instrument_name": "Non-convertible debenture programme 9.30% (INE530B07526)",
     "instrument_type": "ncd",
     "amount_cr": 2.9,
@@ -773,7 +773,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 728,
+    "claim_id": 2975,
     "instrument_name": "Subordinated debt programme 8.70% (INE866I08246)",
     "instrument_type": "subordinated_debt",
     "amount_cr": 100.0,
@@ -783,7 +783,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 701,
+    "claim_id": 2948,
     "instrument_name": "NCD 9.90% (INE530B07427)",
     "instrument_type": "ncd",
     "amount_cr": 250.0,
@@ -793,7 +793,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 708,
+    "claim_id": 2955,
     "instrument_name": "Non-convertible debenture programme 8.65% (INE530B07310)",
     "instrument_type": "ncd",
     "amount_cr": 157.24,
@@ -803,7 +803,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 709,
+    "claim_id": 2956,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07260)",
     "instrument_type": "ncd",
     "amount_cr": 118.93,
@@ -813,7 +813,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 710,
+    "claim_id": 2957,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07278)",
     "instrument_type": "ncd",
     "amount_cr": 37.86,
@@ -823,7 +823,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 721,
+    "claim_id": 2968,
     "instrument_name": "Non-convertible debenture programme 9.75% (INE530B07476)",
     "instrument_type": "ncd",
     "amount_cr": 98.6,
@@ -833,7 +833,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 720,
+    "claim_id": 2967,
     "instrument_name": "Non-convertible debenture programme 9.35% (INE530B07518)",
     "instrument_type": "ncd",
     "amount_cr": 23.51,
@@ -843,7 +843,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 722,
+    "claim_id": 2969,
     "instrument_name": "Non-convertible debenture programme 9.75% (INE530B07500)",
     "instrument_type": "ncd",
     "amount_cr": 7.34,
@@ -853,7 +853,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 714,
+    "claim_id": 2961,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07377)",
     "instrument_type": "ncd",
     "amount_cr": 131.94,
@@ -863,7 +863,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 713,
+    "claim_id": 2960,
     "instrument_name": "Non-convertible debenture programme 8.65% (INE530B07385)",
     "instrument_type": "ncd",
     "amount_cr": 88.91,
@@ -873,7 +873,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 715,
+    "claim_id": 2962,
     "instrument_name": "Non-convertible debenture programme 9.00% (INE530B07369)",
     "instrument_type": "ncd",
     "amount_cr": 37.52,
@@ -883,7 +883,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 706,
+    "claim_id": 2953,
     "instrument_name": "Non-convertible debenture programme 10.00% (INE866I08279)",
     "instrument_type": "ncd",
     "amount_cr": 30.76,
@@ -893,7 +893,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 707,
+    "claim_id": 2954,
     "instrument_name": "Non-convertible debenture programme 10.50% (INE866I08295)",
     "instrument_type": "ncd",
     "amount_cr": 15.45,
@@ -903,7 +903,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 697,
+    "claim_id": 2944,
     "instrument_name": "NCD 9.45% (INE530B07237)",
     "instrument_type": "ncd",
     "amount_cr": 550.0,
@@ -913,7 +913,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 724,
+    "claim_id": 2971,
     "instrument_name": "Non-convertible debenture programme 10.25% (INE530B07492)",
     "instrument_type": "ncd",
     "amount_cr": 61.99,
@@ -923,7 +923,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 723,
+    "claim_id": 2970,
     "instrument_name": "Non-convertible debenture programme 9.60% (INE530B07484)",
     "instrument_type": "ncd",
     "amount_cr": 42.58,
@@ -933,7 +933,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 695,
+    "claim_id": 2942,
     "instrument_name": "NCD 8.50% (INE530B07195)",
     "instrument_type": "ncd",
     "amount_cr": 10.0,
@@ -943,7 +943,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 692,
+    "claim_id": 2939,
     "instrument_name": "NCD 8.60% (INE530B07203)",
     "instrument_type": "ncd",
     "amount_cr": 60.0,
@@ -953,7 +953,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 693,
+    "claim_id": 2940,
     "instrument_name": "NCD 9.35% (INE530B08128)",
     "instrument_type": "ncd",
     "amount_cr": 50.0,
@@ -963,7 +963,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 704,
+    "claim_id": 2951,
     "instrument_name": "NCD 9.25% (INE530B08193)",
     "instrument_type": "ncd",
     "amount_cr": 250.0,
@@ -973,7 +973,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 694,
+    "claim_id": 2941,
     "instrument_name": "NCD 9.00% (INE530B07211)",
     "instrument_type": "ncd",
     "amount_cr": 10.0,
@@ -983,7 +983,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 696,
+    "claim_id": 2943,
     "instrument_name": "NCD 9.65% (INE530B08136)",
     "instrument_type": "ncd",
     "amount_cr": 235.0,
@@ -993,7 +993,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 729,
+    "claim_id": 2976,
     "instrument_name": "Subordinated debt programme 9.45% (INE530B08144)",
     "instrument_type": "subordinated_debt",
     "amount_cr": 35.0,
@@ -1003,7 +1003,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 730,
+    "claim_id": 2977,
     "instrument_name": "Subordinated debt programme 9.45% (INE530B08144)",
     "instrument_type": "subordinated_debt",
     "amount_cr": 30.0,
@@ -1013,7 +1013,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 698,
+    "claim_id": 2945,
     "instrument_name": "NCD 9.20% (INE530B08151)",
     "instrument_type": "ncd",
     "amount_cr": 35.0,
@@ -1023,7 +1023,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 702,
+    "claim_id": 2949,
     "instrument_name": "NCD 9.50% (INE530B08177)",
     "instrument_type": "ncd",
     "amount_cr": 100.0,
@@ -1033,7 +1033,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 699,
+    "claim_id": 2946,
     "instrument_name": "NCD 9.50% (INE530B08169)",
     "instrument_type": "ncd",
     "amount_cr": 75.0,
@@ -1043,7 +1043,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 700,
+    "claim_id": 2947,
     "instrument_name": "NCD 9.50% (INE530B08169)",
     "instrument_type": "ncd",
     "amount_cr": 50.0,
@@ -1053,7 +1053,7 @@
     "title": "ICRA: Ratings reaffirmed"
    },
    {
-    "claim_id": 703,
+    "claim_id": 2950,
     "instrument_name": "NCD 9.30% (INE530B08185)",
     "instrument_type": "ncd",
     "amount_cr": 250.0,
@@ -1066,7 +1066,7 @@
  },
  "ratings": [
   {
-   "claim_id": 682,
+   "claim_id": 2929,
    "agency": "ICRA",
    "instrument": "Commercial paper programme",
    "instrument_class": "commercial_paper",
@@ -1083,7 +1083,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 675,
+   "claim_id": 2922,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1100,7 +1100,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 672,
+   "claim_id": 2919,
    "agency": "ICRA",
    "instrument": "Non-convertible debenture programme (NCD)",
    "instrument_class": "ncd",
@@ -1117,7 +1117,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 678,
+   "claim_id": 2925,
    "agency": "ICRA",
    "instrument": "Subordinated debt programme",
    "instrument_class": "subordinated_debt",
@@ -1134,7 +1134,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 680,
+   "claim_id": 2927,
    "agency": "ICRA",
    "instrument": "Subordinated debt programme",
    "instrument_class": "subordinated_debt",
@@ -1146,12 +1146,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 677,
+   "claim_id": 2924,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1163,12 +1163,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 674,
+   "claim_id": 2921,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1180,12 +1180,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 685,
+   "claim_id": 2932,
    "agency": "ICRA",
    "instrument": "Commercial paper programme (IPO financing)",
    "instrument_class": "commercial_paper",
@@ -1197,12 +1197,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 684,
+   "claim_id": 2931,
    "agency": "ICRA",
    "instrument": "Commercial paper programme",
    "instrument_class": "commercial_paper",
@@ -1214,12 +1214,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 681,
+   "claim_id": 2928,
    "agency": "ICRA",
    "instrument": "Long-term bank lines",
    "instrument_class": "bank_facility",
@@ -1231,12 +1231,12 @@
    "action": "reaffirmed; withdrawn",
    "action_date": "2026-02-11",
    "effective_from": "2026-02-11",
-   "effective_to": null,
+   "effective_to": "2026-02-11",
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 581,
+   "claim_id": 2828,
    "agency": "ICRA",
    "instrument": "Commercial paper programme",
    "instrument_class": "commercial_paper",
@@ -1253,7 +1253,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 571,
+   "claim_id": 2818,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1270,7 +1270,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 576,
+   "claim_id": 2823,
    "agency": "ICRA",
    "instrument": "Long-term bank lines",
    "instrument_class": "bank_facility",
@@ -1287,7 +1287,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 568,
+   "claim_id": 2815,
    "agency": "ICRA",
    "instrument": "Non-convertible debenture programme (NCD)",
    "instrument_class": "ncd",
@@ -1304,7 +1304,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 574,
+   "claim_id": 2821,
    "agency": "ICRA",
    "instrument": "Subordinated debt programme",
    "instrument_class": "subordinated_debt",
@@ -1321,7 +1321,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 583,
+   "claim_id": 2830,
    "agency": "ICRA",
    "instrument": "Commercial paper programme (IPO financing)",
    "instrument_class": "commercial_paper",
@@ -1338,7 +1338,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 570,
+   "claim_id": 2817,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1350,12 +1350,12 @@
    "action": "reaffirmed; withdrawn; revised",
    "action_date": "2025-09-24",
    "effective_from": "2025-09-24",
-   "effective_to": "2026-02-11",
+   "effective_to": "2025-09-24",
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 573,
+   "claim_id": 2820,
    "agency": "ICRA",
    "instrument": "NCD",
    "instrument_class": "ncd",
@@ -1367,12 +1367,12 @@
    "action": "reaffirmed; withdrawn; revised",
    "action_date": "2025-09-24",
    "effective_from": "2025-09-24",
-   "effective_to": "2026-02-11",
+   "effective_to": "2025-09-24",
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 578,
+   "claim_id": 2825,
    "agency": "ICRA",
    "instrument": "Long-term bank lines",
    "instrument_class": "bank_facility",
@@ -1384,12 +1384,12 @@
    "action": "reaffirmed; withdrawn; revised",
    "action_date": "2025-09-24",
    "effective_from": "2025-09-24",
-   "effective_to": "2026-02-11",
+   "effective_to": "2025-09-24",
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 579,
+   "claim_id": 2826,
    "agency": "ICRA",
    "instrument": "Long-term principal protected equity linked debenture programme",
    "instrument_class": "mld",
@@ -1401,12 +1401,12 @@
    "action": "reaffirmed; withdrawn; revised",
    "action_date": "2025-09-24",
    "effective_from": "2025-09-24",
-   "effective_to": null,
+   "effective_to": "2025-09-24",
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 580,
+   "claim_id": 2827,
    "agency": "ICRA",
    "instrument": "Long-term principal protected market linked debenture programme",
    "instrument_class": "mld",
@@ -1418,12 +1418,12 @@
    "action": "reaffirmed; withdrawn; revised",
    "action_date": "2025-09-24",
    "effective_from": "2025-09-24",
-   "effective_to": null,
+   "effective_to": "2025-09-24",
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA"
   },
   {
-   "claim_id": 786,
+   "claim_id": 3033,
    "agency": "Brickwork",
    "instrument": "NCDs Public Issue",
    "instrument_class": "ncd",
@@ -1440,7 +1440,7 @@
    "source_name": "Brickwork"
   },
   {
-   "claim_id": 790,
+   "claim_id": 3037,
    "agency": "Brickwork",
    "instrument": "Proposed Perpetual Debt Instrument (PDI)",
    "instrument_class": "perpetual_debt",
@@ -1457,7 +1457,7 @@
    "source_name": "Brickwork"
   },
   {
-   "claim_id": 788,
+   "claim_id": 3035,
    "agency": "Brickwork",
    "instrument": "NCDs",
    "instrument_class": "ncd",
@@ -1474,7 +1474,7 @@
    "source_name": "Brickwork"
   },
   {
-   "claim_id": 780,
+   "claim_id": 3027,
    "agency": "CARE",
    "instrument": "Non Convertible Debentures",
    "instrument_class": "ncd",
@@ -1491,7 +1491,7 @@
    "source_name": "CARE"
   },
   {
-   "claim_id": 776,
+   "claim_id": 3023,
    "agency": "CARE",
    "instrument": "Long Term Bank Facilities",
    "instrument_class": "bank_facility",
@@ -1508,7 +1508,7 @@
    "source_name": "CARE"
   },
   {
-   "claim_id": 778,
+   "claim_id": 3025,
    "agency": "CARE",
    "instrument": "Long Term Long Term Instruments",
    "instrument_class": "other",
@@ -1525,7 +1525,7 @@
    "source_name": "CARE"
   },
   {
-   "claim_id": 522,
+   "claim_id": 2769,
    "agency": "ICRA",
    "instrument": "Commercial paper programme",
    "instrument_class": "commercial_paper",
@@ -1542,7 +1542,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 516,
+   "claim_id": 2763,
    "agency": "ICRA",
    "instrument": "Long-term bank lines",
    "instrument_class": "bank_facility",
@@ -1559,7 +1559,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 508,
+   "claim_id": 2755,
    "agency": "ICRA",
    "instrument": "Non-convertible debenture programme",
    "instrument_class": "ncd",
@@ -1576,7 +1576,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 510,
+   "claim_id": 2757,
    "agency": "ICRA",
    "instrument": "Non-convertible debenture programme",
    "instrument_class": "ncd",
@@ -1593,7 +1593,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 512,
+   "claim_id": 2759,
    "agency": "ICRA",
    "instrument": "Non-convertible debenture programme",
    "instrument_class": "ncd",
@@ -1610,7 +1610,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 514,
+   "claim_id": 2761,
    "agency": "ICRA",
    "instrument": "Subordinated debt programme",
    "instrument_class": "subordinated_debt",
@@ -1627,7 +1627,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 524,
+   "claim_id": 2771,
    "agency": "ICRA",
    "instrument": "Commercial paper programme (IPO financing)",
    "instrument_class": "commercial_paper",
@@ -1644,7 +1644,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 518,
+   "claim_id": 2765,
    "agency": "ICRA",
    "instrument": "Long-term principal protected equity linked debenture programme",
    "instrument_class": "mld",
@@ -1661,7 +1661,7 @@
    "source_name": "ICRA"
   },
   {
-   "claim_id": 520,
+   "claim_id": 2767,
    "agency": "ICRA",
    "instrument": "Long-term principal protected market linked debenture programme",
    "instrument_class": "mld",
@@ -1688,9 +1688,10 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 681,
-   "current": true
+   "effective_to": "2026-02-11",
+   "claim_id": 2928,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "bank_facility",
@@ -1701,8 +1702,9 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2025-09-24",
-   "effective_to": "2026-02-11",
-   "claim_id": 578,
+   "effective_to": "2025-09-24",
+   "claim_id": 2825,
+   "withdrawn": true,
    "current": false
   },
   {
@@ -1715,7 +1717,8 @@
    "watch": null,
    "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 576,
+   "claim_id": 2823,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1728,7 +1731,8 @@
    "watch": "Watch with Developing Implications",
    "effective_from": "2024-03-12",
    "effective_to": null,
-   "claim_id": 776,
+   "claim_id": 3023,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -1741,7 +1745,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 516,
+   "claim_id": 2763,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1753,9 +1758,10 @@
    "outlook": null,
    "watch": null,
    "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 685,
-   "current": true
+   "effective_to": "2026-02-11",
+   "claim_id": 2932,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "commercial_paper",
@@ -1767,7 +1773,8 @@
    "watch": null,
    "effective_from": "2026-02-11",
    "effective_to": null,
-   "claim_id": 682,
+   "claim_id": 2929,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -1779,9 +1786,10 @@
    "outlook": null,
    "watch": null,
    "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 684,
-   "current": true
+   "effective_to": "2026-02-11",
+   "claim_id": 2931,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "commercial_paper",
@@ -1793,7 +1801,8 @@
    "watch": null,
    "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 581,
+   "claim_id": 2828,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1806,7 +1815,8 @@
    "watch": null,
    "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 583,
+   "claim_id": 2830,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1819,7 +1829,8 @@
    "watch": null,
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 522,
+   "claim_id": 2769,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1832,7 +1843,8 @@
    "watch": null,
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 524,
+   "claim_id": 2771,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1844,9 +1856,10 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2025-09-24",
-   "effective_to": null,
-   "claim_id": 580,
-   "current": true
+   "effective_to": "2025-09-24",
+   "claim_id": 2827,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "mld",
@@ -1857,9 +1870,10 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2025-09-24",
-   "effective_to": null,
-   "claim_id": 579,
-   "current": true
+   "effective_to": "2025-09-24",
+   "claim_id": 2826,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "mld",
@@ -1871,7 +1885,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 520,
+   "claim_id": 2767,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1884,7 +1899,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 518,
+   "claim_id": 2765,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -1897,7 +1913,8 @@
    "watch": null,
    "effective_from": "2026-02-11",
    "effective_to": null,
-   "claim_id": 675,
+   "claim_id": 2922,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -1909,60 +1926,9 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 677,
-   "current": true
-  },
-  {
-   "instrument_class": "ncd",
-   "term": "long_term",
-   "agency": "ICRA",
-   "instrument": "Non-convertible debenture programme (NCD)",
-   "grade": "AA",
-   "outlook": "Negative",
-   "watch": null,
-   "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 672,
-   "current": true
-  },
-  {
-   "instrument_class": "ncd",
-   "term": "long_term",
-   "agency": "ICRA",
-   "instrument": "NCD",
-   "grade": "AA",
-   "outlook": "Negative",
-   "watch": null,
-   "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 674,
-   "current": true
-  },
-  {
-   "instrument_class": "ncd",
-   "term": "long_term",
-   "agency": "ICRA",
-   "instrument": "NCD",
-   "grade": "AA",
-   "outlook": "Negative",
-   "watch": null,
-   "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 573,
-   "current": false
-  },
-  {
-   "instrument_class": "ncd",
-   "term": "long_term",
-   "agency": "ICRA",
-   "instrument": "NCD",
-   "grade": "AA",
-   "outlook": "Negative",
-   "watch": null,
-   "effective_from": "2025-09-24",
-   "effective_to": "2026-02-11",
-   "claim_id": 571,
+   "claim_id": 2924,
+   "withdrawn": true,
    "current": false
   },
   {
@@ -1973,9 +1939,38 @@
    "grade": "AA",
    "outlook": "Negative",
    "watch": null,
-   "effective_from": "2025-09-24",
+   "effective_from": "2026-02-11",
+   "effective_to": null,
+   "claim_id": 2919,
+   "withdrawn": false,
+   "current": true
+  },
+  {
+   "instrument_class": "ncd",
+   "term": "long_term",
+   "agency": "ICRA",
+   "instrument": "NCD",
+   "grade": "AA",
+   "outlook": "Negative",
+   "watch": null,
+   "effective_from": "2026-02-11",
    "effective_to": "2026-02-11",
-   "claim_id": 568,
+   "claim_id": 2921,
+   "withdrawn": true,
+   "current": false
+  },
+  {
+   "instrument_class": "ncd",
+   "term": "long_term",
+   "agency": "ICRA",
+   "instrument": "NCD",
+   "grade": "AA",
+   "outlook": "Negative",
+   "watch": null,
+   "effective_from": "2025-09-24",
+   "effective_to": "2025-09-24",
+   "claim_id": 2820,
+   "withdrawn": true,
    "current": false
   },
   {
@@ -1988,7 +1983,36 @@
    "watch": null,
    "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 570,
+   "claim_id": 2818,
+   "withdrawn": false,
+   "current": false
+  },
+  {
+   "instrument_class": "ncd",
+   "term": "long_term",
+   "agency": "ICRA",
+   "instrument": "Non-convertible debenture programme (NCD)",
+   "grade": "AA",
+   "outlook": "Negative",
+   "watch": null,
+   "effective_from": "2025-09-24",
+   "effective_to": "2026-02-11",
+   "claim_id": 2815,
+   "withdrawn": false,
+   "current": false
+  },
+  {
+   "instrument_class": "ncd",
+   "term": "long_term",
+   "agency": "ICRA",
+   "instrument": "NCD",
+   "grade": "AA",
+   "outlook": "Negative",
+   "watch": null,
+   "effective_from": "2025-09-24",
+   "effective_to": "2025-09-24",
+   "claim_id": 2817,
+   "withdrawn": true,
    "current": false
   },
   {
@@ -2001,7 +2025,8 @@
    "watch": null,
    "effective_from": "2025-09-15",
    "effective_to": null,
-   "claim_id": 786,
+   "claim_id": 3033,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2014,7 +2039,8 @@
    "watch": null,
    "effective_from": "2025-09-15",
    "effective_to": null,
-   "claim_id": 788,
+   "claim_id": 3035,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2027,7 +2053,8 @@
    "watch": "Watch with Developing Implications",
    "effective_from": "2024-03-12",
    "effective_to": null,
-   "claim_id": 780,
+   "claim_id": 3027,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2040,7 +2067,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 512,
+   "claim_id": 2759,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -2053,7 +2081,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 510,
+   "claim_id": 2757,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -2066,7 +2095,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 508,
+   "claim_id": 2755,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -2079,7 +2109,8 @@
    "watch": "Watch with Developing Implications",
    "effective_from": "2024-03-12",
    "effective_to": null,
-   "claim_id": 778,
+   "claim_id": 3025,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2092,7 +2123,8 @@
    "watch": null,
    "effective_from": "2025-09-15",
    "effective_to": null,
-   "claim_id": 790,
+   "claim_id": 3037,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2104,9 +2136,10 @@
    "outlook": "Negative",
    "watch": null,
    "effective_from": "2026-02-11",
-   "effective_to": null,
-   "claim_id": 680,
-   "current": true
+   "effective_to": "2026-02-11",
+   "claim_id": 2927,
+   "withdrawn": true,
+   "current": false
   },
   {
    "instrument_class": "subordinated_debt",
@@ -2118,7 +2151,8 @@
    "watch": null,
    "effective_from": "2026-02-11",
    "effective_to": null,
-   "claim_id": 678,
+   "claim_id": 2925,
+   "withdrawn": false,
    "current": true
   },
   {
@@ -2131,7 +2165,8 @@
    "watch": null,
    "effective_from": "2025-09-24",
    "effective_to": "2026-02-11",
-   "claim_id": 574,
+   "claim_id": 2821,
+   "withdrawn": false,
    "current": false
   },
   {
@@ -2144,7 +2179,8 @@
    "watch": "Watch with Negative Implications",
    "effective_from": "2024-03-12",
    "effective_to": "2025-09-24",
-   "claim_id": 514,
+   "claim_id": 2761,
+   "withdrawn": false,
    "current": false
   }
  ],
@@ -2158,12 +2194,13 @@
    "spread_pct": null,
    "note": "Brickwork says AA+ (NCDs Public Issue) \u00b7 CARE says AA (Non Convertible Debentures) \u2014 both in force from 2025-09-15 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
    "resolved_at": null,
+   "ended_on": null,
    "status": "open",
    "members": [
     {
-     "claim_id": 780,
+     "claim_id": 3027,
      "value_numeric": null,
      "value_text": "CARE AA (RWD) Placed on Rating Watch with Developing Implications",
      "stated_value": "AA",
@@ -2175,7 +2212,7 @@
      "published_date": "2024-03-12"
     },
     {
-     "claim_id": 786,
+     "claim_id": 3033,
      "value_numeric": null,
      "value_text": "BWR AA+/Stable (Reaffirmed)",
      "stated_value": "AA+",
@@ -2187,7 +2224,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 788,
+     "claim_id": 3035,
      "value_numeric": null,
      "value_text": "BWR AA+/Stable (Reaffirmed)",
      "stated_value": "AA+",
@@ -2209,12 +2246,13 @@
    "spread_pct": null,
    "note": "Brickwork says AA+ (NCDs Public Issue) \u00b7 ICRA says AA (Non-convertible debenture programme) \u2014 both in force from 2025-09-15 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
    "resolved_at": null,
+   "ended_on": null,
    "status": "open",
    "members": [
     {
-     "claim_id": 508,
+     "claim_id": 2755,
      "value_numeric": null,
      "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
      "stated_value": "AA",
@@ -2226,7 +2264,7 @@
      "published_date": "2024-03-12"
     },
     {
-     "claim_id": 510,
+     "claim_id": 2757,
      "value_numeric": null,
      "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
      "stated_value": "AA",
@@ -2238,7 +2276,7 @@
      "published_date": "2024-03-12"
     },
     {
-     "claim_id": 512,
+     "claim_id": 2759,
      "value_numeric": null,
      "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
      "stated_value": "AA",
@@ -2250,7 +2288,7 @@
      "published_date": "2024-03-12"
     },
     {
-     "claim_id": 788,
+     "claim_id": 3035,
      "value_numeric": null,
      "value_text": "BWR AA+/Stable (Reaffirmed)",
      "stated_value": "AA+",
@@ -2262,7 +2300,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 786,
+     "claim_id": 3033,
      "value_numeric": null,
      "value_text": "BWR AA+/Stable (Reaffirmed)",
      "stated_value": "AA+",
@@ -2274,31 +2312,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 571,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
-     "stated_value": "AA",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2025-09-24",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
-     "published_date": "2025-09-24"
-    },
-    {
-     "claim_id": 573,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn, outlook revised to Negative from Stable",
-     "stated_value": "AA",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2025-09-24",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
-     "published_date": "2025-09-24"
-    },
-    {
-     "claim_id": 568,
+     "claim_id": 2815,
      "value_numeric": null,
      "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
      "stated_value": "AA",
@@ -2310,9 +2324,9 @@
      "published_date": "2025-09-24"
     },
     {
-     "claim_id": 570,
+     "claim_id": 2818,
      "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn, outlook revised to Negative from Stable",
+     "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
      "stated_value": "AA",
      "subject": "NCD \u2014 ICRA rating",
      "basis": "unknown",
@@ -2322,31 +2336,7 @@
      "published_date": "2025-09-24"
     },
     {
-     "claim_id": 675,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed",
-     "stated_value": "AA",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2026-02-11",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed",
-     "published_date": "2026-02-11"
-    },
-    {
-     "claim_id": 677,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn",
-     "stated_value": "AA",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2026-02-11",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed",
-     "published_date": "2026-02-11"
-    },
-    {
-     "claim_id": 672,
+     "claim_id": 2919,
      "value_numeric": null,
      "value_text": "[ICRA]AA (Negative); reaffirmed",
      "stated_value": "AA",
@@ -2358,9 +2348,9 @@
      "published_date": "2026-02-11"
     },
     {
-     "claim_id": 674,
+     "claim_id": 2922,
      "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn",
+     "value_text": "[ICRA]AA (Negative); reaffirmed",
      "stated_value": "AA",
      "subject": "NCD \u2014 ICRA rating",
      "basis": "unknown",
@@ -2380,24 +2370,13 @@
    "spread_pct": null,
    "note": "Brickwork says Stable (NCDs Public Issue) \u00b7 ICRA says Negative (Non-convertible debenture programme (NCD)) \u2014 both in force from 2025-09-24 (still in force)",
    "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
    "resolved_at": null,
+   "ended_on": null,
    "status": "open",
    "members": [
     {
-     "claim_id": 788,
-     "value_numeric": null,
-     "value_text": "BWR AA+/Stable (Reaffirmed)",
-     "stated_value": "Stable",
-     "subject": "NCDs \u2014 Brickwork rating",
-     "basis": "unknown",
-     "as_of_date": "2025-09-15",
-     "source_name": "Brickwork",
-     "title": "Brickwork Ratings rationale",
-     "published_date": "2025-09-15"
-    },
-    {
-     "claim_id": 786,
+     "claim_id": 3033,
      "value_numeric": null,
      "value_text": "BWR AA+/Stable (Reaffirmed)",
      "stated_value": "Stable",
@@ -2409,31 +2388,19 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 571,
+     "claim_id": 3035,
      "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
-     "stated_value": "Negative",
-     "subject": "NCD \u2014 ICRA rating",
+     "value_text": "BWR AA+/Stable (Reaffirmed)",
+     "stated_value": "Stable",
+     "subject": "NCDs \u2014 Brickwork rating",
      "basis": "unknown",
-     "as_of_date": "2025-09-24",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
-     "published_date": "2025-09-24"
+     "as_of_date": "2025-09-15",
+     "source_name": "Brickwork",
+     "title": "Brickwork Ratings rationale",
+     "published_date": "2025-09-15"
     },
     {
-     "claim_id": 573,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn, outlook revised to Negative from Stable",
-     "stated_value": "Negative",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2025-09-24",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
-     "published_date": "2025-09-24"
-    },
-    {
-     "claim_id": 568,
+     "claim_id": 2815,
      "value_numeric": null,
      "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
      "stated_value": "Negative",
@@ -2445,9 +2412,9 @@
      "published_date": "2025-09-24"
     },
     {
-     "claim_id": 570,
+     "claim_id": 2818,
      "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn, outlook revised to Negative from Stable",
+     "value_text": "[ICRA]AA (Negative); reaffirmed and outlook revised to Negative from Stable",
      "stated_value": "Negative",
      "subject": "NCD \u2014 ICRA rating",
      "basis": "unknown",
@@ -2457,43 +2424,7 @@
      "published_date": "2025-09-24"
     },
     {
-     "claim_id": 675,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed",
-     "stated_value": "Negative",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2026-02-11",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed",
-     "published_date": "2026-02-11"
-    },
-    {
-     "claim_id": 677,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn",
-     "stated_value": "Negative",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2026-02-11",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed",
-     "published_date": "2026-02-11"
-    },
-    {
-     "claim_id": 674,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA (Negative); reaffirmed and withdrawn",
-     "stated_value": "Negative",
-     "subject": "NCD \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2026-02-11",
-     "source_name": "ICRA",
-     "title": "ICRA: Ratings reaffirmed",
-     "published_date": "2026-02-11"
-    },
-    {
-     "claim_id": 672,
+     "claim_id": 2919,
      "value_numeric": null,
      "value_text": "[ICRA]AA (Negative); reaffirmed",
      "stated_value": "Negative",
@@ -2503,108 +2434,18 @@
      "source_name": "ICRA",
      "title": "ICRA: Ratings reaffirmed",
      "published_date": "2026-02-11"
-    }
-   ]
-  },
-  {
-   "id": 152,
-   "fact_key": "rating_watch|bank_facility|long_term|CARE~ICRA|2024-03-12",
-   "subject": "Long-term watch on bank facilities, from 2024-03-12 to 2025-09-24",
-   "kind": "categorical_disagreement",
-   "tolerance_pct": 0.1,
-   "spread_pct": null,
-   "note": "CARE says Watch with Developing Implications (Long Term Bank Facilities) \u00b7 ICRA says Watch with Negative Implications (Long-term bank lines) \u2014 both in force from 2024-03-12 to 2025-09-24",
-   "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
-   "resolved_at": null,
-   "status": "open",
-   "members": [
-    {
-     "claim_id": 776,
-     "value_numeric": null,
-     "value_text": "CARE AA (RWD) Placed on Rating Watch with Developing Implications",
-     "stated_value": "Watch with Developing Implications",
-     "subject": "Long Term Bank Facilities \u2014 CARE rating",
-     "basis": "unknown",
-     "as_of_date": "2024-03-12",
-     "source_name": "CARE",
-     "title": "CARE Ratings press release (Revised)",
-     "published_date": "2024-03-12"
     },
     {
-     "claim_id": 516,
+     "claim_id": 2922,
      "value_numeric": null,
-     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
-     "stated_value": "Watch with Negative Implications",
-     "subject": "Long-term bank lines \u2014 ICRA rating",
+     "value_text": "[ICRA]AA (Negative); reaffirmed",
+     "stated_value": "Negative",
+     "subject": "NCD \u2014 ICRA rating",
      "basis": "unknown",
-     "as_of_date": "2024-03-12",
+     "as_of_date": "2026-02-11",
      "source_name": "ICRA",
-     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
-     "published_date": "2024-03-12"
-    }
-   ]
-  },
-  {
-   "id": 153,
-   "fact_key": "rating_watch|ncd|long_term|CARE~ICRA|2024-03-12",
-   "subject": "Long-term watch on non-convertible debentures, from 2024-03-12 to 2025-09-24",
-   "kind": "categorical_disagreement",
-   "tolerance_pct": 0.1,
-   "spread_pct": null,
-   "note": "CARE says Watch with Developing Implications (Non Convertible Debentures) \u00b7 ICRA says Watch with Negative Implications (Non-convertible debenture programme) \u2014 both in force from 2024-03-12 to 2025-09-24",
-   "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
-   "resolved_at": null,
-   "status": "open",
-   "members": [
-    {
-     "claim_id": 780,
-     "value_numeric": null,
-     "value_text": "CARE AA (RWD) Placed on Rating Watch with Developing Implications",
-     "stated_value": "Watch with Developing Implications",
-     "subject": "Non Convertible Debentures \u2014 CARE rating",
-     "basis": "unknown",
-     "as_of_date": "2024-03-12",
-     "source_name": "CARE",
-     "title": "CARE Ratings press release (Revised)",
-     "published_date": "2024-03-12"
-    },
-    {
-     "claim_id": 508,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
-     "stated_value": "Watch with Negative Implications",
-     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2024-03-12",
-     "source_name": "ICRA",
-     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
-     "published_date": "2024-03-12"
-    },
-    {
-     "claim_id": 510,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
-     "stated_value": "Watch with Negative Implications",
-     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2024-03-12",
-     "source_name": "ICRA",
-     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
-     "published_date": "2024-03-12"
-    },
-    {
-     "claim_id": 512,
-     "value_numeric": null,
-     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
-     "stated_value": "Watch with Negative Implications",
-     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
-     "basis": "unknown",
-     "as_of_date": "2024-03-12",
-     "source_name": "ICRA",
-     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
-     "published_date": "2024-03-12"
+     "title": "ICRA: Ratings reaffirmed",
+     "published_date": "2026-02-11"
     }
    ]
   },
@@ -2617,12 +2458,13 @@
    "spread_pct": 0.05313427975198289,
    "note": "Brickwork vs Company differ by \u20b924.80 crore \u2014 above the \u20b95 crore tolerance, though only 0.053% of the reported figure",
    "first_detected_at": "2026-09-16T23:15:05.327226+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
    "resolved_at": null,
+   "ended_on": null,
    "status": "open",
    "members": [
     {
-     "claim_id": 797,
+     "claim_id": 3044,
      "value_numeric": 46699.0,
      "value_text": null,
      "stated_value": null,
@@ -2634,7 +2476,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 2113,
+     "claim_id": 3161,
      "value_numeric": 46674.2,
      "value_text": null,
      "stated_value": null,
@@ -2656,12 +2498,13 @@
    "spread_pct": 0.12558853992064406,
    "note": "Brickwork vs Company differ by \u20b925.10 crore (0.126%) \u2014 over both the 0.10% and \u20b95 crore tolerances",
    "first_detected_at": "2026-09-16T23:15:05.327226+05:30",
-   "last_seen_at": "2026-09-16T23:58:49.616325+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
    "resolved_at": null,
+   "ended_on": null,
    "status": "open",
    "members": [
     {
-     "claim_id": 803,
+     "claim_id": 3050,
      "value_numeric": 20011.0,
      "value_text": null,
      "stated_value": null,
@@ -2673,7 +2516,7 @@
      "published_date": "2025-09-15"
     },
     {
-     "claim_id": 2105,
+     "claim_id": 3153,
      "value_numeric": 19985.9,
      "value_text": null,
      "stated_value": null,
@@ -2683,6 +2526,110 @@
      "source_name": "Company",
      "title": "IIFL Finance Integrated Annual Report 2024-25",
      "published_date": null
+    }
+   ]
+  },
+  {
+   "id": 152,
+   "fact_key": "rating_watch|bank_facility|long_term|CARE~ICRA|2024-03-12",
+   "subject": "Long-term watch on bank facilities, from 2024-03-12 to 2025-09-24",
+   "kind": "categorical_disagreement",
+   "tolerance_pct": 0.1,
+   "spread_pct": null,
+   "note": "CARE says Watch with Developing Implications (Long Term Bank Facilities) \u00b7 ICRA says Watch with Negative Implications (Long-term bank lines) \u2014 both in force from 2024-03-12 to 2025-09-24",
+   "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
+   "resolved_at": null,
+   "ended_on": "2025-09-24",
+   "status": "ended",
+   "members": [
+    {
+     "claim_id": 3023,
+     "value_numeric": null,
+     "value_text": "CARE AA (RWD) Placed on Rating Watch with Developing Implications",
+     "stated_value": "Watch with Developing Implications",
+     "subject": "Long Term Bank Facilities \u2014 CARE rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "CARE",
+     "title": "CARE Ratings press release (Revised)",
+     "published_date": "2024-03-12"
+    },
+    {
+     "claim_id": 2763,
+     "value_numeric": null,
+     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
+     "stated_value": "Watch with Negative Implications",
+     "subject": "Long-term bank lines \u2014 ICRA rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "ICRA",
+     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
+     "published_date": "2024-03-12"
+    }
+   ]
+  },
+  {
+   "id": 153,
+   "fact_key": "rating_watch|ncd|long_term|CARE~ICRA|2024-03-12",
+   "subject": "Long-term watch on non-convertible debentures, from 2024-03-12 to 2025-09-24",
+   "kind": "categorical_disagreement",
+   "tolerance_pct": 0.1,
+   "spread_pct": null,
+   "note": "CARE says Watch with Developing Implications (Non Convertible Debentures) \u00b7 ICRA says Watch with Negative Implications (Non-convertible debenture programme) \u2014 both in force from 2024-03-12 to 2025-09-24",
+   "first_detected_at": "2026-09-16T23:23:18.660309+05:30",
+   "last_seen_at": "2026-09-17T23:12:04.131746+05:30",
+   "resolved_at": null,
+   "ended_on": "2025-09-24",
+   "status": "ended",
+   "members": [
+    {
+     "claim_id": 3027,
+     "value_numeric": null,
+     "value_text": "CARE AA (RWD) Placed on Rating Watch with Developing Implications",
+     "stated_value": "Watch with Developing Implications",
+     "subject": "Non Convertible Debentures \u2014 CARE rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "CARE",
+     "title": "CARE Ratings press release (Revised)",
+     "published_date": "2024-03-12"
+    },
+    {
+     "claim_id": 2755,
+     "value_numeric": null,
+     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
+     "stated_value": "Watch with Negative Implications",
+     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "ICRA",
+     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
+     "published_date": "2024-03-12"
+    },
+    {
+     "claim_id": 2757,
+     "value_numeric": null,
+     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
+     "stated_value": "Watch with Negative Implications",
+     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "ICRA",
+     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
+     "published_date": "2024-03-12"
+    },
+    {
+     "claim_id": 2759,
+     "value_numeric": null,
+     "value_text": "[ICRA]AA; placed on Rating Watch with Negative Implications",
+     "stated_value": "Watch with Negative Implications",
+     "subject": "Non-convertible debenture programme \u2014 ICRA rating",
+     "basis": "unknown",
+     "as_of_date": "2024-03-12",
+     "source_name": "ICRA",
+     "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
+     "published_date": "2024-03-12"
     }
    ]
   }
@@ -2698,12 +2645,12 @@
    "spread_pct": 5.87452024751312e-05,
    "members": [
     {
-     "claim_id": 798,
+     "claim_id": 3045,
      "source": "Brickwork",
      "value": 51068
     },
     {
-     "claim_id": 2109,
+     "claim_id": 3157,
      "source": "Company",
      "value": 51068.03
     }
@@ -2719,12 +2666,12 @@
    "spread_pct": 0.0006524221171097701,
    "members": [
     {
-     "claim_id": 804,
+     "claim_id": 3051,
      "source": "Brickwork",
      "value": 24524
     },
     {
-     "claim_id": 2101,
+     "claim_id": 3149,
      "source": "Company",
      "value": 24524.16
     }
@@ -2733,213 +2680,230 @@
  ],
  "changes": [
   {
-   "id": 2188,
+   "id": 2874,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
    "section": "liquidity",
    "direction": "changed",
-   "from_claim_id": 588,
-   "to_claim_id": 689,
+   "certainty": "confirmed",
+   "from_claim_id": 2835,
+   "to_claim_id": 2936,
    "from_text": "As on July 31, 2025, IIFL Finance (consolidated) had an unencumbered cash and liquid balance of around Rs. 3,791 crore along",
    "to_text": "As on December 31, 2025, IIFL Finance (consolidated) had an unencumbered cash and liquid balance of around Rs. 5,971 crore"
   },
   {
-   "id": 2189,
+   "id": 2875,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 579,
+   "certainty": "confirmed",
+   "from_claim_id": 2826,
    "to_claim_id": null,
    "from_text": "AA",
    "to_text": null
   },
   {
-   "id": 2190,
+   "id": 2876,
    "agency": "ICRA",
    "from_date": "2025-09-24",
    "to_date": "2026-02-11",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 579,
+   "certainty": "confirmed",
+   "from_claim_id": 2826,
    "to_claim_id": null,
    "from_text": "Negative",
    "to_text": null
   },
   {
-   "id": 2174,
+   "id": 2860,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "liquidity",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 587,
+   "to_claim_id": 2834,
    "from_text": null,
    "to_text": "Adequate"
   },
   {
-   "id": 2175,
+   "id": 2861,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "liquidity",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 588,
+   "to_claim_id": 2835,
    "from_text": null,
    "to_text": "As on July 31, 2025, IIFL Finance (consolidated) had an unencumbered cash and liquid balance of around Rs. 3,791 crore along"
   },
   {
-   "id": 2179,
+   "id": 2865,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 574,
+   "to_claim_id": 2821,
    "from_text": null,
    "to_text": "Negative"
   },
   {
-   "id": 2178,
+   "id": 2864,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 568,
+   "to_claim_id": 2815,
    "from_text": null,
    "to_text": "Negative"
   },
   {
-   "id": 2177,
+   "id": 2863,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 579,
+   "to_claim_id": 2826,
    "from_text": null,
    "to_text": "Negative"
   },
   {
-   "id": 2176,
+   "id": 2862,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 576,
+   "to_claim_id": 2823,
    "from_text": null,
    "to_text": "Negative"
   },
   {
-   "id": 2183,
+   "id": 2869,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 518,
+   "certainty": "confirmed",
+   "from_claim_id": 2765,
    "to_claim_id": null,
    "from_text": "Watch with Negative Implications",
    "to_text": null
   },
   {
-   "id": 2184,
+   "id": 2870,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 508,
+   "certainty": "confirmed",
+   "from_claim_id": 2755,
    "to_claim_id": null,
    "from_text": "Watch with Negative Implications",
    "to_text": null
   },
   {
-   "id": 2185,
+   "id": 2871,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 514,
+   "certainty": "confirmed",
+   "from_claim_id": 2761,
    "to_claim_id": null,
    "from_text": "Watch with Negative Implications",
    "to_text": null
   },
   {
-   "id": 2182,
+   "id": 2868,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "rating",
    "direction": "removed",
-   "from_claim_id": 516,
+   "certainty": "confirmed",
+   "from_claim_id": 2763,
    "to_claim_id": null,
    "from_text": "Watch with Negative Implications",
    "to_text": null
   },
   {
-   "id": 2180,
+   "id": 2866,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "sensitivities",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 590,
+   "to_claim_id": 2837,
    "from_text": null,
    "to_text": "A prolonged delay in resolving the net vulnerable portfolio in relation to the net worth or weakening in the"
   },
   {
-   "id": 2181,
+   "id": 2867,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "sensitivities",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 589,
+   "to_claim_id": 2836,
    "from_text": null,
    "to_text": "ICRA could revise the outlook to Stable on an improvement in the net vulnerable portfolio in relation to the"
   },
   {
-   "id": 2186,
+   "id": 2872,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "strengths",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 585,
+   "to_claim_id": 2832,
    "from_text": null,
    "to_text": "Diversified lending book with focus on retail lending provides comfort"
   },
   {
-   "id": 2187,
+   "id": 2873,
    "agency": "ICRA",
    "from_date": "2024-03-12",
    "to_date": "2025-09-24",
    "section": "weaknesses",
    "direction": "added",
+   "certainty": "confirmed",
    "from_claim_id": null,
-   "to_claim_id": 586,
+   "to_claim_id": 2833,
    "from_text": null,
    "to_text": "Vulnerable book remains high in relation to net worth"
   }
  ],
  "claims": {
-  "508": {
-   "id": 508,
+  "2755": {
+   "id": 2755,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|non-convertible debenture programme|5000.00|5000.00|2024Q1",
    "subject": "Non-convertible debenture programme \u2014 ICRA rating",
@@ -2949,7 +2913,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3030,8 +2994,8 @@
     }
    ]
   },
-  "510": {
-   "id": 510,
+  "2757": {
+   "id": 2757,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|non-convertible debenture programme|4617.27|4617.27|2024Q1",
    "subject": "Non-convertible debenture programme \u2014 ICRA rating",
@@ -3041,7 +3005,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3122,8 +3086,8 @@
     }
    ]
   },
-  "512": {
-   "id": 512,
+  "2759": {
+   "id": 2759,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|non-convertible debenture programme|3514.65|3514.65|2024Q1",
    "subject": "Non-convertible debenture programme \u2014 ICRA rating",
@@ -3133,7 +3097,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3214,8 +3178,8 @@
     }
    ]
   },
-  "514": {
-   "id": 514,
+  "2761": {
+   "id": 2761,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|subordinated debt programme|657.00|657.00|2024Q1",
    "subject": "Subordinated debt programme \u2014 ICRA rating",
@@ -3225,7 +3189,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3306,8 +3270,8 @@
     }
    ]
   },
-  "516": {
-   "id": 516,
+  "2763": {
+   "id": 2763,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term bank lines|5775.00|5775.00|2024Q1",
    "subject": "Long-term bank lines \u2014 ICRA rating",
@@ -3317,7 +3281,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3398,8 +3362,8 @@
     }
    ]
   },
-  "518": {
-   "id": 518,
+  "2765": {
+   "id": 2765,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term principal protected equity linked debenture programme|500.00|500.00|2024Q1",
    "subject": "Long-term principal protected equity linked debenture programme \u2014 ICRA rating",
@@ -3409,7 +3373,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3496,8 +3460,8 @@
     }
    ]
   },
-  "520": {
-   "id": 520,
+  "2767": {
+   "id": 2767,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term principal protected market linked debenture programme|364.00|364.00|2024Q1",
    "subject": "Long-term principal protected market linked debenture programme \u2014 ICRA rating",
@@ -3507,7 +3471,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3594,8 +3558,8 @@
     }
    ]
   },
-  "522": {
-   "id": 522,
+  "2769": {
+   "id": 2769,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme|8000.00|8000.00|2024Q1",
    "subject": "Commercial paper programme \u2014 ICRA rating",
@@ -3605,7 +3569,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3680,8 +3644,8 @@
     }
    ]
   },
-  "524": {
-   "id": 524,
+  "2771": {
+   "id": 2771,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme (ipo financing)|500.00|500.00|2024Q1",
    "subject": "Commercial paper programme (IPO financing) \u2014 ICRA rating",
@@ -3691,7 +3655,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 2,
    "title": "ICRA: Long-term ratings placed on Watch with Negative Implications",
    "source_name": "ICRA",
@@ -3766,8 +3730,8 @@
     }
    ]
   },
-  "568": {
-   "id": 568,
+  "2815": {
+   "id": 2815,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|non-convertible debenture programme (ncd)|1400.00|1400.00|2025Q3",
    "subject": "Non-convertible debenture programme (NCD) \u2014 ICRA rating",
@@ -3777,7 +3741,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -3864,8 +3828,8 @@
     }
    ]
   },
-  "570": {
-   "id": 570,
+  "2817": {
+   "id": 2817,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|3600.00|None|2025Q3",
    "subject": "NCD \u2014 ICRA rating",
@@ -3875,7 +3839,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -3935,8 +3899,8 @@
     }
    ]
   },
-  "571": {
-   "id": 571,
+  "2818": {
+   "id": 2818,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|6588.48|6588.48|2025Q3",
    "subject": "NCD \u2014 ICRA rating",
@@ -3946,7 +3910,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4027,8 +3991,8 @@
     }
    ]
   },
-  "573": {
-   "id": 573,
+  "2820": {
+   "id": 2820,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|1543.44|None|2025Q3",
    "subject": "NCD \u2014 ICRA rating",
@@ -4038,7 +4002,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4098,8 +4062,8 @@
     }
    ]
   },
-  "574": {
-   "id": 574,
+  "2821": {
+   "id": 2821,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|subordinated debt programme|657.00|657.00|2025Q3",
    "subject": "Subordinated debt programme \u2014 ICRA rating",
@@ -4109,7 +4073,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4190,8 +4154,8 @@
     }
    ]
   },
-  "576": {
-   "id": 576,
+  "2823": {
+   "id": 2823,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term bank lines|2775.00|2775.00|2025Q3",
    "subject": "Long-term bank lines \u2014 ICRA rating",
@@ -4201,7 +4165,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4282,8 +4246,8 @@
     }
    ]
   },
-  "578": {
-   "id": 578,
+  "2825": {
+   "id": 2825,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term bank lines|3000.00|None|2025Q3",
    "subject": "Long-term bank lines \u2014 ICRA rating",
@@ -4293,7 +4257,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4353,8 +4317,8 @@
     }
    ]
   },
-  "579": {
-   "id": 579,
+  "2826": {
+   "id": 2826,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term principal protected equity linked debenture programme|500.00|None|2025Q3",
    "subject": "Long-term principal protected equity linked debenture programme \u2014 ICRA rating",
@@ -4364,7 +4328,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4430,8 +4394,8 @@
     }
    ]
   },
-  "580": {
-   "id": 580,
+  "2827": {
+   "id": 2827,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term principal protected market linked debenture programme|314.00|None|2025Q3",
    "subject": "Long-term principal protected market linked debenture programme \u2014 ICRA rating",
@@ -4441,7 +4405,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4513,8 +4477,8 @@
     }
    ]
   },
-  "581": {
-   "id": 581,
+  "2828": {
+   "id": 2828,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme|8000.00|8000.00|2025Q3",
    "subject": "Commercial paper programme \u2014 ICRA rating",
@@ -4524,7 +4488,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4599,8 +4563,8 @@
     }
    ]
   },
-  "583": {
-   "id": 583,
+  "2830": {
+   "id": 2830,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme (ipo financing)|500.00|500.00|2025Q3",
    "subject": "Commercial paper programme (IPO financing) \u2014 ICRA rating",
@@ -4610,7 +4574,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4691,8 +4655,8 @@
     }
    ]
   },
-  "585": {
-   "id": 585,
+  "2832": {
+   "id": 2832,
    "claim_type": "rationale_point",
    "fact_key": "rationale|ICRA|strengths|diversified lending book with focus on retail lending provides comfort",
    "subject": "ICRA strength",
@@ -4702,7 +4666,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4735,8 +4699,8 @@
     }
    ]
   },
-  "586": {
-   "id": 586,
+  "2833": {
+   "id": 2833,
    "claim_type": "rationale_point",
    "fact_key": "rationale|ICRA|weaknesses|vulnerable book remains high in relation to net worth",
    "subject": "ICRA weaknesse",
@@ -4746,7 +4710,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4779,8 +4743,8 @@
     }
    ]
   },
-  "587": {
-   "id": 587,
+  "2834": {
+   "id": 2834,
    "claim_type": "rationale_point",
    "fact_key": "liquidity_assessment|ICRA",
    "subject": "ICRA liquidity assessment",
@@ -4790,7 +4754,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4844,8 +4808,8 @@
     }
    ]
   },
-  "588": {
-   "id": 588,
+  "2835": {
+   "id": 2835,
    "claim_type": "rationale_point",
    "fact_key": "liquidity_detail|ICRA",
    "subject": "ICRA liquidity narrative",
@@ -4855,7 +4819,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4888,8 +4852,8 @@
     }
    ]
   },
-  "589": {
-   "id": 589,
+  "2836": {
+   "id": 2836,
    "claim_type": "rationale_point",
    "fact_key": "rating_sensitivity|ICRA|positive",
    "subject": "ICRA positive rating factors",
@@ -4899,7 +4863,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4932,8 +4896,8 @@
     }
    ]
   },
-  "590": {
-   "id": 590,
+  "2837": {
+   "id": 2837,
    "claim_type": "rationale_point",
    "fact_key": "rating_sensitivity|ICRA|negative",
    "subject": "ICRA negative rating factors",
@@ -4943,7 +4907,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-24",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 3,
    "title": "ICRA: Ratings reaffirmed and outlook revised to Negative",
    "source_name": "ICRA",
@@ -4976,8 +4940,8 @@
     }
    ]
   },
-  "672": {
-   "id": 672,
+  "2919": {
+   "id": 2919,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|non-convertible debenture programme (ncd)|1251.11|1251.11|2026Q1",
    "subject": "Non-convertible debenture programme (NCD) \u2014 ICRA rating",
@@ -4987,7 +4951,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5068,8 +5032,8 @@
     }
    ]
   },
-  "674": {
-   "id": 674,
+  "2921": {
+   "id": 2921,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|148.89|None|2026Q1",
    "subject": "NCD \u2014 ICRA rating",
@@ -5079,7 +5043,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5133,8 +5097,8 @@
     }
    ]
   },
-  "675": {
-   "id": 675,
+  "2922": {
+   "id": 2922,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|1925.00|1925.00|2026Q1",
    "subject": "NCD \u2014 ICRA rating",
@@ -5144,7 +5108,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5219,8 +5183,8 @@
     }
    ]
   },
-  "677": {
-   "id": 677,
+  "2924": {
+   "id": 2924,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|ncd|4663.48|None|2026Q1",
    "subject": "NCD \u2014 ICRA rating",
@@ -5230,7 +5194,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5284,8 +5248,8 @@
     }
    ]
   },
-  "678": {
-   "id": 678,
+  "2925": {
+   "id": 2925,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|subordinated debt programme|165.00|165.00|2026Q1",
    "subject": "Subordinated debt programme \u2014 ICRA rating",
@@ -5295,7 +5259,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5370,8 +5334,8 @@
     }
    ]
   },
-  "680": {
-   "id": 680,
+  "2927": {
+   "id": 2927,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|subordinated debt programme|492.00|None|2026Q1",
    "subject": "Subordinated debt programme \u2014 ICRA rating",
@@ -5381,7 +5345,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5435,8 +5399,8 @@
     }
    ]
   },
-  "681": {
-   "id": 681,
+  "2928": {
+   "id": 2928,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|long-term bank lines|2775.00|None|2026Q1",
    "subject": "Long-term bank lines \u2014 ICRA rating",
@@ -5446,7 +5410,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5500,8 +5464,8 @@
     }
    ]
   },
-  "682": {
-   "id": 682,
+  "2929": {
+   "id": 2929,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme|4500.00|4500.00|2026Q1",
    "subject": "Commercial paper programme \u2014 ICRA rating",
@@ -5511,7 +5475,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5586,8 +5550,8 @@
     }
    ]
   },
-  "684": {
-   "id": 684,
+  "2931": {
+   "id": 2931,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme|3500.00|None|2026Q1",
    "subject": "Commercial paper programme \u2014 ICRA rating",
@@ -5597,7 +5561,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5651,8 +5615,8 @@
     }
    ]
   },
-  "685": {
-   "id": 685,
+  "2932": {
+   "id": 2932,
    "claim_type": "rating",
    "fact_key": "rating_instrument|ICRA|commercial paper programme (ipo financing)|500.00|None|2026Q1",
    "subject": "Commercial paper programme (IPO financing) \u2014 ICRA rating",
@@ -5662,7 +5626,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5722,8 +5686,8 @@
     }
    ]
   },
-  "689": {
-   "id": 689,
+  "2936": {
+   "id": 2936,
    "claim_type": "rationale_point",
    "fact_key": "liquidity_detail|ICRA",
    "subject": "ICRA liquidity narrative",
@@ -5733,7 +5697,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5766,8 +5730,8 @@
     }
    ]
   },
-  "692": {
-   "id": 692,
+  "2939": {
+   "id": 2939,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07203|2032-03-24|60.00",
    "subject": "NCD (INE530B07203)",
@@ -5777,7 +5741,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5810,8 +5774,8 @@
     }
    ]
   },
-  "693": {
-   "id": 693,
+  "2940": {
+   "id": 2940,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08128|2032-03-24|50.00",
    "subject": "NCD (INE530B08128)",
@@ -5821,7 +5785,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5854,8 +5818,8 @@
     }
    ]
   },
-  "694": {
-   "id": 694,
+  "2941": {
+   "id": 2941,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07211|2032-07-15|10.00",
    "subject": "NCD (INE530B07211)",
@@ -5865,7 +5829,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5898,8 +5862,8 @@
     }
    ]
   },
-  "695": {
-   "id": 695,
+  "2942": {
+   "id": 2942,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07195|2032-01-21|10.00",
    "subject": "NCD (INE530B07195)",
@@ -5909,7 +5873,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5942,8 +5906,8 @@
     }
    ]
   },
-  "696": {
-   "id": 696,
+  "2943": {
+   "id": 2943,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08136|2032-07-26|235.00",
    "subject": "NCD (INE530B08136)",
@@ -5953,7 +5917,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -5986,8 +5950,8 @@
     }
    ]
   },
-  "697": {
-   "id": 697,
+  "2944": {
+   "id": 2944,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07237|2029-11-01|550.00",
    "subject": "NCD (INE530B07237)",
@@ -5997,7 +5961,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6030,8 +5994,8 @@
     }
    ]
   },
-  "698": {
-   "id": 698,
+  "2945": {
+   "id": 2945,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08151|2033-05-08|35.00",
    "subject": "NCD (INE530B08151)",
@@ -6041,7 +6005,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6074,8 +6038,8 @@
     }
    ]
   },
-  "699": {
-   "id": 699,
+  "2946": {
+   "id": 2946,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08169|2034-10-16|75.00",
    "subject": "NCD (INE530B08169)",
@@ -6085,7 +6049,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6118,8 +6082,8 @@
     }
    ]
   },
-  "700": {
-   "id": 700,
+  "2947": {
+   "id": 2947,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08169|2034-10-16|50.00",
    "subject": "NCD (INE530B08169)",
@@ -6129,7 +6093,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6162,8 +6126,8 @@
     }
    ]
   },
-  "701": {
-   "id": 701,
+  "2948": {
+   "id": 2948,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07427|2027-12-20|250.00",
    "subject": "NCD (INE530B07427)",
@@ -6173,7 +6137,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6206,8 +6170,8 @@
     }
    ]
   },
-  "702": {
-   "id": 702,
+  "2949": {
+   "id": 2949,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08177|2034-10-16|100.00",
    "subject": "NCD (INE530B08177)",
@@ -6217,7 +6181,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6250,8 +6214,8 @@
     }
    ]
   },
-  "703": {
-   "id": 703,
+  "2950": {
+   "id": 2950,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08185|2035-06-20|250.00",
    "subject": "NCD (INE530B08185)",
@@ -6261,7 +6225,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6294,8 +6258,8 @@
     }
    ]
   },
-  "704": {
-   "id": 704,
+  "2951": {
+   "id": 2951,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08193|2032-06-24|250.00",
    "subject": "NCD (INE530B08193)",
@@ -6305,7 +6269,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6338,8 +6302,8 @@
     }
    ]
   },
-  "706": {
-   "id": 706,
+  "2953": {
+   "id": 2953,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE866I08279|2029-02-07|30.76",
    "subject": "Non-convertible debenture programme (INE866I08279)",
@@ -6349,7 +6313,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6400,8 +6364,8 @@
     }
    ]
   },
-  "707": {
-   "id": 707,
+  "2954": {
+   "id": 2954,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE866I08295|2029-02-07|15.45",
    "subject": "Non-convertible debenture programme (INE866I08295)",
@@ -6411,7 +6375,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6462,8 +6426,8 @@
     }
    ]
   },
-  "708": {
-   "id": 708,
+  "2955": {
+   "id": 2955,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07310|2028-01-24|157.24",
    "subject": "Non-convertible debenture programme (INE530B07310)",
@@ -6473,7 +6437,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6524,8 +6488,8 @@
     }
    ]
   },
-  "709": {
-   "id": 709,
+  "2956": {
+   "id": 2956,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07260|2028-01-24|118.93",
    "subject": "Non-convertible debenture programme (INE530B07260)",
@@ -6535,7 +6499,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6586,8 +6550,8 @@
     }
    ]
   },
-  "710": {
-   "id": 710,
+  "2957": {
+   "id": 2957,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07278|2028-01-24|37.86",
    "subject": "Non-convertible debenture programme (INE530B07278)",
@@ -6597,7 +6561,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6648,8 +6612,8 @@
     }
    ]
   },
-  "711": {
-   "id": 711,
+  "2958": {
+   "id": 2958,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07344|2026-06-28|123.58",
    "subject": "Non-convertible debenture programme (INE530B07344)",
@@ -6659,7 +6623,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6710,8 +6674,8 @@
     }
    ]
   },
-  "712": {
-   "id": 712,
+  "2959": {
+   "id": 2959,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07351|2026-06-28|8.91",
    "subject": "Non-convertible debenture programme (INE530B07351)",
@@ -6721,7 +6685,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6772,8 +6736,8 @@
     }
    ]
   },
-  "713": {
-   "id": 713,
+  "2960": {
+   "id": 2960,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07385|2028-06-28|88.91",
    "subject": "Non-convertible debenture programme (INE530B07385)",
@@ -6783,7 +6747,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6834,8 +6798,8 @@
     }
    ]
   },
-  "714": {
-   "id": 714,
+  "2961": {
+   "id": 2961,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07377|2028-06-28|131.94",
    "subject": "Non-convertible debenture programme (INE530B07377)",
@@ -6845,7 +6809,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6896,8 +6860,8 @@
     }
    ]
   },
-  "715": {
-   "id": 715,
+  "2962": {
+   "id": 2962,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07369|2028-06-28|37.52",
    "subject": "Non-convertible debenture programme (INE530B07369)",
@@ -6907,7 +6871,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -6958,8 +6922,8 @@
     }
    ]
   },
-  "716": {
-   "id": 716,
+  "2963": {
+   "id": 2963,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07559|2026-07-21|146.10",
    "subject": "Non-convertible debenture programme (INE530B07559)",
@@ -6969,7 +6933,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7020,8 +6984,8 @@
     }
    ]
   },
-  "717": {
-   "id": 717,
+  "2964": {
+   "id": 2964,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07542|2026-07-21|14.38",
    "subject": "Non-convertible debenture programme (INE530B07542)",
@@ -7031,7 +6995,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7082,8 +7046,8 @@
     }
    ]
   },
-  "718": {
-   "id": 718,
+  "2965": {
+   "id": 2965,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07534|2027-04-21|102.61",
    "subject": "Non-convertible debenture programme (INE530B07534)",
@@ -7093,7 +7057,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7144,8 +7108,8 @@
     }
    ]
   },
-  "719": {
-   "id": 719,
+  "2966": {
+   "id": 2966,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07526|2027-04-21|2.90",
    "subject": "Non-convertible debenture programme (INE530B07526)",
@@ -7155,7 +7119,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7206,8 +7170,8 @@
     }
    ]
   },
-  "720": {
-   "id": 720,
+  "2967": {
+   "id": 2967,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07518|2028-04-21|23.51",
    "subject": "Non-convertible debenture programme (INE530B07518)",
@@ -7217,7 +7181,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7268,8 +7232,8 @@
     }
    ]
   },
-  "721": {
-   "id": 721,
+  "2968": {
+   "id": 2968,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07476|2028-04-21|98.60",
    "subject": "Non-convertible debenture programme (INE530B07476)",
@@ -7279,7 +7243,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7330,8 +7294,8 @@
     }
    ]
   },
-  "722": {
-   "id": 722,
+  "2969": {
+   "id": 2969,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07500|2028-04-21|7.34",
    "subject": "Non-convertible debenture programme (INE530B07500)",
@@ -7341,7 +7305,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7392,8 +7356,8 @@
     }
    ]
   },
-  "723": {
-   "id": 723,
+  "2970": {
+   "id": 2970,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07484|2030-04-21|42.58",
    "subject": "Non-convertible debenture programme (INE530B07484)",
@@ -7403,7 +7367,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7454,8 +7418,8 @@
     }
    ]
   },
-  "724": {
-   "id": 724,
+  "2971": {
+   "id": 2971,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07492|2030-04-21|61.99",
    "subject": "Non-convertible debenture programme (INE530B07492)",
@@ -7465,7 +7429,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7516,8 +7480,8 @@
     }
    ]
   },
-  "725": {
-   "id": 725,
+  "2972": {
+   "id": 2972,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07294|2026-01-24|57.21",
    "subject": "Non-convertible debenture programme (INE530B07294)",
@@ -7527,7 +7491,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7578,8 +7542,8 @@
     }
    ]
   },
-  "726": {
-   "id": 726,
+  "2973": {
+   "id": 2973,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B07286|2026-01-24|24.13",
    "subject": "Non-convertible debenture programme (INE530B07286)",
@@ -7589,7 +7553,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7640,8 +7604,8 @@
     }
    ]
   },
-  "728": {
-   "id": 728,
+  "2975": {
+   "id": 2975,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE866I08246|2027-11-19|100.00",
    "subject": "Subordinated debt programme (INE866I08246)",
@@ -7651,7 +7615,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7702,8 +7666,8 @@
     }
    ]
   },
-  "729": {
-   "id": 729,
+  "2976": {
+   "id": 2976,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08144|2032-12-27|35.00",
    "subject": "Subordinated debt programme (INE530B08144)",
@@ -7713,7 +7677,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7764,8 +7728,8 @@
     }
    ]
   },
-  "730": {
-   "id": 730,
+  "2977": {
+   "id": 2977,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B08144|2032-12-27|30.00",
    "subject": "Subordinated debt programme (INE530B08144)",
@@ -7775,7 +7739,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7826,8 +7790,8 @@
     }
    ]
   },
-  "733": {
-   "id": 733,
+  "2980": {
+   "id": 2980,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14CZ2|2026-03-03|100.00",
    "subject": "Commercial paper (INE530B14CZ2)",
@@ -7837,7 +7801,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7870,8 +7834,8 @@
     }
    ]
   },
-  "734": {
-   "id": 734,
+  "2981": {
+   "id": 2981,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14DO4|2026-02-27|50.00",
    "subject": "Commercial paper (INE530B14DO4)",
@@ -7881,7 +7845,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7914,8 +7878,8 @@
     }
    ]
   },
-  "735": {
-   "id": 735,
+  "2982": {
+   "id": 2982,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EB9|2026-02-23|250.00",
    "subject": "Commercial paper (INE530B14EB9)",
@@ -7925,7 +7889,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -7958,8 +7922,8 @@
     }
    ]
   },
-  "736": {
-   "id": 736,
+  "2983": {
+   "id": 2983,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EE3|2026-02-25|100.00",
    "subject": "Commercial paper (INE530B14EE3)",
@@ -7969,7 +7933,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8002,8 +7966,8 @@
     }
    ]
   },
-  "737": {
-   "id": 737,
+  "2984": {
+   "id": 2984,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EG8|2026-06-03|25.00",
    "subject": "Commercial paper (INE530B14EG8)",
@@ -8013,7 +7977,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8046,8 +8010,8 @@
     }
    ]
   },
-  "738": {
-   "id": 738,
+  "2985": {
+   "id": 2985,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EG8|2026-06-03|5.00",
    "subject": "Commercial paper (INE530B14EG8)",
@@ -8057,7 +8021,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8090,8 +8054,8 @@
     }
    ]
   },
-  "739": {
-   "id": 739,
+  "2986": {
+   "id": 2986,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14DL0|2026-02-26|250.00",
    "subject": "Commercial paper (INE530B14DL0)",
@@ -8101,7 +8065,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8134,8 +8098,8 @@
     }
    ]
   },
-  "740": {
-   "id": 740,
+  "2987": {
+   "id": 2987,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EZ8|2026-03-05|52.10",
    "subject": "Commercial paper (INE530B14EZ8)",
@@ -8145,7 +8109,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8178,8 +8142,8 @@
     }
    ]
   },
-  "741": {
-   "id": 741,
+  "2988": {
+   "id": 2988,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EZ8|2026-03-05|52.10",
    "subject": "Commercial paper (INE530B14EZ8)",
@@ -8189,7 +8153,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8222,8 +8186,8 @@
     }
    ]
   },
-  "742": {
-   "id": 742,
+  "2989": {
+   "id": 2989,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FG5|2026-03-25|25.00",
    "subject": "Commercial paper (INE530B14FG5)",
@@ -8233,7 +8197,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8266,8 +8230,8 @@
     }
    ]
   },
-  "743": {
-   "id": 743,
+  "2990": {
+   "id": 2990,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FJ9|2026-04-21|130.00",
    "subject": "Commercial paper (INE530B14FJ9)",
@@ -8277,7 +8241,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8310,8 +8274,8 @@
     }
    ]
   },
-  "744": {
-   "id": 744,
+  "2991": {
+   "id": 2991,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FN1|2026-02-09|100.00",
    "subject": "Commercial paper (INE530B14FN1)",
@@ -8321,7 +8285,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8354,8 +8318,8 @@
     }
    ]
   },
-  "745": {
-   "id": 745,
+  "2992": {
+   "id": 2992,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FT8|2026-02-24|100.00",
    "subject": "Commercial paper (INE530B14FT8)",
@@ -8365,7 +8329,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8398,8 +8362,8 @@
     }
    ]
   },
-  "746": {
-   "id": 746,
+  "2993": {
+   "id": 2993,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14DL0|2026-02-26|100.00",
    "subject": "Commercial paper (INE530B14DL0)",
@@ -8409,7 +8373,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8442,8 +8406,8 @@
     }
    ]
   },
-  "747": {
-   "id": 747,
+  "2994": {
+   "id": 2994,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FS0|2026-03-11|100.00",
    "subject": "Commercial paper (INE530B14FS0)",
@@ -8453,7 +8417,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8486,8 +8450,8 @@
     }
    ]
   },
-  "748": {
-   "id": 748,
+  "2995": {
+   "id": 2995,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FM3|2026-03-27|100.00",
    "subject": "Commercial paper (INE530B14FM3)",
@@ -8497,7 +8461,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8530,8 +8494,8 @@
     }
    ]
   },
-  "749": {
-   "id": 749,
+  "2996": {
+   "id": 2996,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FK7|2026-03-30|100.00",
    "subject": "Commercial paper (INE530B14FK7)",
@@ -8541,7 +8505,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8574,8 +8538,8 @@
     }
    ]
   },
-  "750": {
-   "id": 750,
+  "2997": {
+   "id": 2997,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FR2|2026-02-06|150.00",
    "subject": "Commercial paper (INE530B14FR2)",
@@ -8585,7 +8549,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8618,8 +8582,8 @@
     }
    ]
   },
-  "751": {
-   "id": 751,
+  "2998": {
+   "id": 2998,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FY8|2026-02-10|400.00",
    "subject": "Commercial paper (INE530B14FY8)",
@@ -8629,7 +8593,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8662,8 +8626,8 @@
     }
    ]
   },
-  "752": {
-   "id": 752,
+  "2999": {
+   "id": 2999,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FV4|2026-09-09|214.15",
    "subject": "Commercial paper (INE530B14FV4)",
@@ -8673,7 +8637,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8706,8 +8670,8 @@
     }
    ]
   },
-  "753": {
-   "id": 753,
+  "3000": {
+   "id": 3000,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FV4|2026-09-09|10.00",
    "subject": "Commercial paper (INE530B14FV4)",
@@ -8717,7 +8681,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8750,8 +8714,8 @@
     }
    ]
   },
-  "754": {
-   "id": 754,
+  "3001": {
+   "id": 3001,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FN1|2026-02-09|10.00",
    "subject": "Commercial paper (INE530B14FN1)",
@@ -8761,7 +8725,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8794,8 +8758,8 @@
     }
    ]
   },
-  "755": {
-   "id": 755,
+  "3002": {
+   "id": 3002,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FR2|2026-02-06|150.00",
    "subject": "Commercial paper (INE530B14FR2)",
@@ -8805,7 +8769,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8838,8 +8802,8 @@
     }
    ]
   },
-  "756": {
-   "id": 756,
+  "3003": {
+   "id": 3003,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FT8|2026-02-24|5.00",
    "subject": "Commercial paper (INE530B14FT8)",
@@ -8849,7 +8813,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8882,8 +8846,8 @@
     }
    ]
   },
-  "757": {
-   "id": 757,
+  "3004": {
+   "id": 3004,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14DO4|2026-02-27|25.00",
    "subject": "Commercial paper (INE530B14DO4)",
@@ -8893,7 +8857,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8926,8 +8890,8 @@
     }
    ]
   },
-  "758": {
-   "id": 758,
+  "3005": {
+   "id": 3005,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GA6|2026-02-20|50.00",
    "subject": "Commercial paper (INE530B14GA6)",
@@ -8937,7 +8901,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -8970,8 +8934,8 @@
     }
    ]
   },
-  "759": {
-   "id": 759,
+  "3006": {
+   "id": 3006,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GA6|2026-02-20|20.00",
    "subject": "Commercial paper (INE530B14GA6)",
@@ -8981,7 +8945,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9014,8 +8978,8 @@
     }
    ]
   },
-  "760": {
-   "id": 760,
+  "3007": {
+   "id": 3007,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GA6|2026-02-20|30.00",
    "subject": "Commercial paper (INE530B14GA6)",
@@ -9025,7 +8989,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9058,8 +9022,8 @@
     }
    ]
   },
-  "761": {
-   "id": 761,
+  "3008": {
+   "id": 3008,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FT8|2026-02-24|5.00",
    "subject": "Commercial paper (INE530B14FT8)",
@@ -9069,7 +9033,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9102,8 +9066,8 @@
     }
    ]
   },
-  "762": {
-   "id": 762,
+  "3009": {
+   "id": 3009,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GC2|2026-11-25|5.40",
    "subject": "Commercial paper (INE530B14GC2)",
@@ -9113,7 +9077,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9146,8 +9110,8 @@
     }
    ]
   },
-  "763": {
-   "id": 763,
+  "3010": {
+   "id": 3010,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GB4|2026-05-26|25.00",
    "subject": "Commercial paper (INE530B14GB4)",
@@ -9157,7 +9121,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9190,8 +9154,8 @@
     }
    ]
   },
-  "764": {
-   "id": 764,
+  "3011": {
+   "id": 3011,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14DL0|2026-02-26|150.00",
    "subject": "Commercial paper (INE530B14DL0)",
@@ -9201,7 +9165,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9234,8 +9198,8 @@
     }
    ]
   },
-  "765": {
-   "id": 765,
+  "3012": {
+   "id": 3012,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GD0|2026-06-04|25.00",
    "subject": "Commercial paper (INE530B14GD0)",
@@ -9245,7 +9209,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9278,8 +9242,8 @@
     }
    ]
   },
-  "766": {
-   "id": 766,
+  "3013": {
+   "id": 3013,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14GF5|2026-03-10|525.00",
    "subject": "Commercial paper (INE530B14GF5)",
@@ -9289,7 +9253,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9322,8 +9286,8 @@
     }
    ]
   },
-  "767": {
-   "id": 767,
+  "3014": {
+   "id": 3014,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EZ8|2026-03-05|300.00",
    "subject": "Commercial paper (INE530B14EZ8)",
@@ -9333,7 +9297,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9366,8 +9330,8 @@
     }
    ]
   },
-  "768": {
-   "id": 768,
+  "3015": {
+   "id": 3015,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EZ8|2026-03-05|150.00",
    "subject": "Commercial paper (INE530B14EZ8)",
@@ -9377,7 +9341,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9410,8 +9374,8 @@
     }
    ]
   },
-  "769": {
-   "id": 769,
+  "3016": {
+   "id": 3016,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FS0|2026-03-11|5.00",
    "subject": "Commercial paper (INE530B14FS0)",
@@ -9421,7 +9385,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9454,8 +9418,8 @@
     }
    ]
   },
-  "770": {
-   "id": 770,
+  "3017": {
+   "id": 3017,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FS0|2026-03-11|25.00",
    "subject": "Commercial paper (INE530B14FS0)",
@@ -9465,7 +9429,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9498,8 +9462,8 @@
     }
    ]
   },
-  "771": {
-   "id": 771,
+  "3018": {
+   "id": 3018,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14FS0|2026-03-11|10.00",
    "subject": "Commercial paper (INE530B14FS0)",
@@ -9509,7 +9473,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9542,8 +9506,8 @@
     }
    ]
   },
-  "772": {
-   "id": 772,
+  "3019": {
+   "id": 3019,
    "claim_type": "debt_instrument",
    "fact_key": "instrument|INE530B14EZ8|2026-03-05|100.00",
    "subject": "Commercial paper (INE530B14EZ8)",
@@ -9553,7 +9517,7 @@
    "basis": "unknown",
    "as_of_date": "2026-02-11",
    "extractor": "icra_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 4,
    "title": "ICRA: Ratings reaffirmed",
    "source_name": "ICRA",
@@ -9586,8 +9550,8 @@
     }
    ]
   },
-  "776": {
-   "id": 776,
+  "3023": {
+   "id": 3023,
    "claim_type": "rating",
    "fact_key": "rating_instrument|CARE|long term bank facilities|400.00|2024Q1",
    "subject": "Long Term Bank Facilities \u2014 CARE rating",
@@ -9597,7 +9561,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "care_press_release",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 5,
    "title": "CARE Ratings press release (Revised)",
    "source_name": "CARE",
@@ -9690,8 +9654,8 @@
     }
    ]
   },
-  "778": {
-   "id": 778,
+  "3025": {
+   "id": 3025,
    "claim_type": "rating",
    "fact_key": "rating_instrument|CARE|long term long term instruments|100.00|2024Q1",
    "subject": "Long Term Long Term Instruments \u2014 CARE rating",
@@ -9701,7 +9665,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "care_press_release",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 5,
    "title": "CARE Ratings press release (Revised)",
    "source_name": "CARE",
@@ -9800,8 +9764,8 @@
     }
    ]
   },
-  "780": {
-   "id": 780,
+  "3027": {
+   "id": 3027,
    "claim_type": "rating",
    "fact_key": "rating_instrument|CARE|non convertible debentures|537.50|2024Q1",
    "subject": "Non Convertible Debentures \u2014 CARE rating",
@@ -9811,7 +9775,7 @@
    "basis": "unknown",
    "as_of_date": "2024-03-12",
    "extractor": "care_press_release",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 5,
    "title": "CARE Ratings press release (Revised)",
    "source_name": "CARE",
@@ -9904,8 +9868,8 @@
     }
    ]
   },
-  "786": {
-   "id": 786,
+  "3033": {
+   "id": 3033,
    "claim_type": "rating",
    "fact_key": "rating_instrument|Brickwork|ncds public issue|975.82|2025Q3",
    "subject": "NCDs Public Issue \u2014 Brickwork rating",
@@ -9915,7 +9879,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-15",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -9996,8 +9960,8 @@
     }
    ]
   },
-  "788": {
-   "id": 788,
+  "3035": {
+   "id": 3035,
    "claim_type": "rating",
    "fact_key": "rating_instrument|Brickwork|ncds|46.22|2025Q3",
    "subject": "NCDs \u2014 Brickwork rating",
@@ -10007,7 +9971,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-15",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10088,8 +10052,8 @@
     }
    ]
   },
-  "790": {
-   "id": 790,
+  "3037": {
+   "id": 3037,
    "claim_type": "rating",
    "fact_key": "rating_instrument|Brickwork|proposed perpetual debt instrument (pdi)|500.00|2025Q3",
    "subject": "Proposed Perpetual Debt Instrument (PDI) \u2014 Brickwork rating",
@@ -10099,7 +10063,7 @@
    "basis": "unknown",
    "as_of_date": "2025-09-15",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10198,8 +10162,8 @@
     }
    ]
   },
-  "796": {
-   "id": 796,
+  "3043": {
+   "id": 3043,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2023-03-31",
    "subject": "Total debt (consolidated, FY23)",
@@ -10209,7 +10173,7 @@
    "basis": "consolidated",
    "as_of_date": "2023-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10263,8 +10227,8 @@
     }
    ]
   },
-  "797": {
-   "id": 797,
+  "3044": {
+   "id": 3044,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2024-03-31",
    "subject": "Total debt (consolidated, FY24)",
@@ -10274,7 +10238,7 @@
    "basis": "consolidated",
    "as_of_date": "2024-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10328,8 +10292,8 @@
     }
    ]
   },
-  "798": {
-   "id": 798,
+  "3045": {
+   "id": 3045,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2025-03-31",
    "subject": "Total debt (consolidated, FY25)",
@@ -10339,7 +10303,7 @@
    "basis": "consolidated",
    "as_of_date": "2025-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10393,8 +10357,8 @@
     }
    ]
   },
-  "799": {
-   "id": 799,
+  "3046": {
+   "id": 3046,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2025-06-30",
    "subject": "Total debt (consolidated, Q1FY26)",
@@ -10404,7 +10368,7 @@
    "basis": "consolidated",
    "as_of_date": "2025-06-30",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10458,8 +10422,8 @@
     }
    ]
   },
-  "802": {
-   "id": 802,
+  "3049": {
+   "id": 3049,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2023-03-31",
    "subject": "Total debt (standalone, FY23)",
@@ -10469,7 +10433,7 @@
    "basis": "standalone",
    "as_of_date": "2023-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10523,8 +10487,8 @@
     }
    ]
   },
-  "803": {
-   "id": 803,
+  "3050": {
+   "id": 3050,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2024-03-31",
    "subject": "Total debt (standalone, FY24)",
@@ -10534,7 +10498,7 @@
    "basis": "standalone",
    "as_of_date": "2024-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10588,8 +10552,8 @@
     }
    ]
   },
-  "804": {
-   "id": 804,
+  "3051": {
+   "id": 3051,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2025-03-31",
    "subject": "Total debt (standalone, FY25)",
@@ -10599,7 +10563,7 @@
    "basis": "standalone",
    "as_of_date": "2025-03-31",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10653,8 +10617,8 @@
     }
    ]
   },
-  "805": {
-   "id": 805,
+  "3052": {
+   "id": 3052,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2025-06-30",
    "subject": "Total debt (standalone, Q1FY26)",
@@ -10664,7 +10628,7 @@
    "basis": "standalone",
    "as_of_date": "2025-06-30",
    "extractor": "bwr_rationale",
-   "extractor_version": "2.0.0",
+   "extractor_version": "2.1.0",
    "document_id": 6,
    "title": "Brickwork Ratings rationale",
    "source_name": "Brickwork",
@@ -10718,8 +10682,8 @@
     }
    ]
   },
-  "2101": {
-   "id": 2101,
+  "3149": {
+   "id": 3149,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2025-03-31",
    "subject": "Total borrowings (standalone, as at 2025-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -10825,8 +10789,8 @@
     }
    ]
   },
-  "2105": {
-   "id": 2105,
+  "3153": {
+   "id": 3153,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|standalone|2024-03-31",
    "subject": "Total borrowings (standalone, as at 2024-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -10932,8 +10896,8 @@
     }
    ]
   },
-  "2109": {
-   "id": 2109,
+  "3157": {
+   "id": 3157,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2025-03-31",
    "subject": "Total borrowings (consolidated, as at 2025-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",
@@ -11039,8 +11003,8 @@
     }
    ]
   },
-  "2113": {
-   "id": 2113,
+  "3161": {
+   "id": 3161,
    "claim_type": "total_borrowings",
    "fact_key": "total_borrowings|consolidated|2024-03-31",
    "subject": "Total borrowings (consolidated, as at 2024-03-31) = debt securities + borrowings (other than debt securities) + subordinated liabilities",

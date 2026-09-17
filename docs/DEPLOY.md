@@ -45,10 +45,17 @@ psql -d issuergraph -f sql/006_pilot_requests.sql
 
 ## Behind a proxy
 
-Run uvicorn with `--proxy-headers --forwarded-allow-ips='*'` so the rate limiter
-sees the real client address. It hashes that address with
-`ISSUERGRAPH_RATE_SALT` and stores only the hash; set the salt to any random
-string in production so hashes are not comparable across deployments.
+Set `ISSUERGRAPH_TRUSTED_PROXY_HOPS` to the number of proxies you control in
+front of the process (1 behind App Runner or a single load balancer). The rate
+limiter then takes the caller's address from that position counting from the
+*right* of `X-Forwarded-For` — the value your proxy appended — and ignores
+anything the caller put in the header itself. Leave it at 0 when nothing is in
+front, and do not run uvicorn with `--forwarded-allow-ips='*'`: that trusts the
+leftmost value, which is whatever the caller sent.
+
+The address is hashed with `ISSUERGRAPH_RATE_SALT` and only the hash is stored;
+set the salt to any random string in production so hashes are not comparable
+across deployments.
 
 Terminate TLS at the proxy. Nothing in the app requires sticky sessions,
 websockets or background workers, so any number of processes can run behind a

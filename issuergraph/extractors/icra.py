@@ -10,12 +10,13 @@ from __future__ import annotations
 import re
 
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
+from .coverage import Coverage, rating_rationale_coverage
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook,
                      parse_short_date, parse_watch, quarter_key, rating_identity)
 
 EXTRACTOR = "icra_rationale"
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 AGENCY = "ICRA"
 SUMMARY_HEADS = ("Summary of rating action", "Summary of rating(s) outstanding")
@@ -166,6 +167,33 @@ def _bullets(page_no: int, text: str, heading: str, stop: tuple[str, ...]):
         if len(head.split()) < 3:
             continue
         yield head, (start + m.start("head"), start + m.end("head"))
+
+
+# A material-event release (a watch placement after an RBI order, say) carries
+# the summary table and a short rationale and refers the reader elsewhere for
+# the rest: "liquidity position and rating sensitivities: Click here". Those
+# sections are not missing from it; they were never in it.
+MATERIAL_EVENT_MARKERS = ("Material event", "rating sensitivities: Click here")
+
+
+def is_material_event_release(pages: list[dict]) -> bool:
+    text = "\n".join(p["text"] for p in pages[:3])
+    return all(marker in text for marker in MATERIAL_EVENT_MARKERS)
+
+
+def check_coverage(doc_meta, pages: list[dict], claims) -> Coverage:
+    """A full ICRA rationale carries the summary table, the liquidity position,
+    both sensitivity directions and the strengths/challenges bullets. Each is
+    required on its own. A material-event release declares itself to hold only
+    the table, so only the table is required of it."""
+    if is_material_event_release(pages):
+        return rating_rationale_coverage(AGENCY, claims, (), liquidity=False)
+    return rating_rationale_coverage(AGENCY, claims, (
+        (f"rating_sensitivity|{AGENCY}|positive", "positive rating sensitivities"),
+        (f"rating_sensitivity|{AGENCY}|negative", "negative rating sensitivities"),
+        (f"rationale|{AGENCY}|strengths|", "credit strengths"),
+        (f"rationale|{AGENCY}|weaknesses|", "credit challenges"),
+    ))
 
 
 def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:

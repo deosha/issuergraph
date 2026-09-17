@@ -13,7 +13,10 @@ Parameters:
     Default: https://cal.com/deo-shankar-yjzpnf/issuergraph-pilot
   FounderBio:
     Type: String
-    Default: More than 14 years in fintech, building large-scale systems at Fortune 500 companies. MS from IIT Indore and IIM Indore.
+    Default: Deo Shankar is the founder of IssuerGraph. He brings over 14 years of experience in cloud architecture and enterprise engineering, including work across banking and financial services. He is building IssuerGraph to help credit-research teams review issuer debt and rating changes, compare information across documents, and trace findings back to their original sources.
+  FounderLinkedin:
+    Type: String
+    Default: ""
   DbInstanceClass:
     Type: String
     Default: db.t4g.micro
@@ -198,6 +201,8 @@ Resources:
                 Value: Founder
               - Name: ISSUERGRAPH_FOUNDER_BIO
                 Value: !Ref FounderBio
+              - Name: ISSUERGRAPH_FOUNDER_LINKEDIN
+                Value: !Ref FounderLinkedin
               - Name: ISSUERGRAPH_BOOKING_URL
                 Value: !Ref BookingUrl
               - Name: ISSUERGRAPH_PILOT_LENGTH
@@ -206,6 +211,8 @@ Resources:
                 Value: "5"
               - Name: ISSUERGRAPH_PILOT_RATE_WINDOW
                 Value: "3600"
+              - Name: ISSUERGRAPH_TRUSTED_PROXY_HOPS
+                Value: "1"
               - Name: POSTHOG_HOST
                 Value: https://eu.i.posthog.com
             RuntimeEnvironmentSecrets:

@@ -103,25 +103,33 @@ def _comparable_keys(conn, issuer_id: int, column: str) -> tuple[list[str], list
 
 
 def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
-            spread_pct: Decimal | None, note: str, rows: list[dict]) -> int | None:
-    """Upsert a conflict. Returns None when the rows do not span two sources."""
+            spread_pct: Decimal | None, note: str, rows: list[dict],
+            ended_on=None) -> int | None:
+    """Upsert a conflict. Returns None when the rows do not span two sources.
+
+    `ended_on` is the date the sources say the disagreement stopped — the end
+    of a rating window — as distinct from resolved_at, which is the pipeline
+    no longer detecting it. A historical interval is re-detected on every run,
+    so without this column it would read as open forever.
+    """
     if len({r["source_name"] for r in rows}) < 2:
         return None
 
     row = conn.execute(
         """
         INSERT INTO conflict (issuer_id, fact_key, subject, kind, tolerance_pct,
-                              spread_pct, note)
-        VALUES (%s,%s,%s,%s,%s,%s,%s)
+                              spread_pct, note, ended_on)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (issuer_id, fact_key, kind)
         DO UPDATE SET subject      = EXCLUDED.subject,
                       spread_pct   = EXCLUDED.spread_pct,
                       note         = EXCLUDED.note,
+                      ended_on     = EXCLUDED.ended_on,
                       last_seen_at = now(),
                       resolved_at  = NULL      -- it came back; it is open again
         RETURNING id
         """,
-        (issuer_id, fact_key, subject, kind, TOLERANCE_PCT, spread_pct, note),
+        (issuer_id, fact_key, subject, kind, TOLERANCE_PCT, spread_pct, note, ended_on),
     ).fetchone()
 
     # Claim ids are rewritten whenever a document is re-extracted, so membership
@@ -269,7 +277,8 @@ def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
                 conn, issuer_id,
                 f"{prefix}|{instrument_class}|{term}|{pair}|{run['start'].isoformat()}",
                 subject, "categorical_disagreement", None,
-                f"{note} — both in force {_window_text(run['start'], run['end'])}", rows)
+                f"{note} — both in force {_window_text(run['start'], run['end'])}", rows,
+                ended_on=run["end"])
             if conflict_id:
                 found += 1
                 seen.append(conflict_id)

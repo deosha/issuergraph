@@ -28,6 +28,7 @@ psql -d issuergraph -f sql/003_extraction_coverage.sql
 psql -d issuergraph -f sql/004_extraction_runs.sql
 psql -d issuergraph -f sql/005_rating_states.sql
 psql -d issuergraph -f sql/006_pilot_requests.sql
+psql -d issuergraph -f sql/007_withdrawn_and_ended.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -156,8 +157,8 @@ difference does not mint a new conflict.
 
 ```
 sql/schema.sql              nine tables
-sql/002..006_*.sql          conflict history; coverage; reprocessing;
-                            rating states; pilot requests
+sql/002..007_*.sql          conflict history; coverage; reprocessing;
+                            rating states; pilot requests; withdrawals + ended
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -204,9 +205,11 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   offset assertions fail loudly only when a pattern *matches* and the text has
   moved. A pattern that stops matching raises nothing, so it is caught instead by
   coverage — each document declares what it must yield and is stored
-  `extraction_incomplete`, with reasons, when it does not. Only the annual-report
-  extractor declares real requirements so far; the other three fall back to
-  "produced at least one claim", which proves very little.
+  `extraction_incomplete`, with reasons, when it does not. Every extractor now
+  declares per-section requirements (the rating table, liquidity, sensitivities
+  and rationale bullets for the agencies; an ICRA material-event release
+  declares only the table), and a change-feed entry whose absent side comes
+  from an incomplete report is marked `unconfirmed`.
 - An extractor fix reaches already-ingested documents: the pipeline compares
   each document's stored `extractor_version` against the version shipped and
   re-extracts on a mismatch (`--reprocess` forces it). Claims are replaced, not
@@ -214,15 +217,15 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   erase, and conflicts keep `first_detected_at` because they are upserted on
   the fact key rather than rebuilt from claim ids.
 - Only ICRA has ≥2 reports here, so only ICRA produces diffs.
-- A rating is treated as in force until the same agency acts again, with no
-  staleness horizon. CARE last acted in March 2024, so its AA still counts as
+- A rating is treated as in force until the same agency acts again or withdraws
+  it on that tranche, with no staleness horizon. CARE last acted in March 2024, so its AA still counts as
   concurrent with Brickwork's September 2025 AA+ and is reported as an open
   conflict. That is faithful to what the documents say and probably not what an
   analyst wants after two years; a maximum age per agency is the missing piece.
 - ICRA's Feb 2026 rationale carries no market-linked-debenture rating, so the
-  change feed reports one removed. Whether the ratings were withdrawn or merely
-  not parsed cannot be settled here: only the annual-report extractor declares
-  coverage, and until ICRA's does, that distinction stays open.
+  change feed reports one removed — confirmed, because that report met its
+  coverage declaration, and consistent with the Sept 2025 rows being
+  "reaffirmed and withdrawn".
 - Rationale bullets are diffed on their headline text, so a reworded strength
   reads as one removal plus one addition.
 - Both numeric tolerances (0.10% and ₹5 crore) are single declared constants

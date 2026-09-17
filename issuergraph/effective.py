@@ -25,8 +25,24 @@ from __future__ import annotations
 from datetime import date
 
 
+def is_withdrawal(action: str | None) -> bool:
+    """Does this action end the rating on the tranche it names?
+
+    Agencies write "reaffirmed and withdrawn": the rating was affirmed as the
+    last word on that tranche and then withdrawn, typically because the paper
+    was repaid. The tranche has no rating after the action date.
+    """
+    return bool(action) and "withdrawn" in action.casefold()
+
+
 def _states(rows: list[dict]) -> list[dict]:
-    """Close each state where the same agency next acts on the same class."""
+    """Close each state where the same agency next acts on the same class.
+
+    A withdrawal closes its own state on the action date instead. It applies to
+    the tranche the row names, not to the whole class: an agency withdrawing
+    one repaid NCD tranche while reaffirming the others leaves the class rated,
+    so the other rows of the same action keep their open-ended state.
+    """
     timelines: dict[tuple[str, str, str], list[dict]] = {}
     for row in rows:
         key = (row["agency"], row["instrument_class"], row["term"])
@@ -41,9 +57,12 @@ def _states(rows: list[dict]) -> list[dict]:
         next_date = {d: dates[i + 1] if i + 1 < len(dates) else None
                      for i, d in enumerate(dates)}
         for row in timeline:
+            withdrawn = is_withdrawal(row.get("action"))
             states.append({**row,
                            "effective_from": row["action_date"],
-                           "effective_to": next_date[row["action_date"]]})
+                           "effective_to": (row["action_date"] if withdrawn
+                                            else next_date[row["action_date"]]),
+                           "withdrawn": withdrawn})
     return states
 
 
@@ -67,7 +86,7 @@ def build_rating_states(conn, issuer_id: int) -> int:
     rows = conn.execute(
         """
         SELECT r.claim_id, r.agency, r.instrument, r.instrument_class, r.term,
-               r.rating AS grade, r.outlook, r.watch, r.action_date
+               r.rating AS grade, r.outlook, r.watch, r.action, r.action_date
         FROM rating_action r
         JOIN claim c ON c.id = r.claim_id
         WHERE c.issuer_id = %s AND r.action_date IS NOT NULL
@@ -83,12 +102,13 @@ def build_rating_states(conn, issuer_id: int) -> int:
             """
             INSERT INTO rating_state (issuer_id, claim_id, agency, instrument_class,
                                       term, instrument, grade, outlook, watch,
-                                      effective_from, effective_to)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                      effective_from, effective_to, withdrawn)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             """,
             (issuer_id, state["claim_id"], state["agency"], state["instrument_class"],
              state["term"], state["instrument"], state["grade"], state["outlook"],
-             state["watch"], state["effective_from"], state["effective_to"]),
+             state["watch"], state["effective_from"], state["effective_to"],
+             state["withdrawn"]),
         )
     return len(states)
 

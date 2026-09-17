@@ -156,7 +156,7 @@ def rating_timeline(issuer_id: int | None = None):
     return query(
         """
         SELECT instrument_class, term, agency, instrument, grade, outlook, watch,
-               effective_from, effective_to, claim_id,
+               effective_from, effective_to, claim_id, withdrawn,
                effective_to IS NULL AS current
         FROM rating_state
         WHERE issuer_id = %s
@@ -175,16 +175,23 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
     history is only useful if the two states are told apart: an open conflict is
     something to act on, a resolved one is something that happened. Returning
     both undifferentiated made every historical conflict read as current, so
-    `status` is explicit and resolved rows are excluded unless asked for.
+    `status` is explicit and non-open rows are excluded unless asked for.
+
+    Three states, because two were not enough: `ended` is a disagreement the
+    sources themselves closed (both agencies were on watch until one moved to
+    an outlook), which the pipeline will keep re-detecting as a historical
+    interval on every run. It is neither current nor "no longer detected".
     """
     rows = query(
         """
         SELECT id, fact_key, subject, kind, tolerance_pct, spread_pct, note,
-               first_detected_at, last_seen_at, resolved_at,
-               CASE WHEN resolved_at IS NULL THEN 'open' ELSE 'resolved' END AS status
+               first_detected_at, last_seen_at, resolved_at, ended_on,
+               CASE WHEN resolved_at IS NOT NULL THEN 'resolved'
+                    WHEN ended_on IS NOT NULL THEN 'ended'
+                    ELSE 'open' END AS status
         FROM conflict
-        WHERE issuer_id = %s AND (resolved_at IS NULL OR %s)
-        ORDER BY resolved_at NULLS FIRST, kind, fact_key
+        WHERE issuer_id = %s AND ((resolved_at IS NULL AND ended_on IS NULL) OR %s)
+        ORDER BY resolved_at NULLS FIRST, ended_on NULLS FIRST, kind, fact_key
         """,
         (resolve_issuer(issuer_id), include_resolved),
     )
@@ -244,7 +251,7 @@ def corroborations(issuer_id: int | None = None):
 def changes(issuer_id: int | None = None):
     return query(
         """
-        SELECT id, agency, from_date, to_date, section, direction,
+        SELECT id, agency, from_date, to_date, section, direction, certainty,
                from_claim_id, to_claim_id, from_text, to_text
         FROM rationale_diff
         WHERE issuer_id = %s

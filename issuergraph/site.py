@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import demo as demo_snapshot
 from . import pilot as pilot_module
-from .settings import demo_only, site_config
+from .settings import demo_only, site_config, trusted_proxy_hops
 
 STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
 
@@ -40,17 +40,58 @@ def _page(name: str) -> FileResponse:
 
 
 def client_ip(request: Request) -> str | None:
-    """The caller's address, honouring one proxy hop.
+    """The caller's address, as established by the proxies we actually trust.
 
     Used only to derive a salted hash for rate limiting; it is never stored.
+
+    Reading the first X-Forwarded-For value trusted whoever wrote it: a caller
+    could send a fresh header per request and never be throttled, and could
+    still do so through a proxy that appends rather than replaces. Each trusted
+    proxy appends exactly one address, so with N trusted hops in front the
+    caller is the Nth value from the right — everything to its left is
+    whatever the caller chose to say. With no trusted hops the peer address is
+    the caller and the header is ignored entirely.
     """
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else None
+    hops = trusted_proxy_hops()
+    peer = request.client.host if request.client else None
+    if hops == 0:
+        return peer
+    chain = [v.strip() for v in request.headers.get("x-forwarded-for", "").split(",")
+             if v.strip()]
+    if len(chain) < hops:
+        # Fewer hops than configured means the request did not come through
+        # the proxies we trust; the peer is the best available identity.
+        return peer
+    return chain[-hops]
+
+
+# Everything a demo-only deployment answers under /api. Anything else there is
+# the live database API and is refused, whatever the database holds.
+PUBLIC_API = ("/api/config", "/api/demo/", "/api/pilot")
+
+
+def public_path(path: str) -> bool:
+    """Is this path served when the live product is switched off?"""
+    if not path.startswith("/api/"):
+        return True
+    return any(path == p or path.startswith(p) for p in PUBLIC_API)
 
 
 def register(app) -> None:
+    # --- demo-only gate -----------------------------------------------------
+
+    @app.middleware("http")
+    async def gate_live_api(request: Request, call_next):
+        # Hiding /app was not enough: the JSON routes behind it stayed
+        # reachable, so a public host pointed at a workspace database would have
+        # served its contents to anyone who guessed the URL. The gate is by
+        # path prefix, so a live route added later is closed by default.
+        if demo_only() and not public_path(request.url.path):
+            return JSONResponse(
+                {"detail": "the live API is not served by this deployment; see /demo"},
+                status_code=404)
+        return await call_next(request)
+
     # --- pages --------------------------------------------------------------
 
     @app.get("/", include_in_schema=False)

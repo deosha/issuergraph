@@ -9,12 +9,13 @@ import re
 from datetime import date
 
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
+from .coverage import Coverage, rating_rationale_coverage
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook, parse_watch,
                      quarter_key, rating_identity)
 
 EXTRACTOR = "bwr_rationale"
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 AGENCY = "Brickwork"
 
 TENURE_CELL = re.compile(r"^(Long Term|Short Term)$")
@@ -132,6 +133,17 @@ def _particulars_rows(text: str):
         else:
             label_lines, amounts = [(line, ls, le)], []
         i += 1
+
+
+def check_coverage(doc_meta, pages: list[dict], claims) -> Coverage:
+    """A Brickwork rationale carries the particulars table, the liquidity
+    paragraph, the strengths/risks bullets and the financials table from
+    which Total Debt is read."""
+    return rating_rationale_coverage(AGENCY, claims, (
+        (f"rationale|{AGENCY}|strengths|", "credit strengths"),
+        (f"rationale|{AGENCY}|weaknesses|", "credit risks"),
+        ("total_borrowings|", "Total Debt row in the financials table"),
+    ))
 
 
 def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:

@@ -78,6 +78,32 @@ def default_coverage(claims) -> Coverage:
     return cov
 
 
+def rating_rationale_coverage(agency: str, claims,
+                              sections: tuple[tuple[str, str], ...],
+                              liquidity: bool = True) -> Coverage:
+    """What every rating rationale must yield, section by section.
+
+    "Produced something" let a rationale whose rating table had stopped parsing
+    pass as complete on the strength of its bullet points — 87 claims, zero
+    ratings, status complete. Each essential section is therefore its own
+    requirement, so the report of a shortfall names the section that failed.
+
+    `sections` are (fact_key prefix, human name) pairs beyond the rating table
+    and liquidity assessment that this agency's layout always carries.
+    """
+    cov = Coverage()
+    keys = [c.fact_key for c in claims]
+    cov.require(any(c.claim_type == "rating" for c in claims),
+                f"{agency}: no rating found — the summary/rating table did not parse")
+    if liquidity:
+        cov.require(any(k.startswith(f"liquidity_assessment|{agency}") for k in keys),
+                    f"{agency}: no liquidity assessment found")
+    for prefix, name in sections:
+        cov.require(any(k.startswith(prefix) for k in keys),
+                    f"{agency}: no {name} found")
+    return cov
+
+
 def check(extractor_module, doc_meta, pages, claims) -> Coverage:
     checker = getattr(extractor_module, "check_coverage", None)
     if checker is None:

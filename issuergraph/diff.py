@@ -109,7 +109,7 @@ def build_diffs(conn, issuer_id: int) -> int:
     for agency in agencies:
         docs = conn.execute(
             """
-            SELECT id, published_date FROM document
+            SELECT id, published_date, extraction_status FROM document
             WHERE issuer_id = %s AND doc_type = 'rating_rationale' AND source_name = %s
             ORDER BY published_date NULLS FIRST, id
             """,
@@ -126,22 +126,33 @@ def build_diffs(conn, issuer_id: int) -> int:
                 old, new = before.get(key), after.get(key)
                 if old and new and old["value_text"] == new["value_text"]:
                     continue
+                # An absence is only a change if the report it is absent from
+                # was read in full. A report that failed its coverage
+                # declaration may simply not have been parsed there, and
+                # "dropped from the later report" is then a claim the data
+                # cannot support.
                 if old and new:
-                    direction = "changed"
+                    direction, lacking = "changed", None
                 elif new:
-                    direction = "added"
+                    direction, lacking = "added", older
                 else:
-                    direction = "removed"
+                    direction, lacking = "removed", newer
+                certainty = ("unconfirmed"
+                             if lacking is not None
+                             and lacking["extraction_status"] != "complete"
+                             else "confirmed")
 
                 conn.execute(
                     """
                     INSERT INTO rationale_diff
                         (issuer_id, agency, from_document_id, to_document_id, from_date, to_date,
-                         section, direction, from_claim_id, to_claim_id, from_text, to_text)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                         section, direction, certainty, from_claim_id, to_claim_id,
+                         from_text, to_text)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """,
                     (issuer_id, agency["source_name"], older["id"], newer["id"],
                      older["published_date"], newer["published_date"], _section(key), direction,
+                     certainty,
                      old["id"] if old else None, new["id"] if new else None,
                      old["value_text"] if old else None, new["value_text"] if new else None),
                 )

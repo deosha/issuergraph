@@ -191,7 +191,22 @@ def test_resolved_differences_are_reported_accurately():
     resolved = [c for c in overview["conflicts"] if c["status"] == "resolved"]
     assert overview["counts"]["conflicts_resolved"] == len(resolved)
     for conflict in overview["conflicts"]:
-        assert (conflict["resolved_at"] is None) == (conflict["status"] == "open")
+        expected = ("resolved" if conflict["resolved_at"] else
+                    "ended" if conflict.get("ended_on") else "open")
+        assert conflict["status"] == expected
+
+
+def test_a_difference_the_sources_ended_is_not_open():
+    """A rating window that closed on a stated date is history, not a to-do."""
+    overview = asgi.get("/api/demo/overview").json()
+    for conflict in overview["conflicts"]:
+        if conflict["status"] == "open":
+            assert conflict["ended_on"] is None
+            assert "still in force" in conflict["subject"] or \
+                conflict["kind"] == "numeric_disagreement"
+    ended = [c for c in overview["conflicts"] if c["status"] == "ended"]
+    assert ended, "the sample dataset holds two ended watch disagreements"
+    assert overview["counts"]["conflicts_ended"] == len(ended)
 
 
 def test_differences_are_not_called_errors():

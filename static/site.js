@@ -24,6 +24,12 @@ function applyConfig(cfg) {
     if (id === "contact-email") el.textContent = cfg.contact_email;
   });
 
+  // A LinkedIn profile is optional: with none configured, no link is rendered.
+  const linkedin = document.getElementById("founder-linkedin");
+  if (linkedin && cfg.founder_linkedin) {
+    linkedin.href = cfg.founder_linkedin; linkedin.hidden = false;
+  }
+
   // A booking link is optional: with none configured, the button never appears
   // rather than pointing at a placeholder.
   const booking = document.getElementById("booking-link");
@@ -104,13 +110,13 @@ function renderPreview(data) {
       </table>
     </div>
 
-    ${conflict ? `<div class="card" style="margin-top:20px;border-left:3px solid var(--warn)">
-      <h3>${escapeHtml(conflict.subject)}</h3>
-      <p class="small" style="color:var(--warn)">${escapeHtml(conflict.note)}</p>
+    ${conflict ? `<div class="card attention" style="margin-top:20px">
+      <h3><span class="pill warn">Difference · ${escapeHtml(conflict.status)}</span>
+        ${escapeHtml(conflict.subject)}</h3>
+      <p class="small attention-text">${escapeHtml(conflict.note)}</p>
       <div class="small muted">
         First detected ${day(conflict.first_detected_at)} ·
-        still present ${day(conflict.last_seen_at)} ·
-        <span class="pill warn">${escapeHtml(conflict.status)}</span>
+        still present ${day(conflict.last_seen_at)}
       </div>
       <p class="small" style="margin:12px 0 0">
         Both figures are kept with their own evidence.

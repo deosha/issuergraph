@@ -33,8 +33,8 @@
       <a href="#faq">FAQ</a>
     </nav>
     <div class="header-cta">
-      <a class="btn small" href="/demo" data-cta="demo" data-where="header">Explore sample issuer</a>
-      <a class="btn small primary" href="/pilot" data-cta="pilot" data-where="header">Request a pilot</a>
+      <a class="btn small" href="/pilot" data-cta="pilot" data-where="header">Request a pilot</a>
+      <a class="btn small primary" href="/demo" data-cta="demo" data-where="header">Explore sample issuer</a>
     </div>
   </div>
 </header>
@@ -46,10 +46,9 @@
     <p class="eyebrow">For credit-research and private-credit teams</p>
     <h1>Issuer debt and rating changes,<br>with the source behind every figure.</h1>
     <p class="lede">
-      IssuerGraph reads an issuer's annual report and rating rationales, extracts the
-      debt and rating facts, and keeps each one attached to the exact characters on the
-      page it came from. Where two documents state different things, it shows both,
-      dated, side by side — and does not pick a winner.
+      Review an issuer's debt, track its rating changes, and verify every figure
+      against the document it came from. Where two sources disagree, both are shown,
+      dated, side by side — and no winner is picked for you.
     </p>
     <div class="hero-actions">
       <a class="btn primary" href="/demo" data-cta="demo" data-where="hero">Explore sample issuer →</a>
@@ -80,20 +79,22 @@
     <p class="lede">
       If your note has to survive an investment committee, a "the model says so" answer
       is not usable. IssuerGraph is built for the part of the job where a number has to
-      be traceable to a document.
+      be traceable to a document: every extracted fact is stored with the exact
+      character range and page geometry it came from, verified against the page before
+      it is stored, so clicking a figure opens the sentence rather than a search.
     </p>
     <div class="grid three" style="margin-top:30px">
-      <div class="card">
+      <div>
         <h3>Credit research</h3>
         <p>Surveillance across an issuer's disclosure and its rating agencies, where the
         question is usually "has anything changed, and who says so".</p>
       </div>
-      <div class="card">
+      <div>
         <h3>Private credit</h3>
         <p>Diligence on issuers whose figures are spread across an annual report and
         several agencies' rationales that do not agree on definitions.</p>
       </div>
-      <div class="card">
+      <div>
         <h3>Risk and monitoring</h3>
         <p>Teams that need a dated record of when a difference between sources first
         appeared, and whether it is still there.</p>
@@ -106,26 +107,26 @@
   <div class="wrap">
     <p class="eyebrow">The workflow</p>
     <h2>Four things, each of which is checkable</h2>
-    <div class="grid four" style="margin-top:30px">
-      <div class="card">
+    <div class="steps" style="margin-top:30px">
+      <div>
         <span class="n">01</span>
         <h3>Review facts</h3>
         <p>Total borrowings by basis and date, rated instruments with maturities, rating
         actions by agency. Derived figures state their arithmetic.</p>
       </div>
-      <div class="card">
+      <div>
         <span class="n">02</span>
         <h3>Inspect evidence</h3>
         <p>Click any figure to open the page it came from, with the exact characters
         highlighted — including the header that establishes the unit.</p>
       </div>
-      <div class="card">
+      <div>
         <span class="n">03</span>
         <h3>Compare sources</h3>
         <p>Where documents disagree, both values are shown with their own evidence,
         the tolerance that was applied, and the period both views were in force.</p>
       </div>
-      <div class="card">
+      <div>
         <span class="n">04</span>
         <h3>Track changes</h3>
         <p>Successive rationales from one agency, diffed structurally: what appeared,
@@ -133,8 +134,8 @@
       </div>
     </div>
 
-    <div class="callout" style="margin-top:28px">
-      <h3>A difference between sources is not an error</h3>
+    <div class="callout" style="margin-top:34px">
+      <h3><span class="pill warn">Needs attention</span> A difference between sources is not an error</h3>
       <p style="margin-bottom:0">
         Most differences are definitional. In the sample dataset, a rating agency's
         "Total Debt" exceeds the annual report's by ₹24.80 crore on one basis and
@@ -194,10 +195,11 @@
           <li>One issuer is loaded in the public sample. It is a vertical slice, not a universe.</li>
           <li>Four extractors, tuned to four publishers' current layouts. A new publisher
               needs a new extractor.</li>
-          <li>Only the annual-report extractor declares full coverage checks; the other three
-              currently prove only that they produced something.</li>
-          <li>A rating is treated as in force until that agency acts again, with no staleness
-              horizon — so a two-year-old action still counts as current.</li>
+          <li>Each extractor declares what its document must yield — balance-sheet rows,
+              the rating table, liquidity, sensitivities — and a shortfall is recorded as
+              incomplete with reasons rather than passed as complete.</li>
+          <li>A rating is treated as in force until that agency acts again or withdraws it,
+              with no staleness horizon — so a two-year-old action still counts as current.</li>
           <li>No score, no recommendation, no chat interface, and no document upload.</li>
         </ul>
       </div>
@@ -251,8 +253,8 @@
     </div>
 
     <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
-      <a class="btn primary" href="/pilot" data-cta="pilot" data-where="pilot-section">Request a pilot →</a>
-      <a class="btn" href="/demo" data-cta="demo" data-where="pilot-section">See the sample first</a>
+      <a class="btn primary" href="/demo" data-cta="demo" data-where="pilot-section">Explore sample issuer</a>
+      <a class="btn" href="/pilot" data-cta="pilot" data-where="pilot-section">Request a pilot →</a>
     </div>
   </div>
 </section>
@@ -338,20 +340,23 @@
   </div>
 </section>
 
-<section id="contact">
+<section id="contact" class="founder">
   <div class="wrap narrow">
     <p class="eyebrow">Who is behind this</p>
     <h2 data-cfg="founder_name">—</h2>
-    <p class="lede" id="founder-line"><span data-cfg="founder_role">Founder</span></p>
+    <p class="role"><span data-cfg="founder_role">Founder</span></p>
     <p id="founder-bio" hidden data-cfg="founder_bio"></p>
-    <p>
-      Questions, or something in the sample that looks wrong?
-      Write to <a id="contact-email" href="#" data-cta="email">the address below</a> — a
-      specific correction about a specific figure is the most useful thing you can send.
+    <div class="links">
+      <a id="founder-linkedin" href="#" hidden rel="me noopener" target="_blank">LinkedIn</a>
+      <a id="contact-email" href="#" data-cta="email">Email</a>
+    </div>
+    <p style="margin-top:22px">
+      Questions, or something in the sample that looks wrong? A specific correction
+      about a specific figure is the most useful thing you can send.
     </p>
     <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
-      <a class="btn primary" href="/pilot" data-cta="pilot" data-where="contact">Request a pilot</a>
-      <a class="btn" href="/demo" data-cta="demo" data-where="contact">Explore sample issuer</a>
+      <a class="btn primary" href="/demo" data-cta="demo" data-where="contact">Explore sample issuer</a>
+      <a class="btn" href="/pilot" data-cta="pilot" data-where="contact">Request a pilot</a>
     </div>
   </div>
 </section>

@@ -1,5 +1,5 @@
 -- IssuerGraph schema. See docs/SCHEMA.md for rationale.
--- Includes migrations 002-006; existing databases apply those files instead.
+-- Includes migrations 002-007; existing databases apply those files instead.
 
 DROP TABLE IF EXISTS pilot_submission_log CASCADE;
 DROP TABLE IF EXISTS pilot_request CASCADE;
@@ -162,7 +162,12 @@ CREATE TABLE rating_state (
     watch            TEXT,
     effective_from   DATE NOT NULL,
     effective_to     DATE,                 -- null = still in force
-    CHECK (effective_to IS NULL OR effective_to > effective_from)
+    -- A withdrawn tranche is in force on its action date and not after: an
+    -- empty half-open interval that overlaps nothing. See sql/007.
+    withdrawn        BOOLEAN NOT NULL DEFAULT false,
+    CHECK (effective_to IS NULL
+           OR effective_to > effective_from
+           OR (withdrawn AND effective_to = effective_from))
 );
 CREATE INDEX ON rating_state (issuer_id, instrument_class, term, effective_from);
 
@@ -192,6 +197,7 @@ CREATE TABLE conflict (
     first_detected_at TIMESTAMPTZ NOT NULL DEFAULT now(),  -- never updated
     last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now(),  -- refreshed each run
     resolved_at       TIMESTAMPTZ,                         -- set when it stops recurring
+    ended_on          DATE,   -- the sources say the disagreement ended here; see sql/007
     UNIQUE (issuer_id, fact_key, kind)
 );
 CREATE INDEX ON conflict (issuer_id, resolved_at, first_detected_at);
@@ -217,6 +223,10 @@ CREATE TABLE rationale_diff (
     section       TEXT NOT NULL,            -- 'strengths' / 'weaknesses' / 'rating'
     direction     TEXT NOT NULL
                   CHECK (direction IN ('added', 'removed', 'changed')),
+    -- 'unconfirmed' when the report that lacks the item failed its own coverage
+    -- declaration: an absence that may be a parse failure. See sql/007.
+    certainty     TEXT NOT NULL DEFAULT 'confirmed'
+                  CHECK (certainty IN ('confirmed', 'unconfirmed')),
     from_claim_id BIGINT REFERENCES claim(id) ON DELETE CASCADE,
     to_claim_id   BIGINT REFERENCES claim(id) ON DELETE CASCADE,
     from_text     TEXT,

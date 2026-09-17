@@ -16,6 +16,8 @@ RUN useradd --system --no-create-home app
 USER app
 EXPOSE 8080
 
-# Apply the pilot-form schema, then serve. --proxy-headers so the rate limiter
-# hashes the visitor's address, not App Runner's (see docs/DEPLOY.md).
-CMD ["sh", "-c", "python -m scripts.migrate; exec uvicorn issuergraph.api:app --host 0.0.0.0 --port 8080 --proxy-headers --forwarded-allow-ips='*'"]
+# Apply the pilot-form schema, then serve. Proxy headers are not trusted by
+# uvicorn; the app counts ISSUERGRAPH_TRUSTED_PROXY_HOPS from the right of
+# X-Forwarded-For instead, so a caller cannot choose its own rate-limit
+# identity (see docs/DEPLOY.md).
+CMD ["sh", "-c", "python -m scripts.migrate; exec uvicorn issuergraph.api:app --host 0.0.0.0 --port 8080"]

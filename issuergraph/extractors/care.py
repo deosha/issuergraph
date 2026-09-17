@@ -4,12 +4,13 @@ from __future__ import annotations
 import re
 
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
+from .coverage import Coverage, rating_rationale_coverage
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook, parse_watch,
                      quarter_key, rating_identity)
 
 EXTRACTOR = "care_press_release"
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 AGENCY = "CARE"
 
 TABLE_HEAD = "Facilities/Instruments"
@@ -73,6 +74,15 @@ def _rows(text: str):
             continue
         label_lines.append((line, ls, le))
         i += 1
+
+
+def check_coverage(doc_meta, pages: list[dict], claims) -> Coverage:
+    """A CARE press release carries the facilities table, the liquidity
+    paragraph and both directions of rating sensitivities."""
+    return rating_rationale_coverage(AGENCY, claims, (
+        (f"rating_sensitivity|{AGENCY}|positive", "positive rating sensitivities"),
+        (f"rating_sensitivity|{AGENCY}|negative", "negative rating sensitivities"),
+    ))
 
 
 def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:

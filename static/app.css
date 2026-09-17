@@ -37,6 +37,7 @@
   .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px;
           border: 1px solid var(--line); color: var(--muted); }
   .pill.bad { color: var(--bad); border-color: #4a2731; background: #2a1a1e; }
+  .pill.warn { color: var(--warn); border-color: #4a3a1c; background: #241d12; }
   .pill.ok { color: var(--ok); border-color: #234238; background: #16241f; }
   .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
           margin-bottom: 12px; background: var(--panel2); }

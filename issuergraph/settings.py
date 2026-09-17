@@ -43,6 +43,7 @@ def site_config() -> dict:
         "founder_name": _env("ISSUERGRAPH_FOUNDER_NAME", "Deo Shankar"),
         "founder_role": _env("ISSUERGRAPH_FOUNDER_ROLE", "Founder"),
         "founder_bio": _env("ISSUERGRAPH_FOUNDER_BIO", ""),
+        "founder_linkedin": _env("ISSUERGRAPH_FOUNDER_LINKEDIN"),   # optional
         "contact_email": _env("ISSUERGRAPH_CONTACT_EMAIL", "hello@issuergraph.com"),
         "booking_url": _env("ISSUERGRAPH_BOOKING_URL"),      # optional
         "pilot_price": _env("ISSUERGRAPH_PILOT_PRICE"),      # empty = ask for scope
@@ -68,6 +69,17 @@ def demo_only() -> bool:
     reachable from the internet.
     """
     return _flag("ISSUERGRAPH_DEMO_ONLY", False)
+
+
+def trusted_proxy_hops() -> int:
+    """How many proxies in front of this process append to X-Forwarded-For.
+
+    0 (the default) ignores the header and uses the peer address. Behind App
+    Runner or one load balancer it is 1. Set it to the number of hops you
+    control, never to "trust everything": the rate limiter's identity is only
+    as good as this number.
+    """
+    return max(0, int(_env("ISSUERGRAPH_TRUSTED_PROXY_HOPS", "0")))
 
 
 def rate_limit() -> tuple[int, int]:

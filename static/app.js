@@ -143,6 +143,7 @@ const CLASS_LABEL = {
 
 function inForce(r) {
   if (!r.effective_from) return "";
+  if (r.withdrawn) return `withdrawn ${day(r.effective_from)} · no longer rated`;
   return r.effective_to
     ? `${day(r.effective_from)} → ${day(r.effective_to)}`
     : `${day(r.effective_from)} → current`;
@@ -164,7 +165,8 @@ function viewRatings() {
   return `<h2>Rating actions across agencies</h2>
     <div class="muted" style="font-size:12px;margin:-6px 0 10px">
       A rating stands from its action date until the same agency next acts on the
-      same instrument class. Agencies are compared only where those periods overlap.</div>
+      same instrument class, or is withdrawn on that tranche. Agencies are compared
+      only where those periods overlap.</div>
     <table><thead><tr><th>Date</th><th>Agency</th><th>Instrument</th>
       <th class="num">Rated amount</th><th>Rating</th><th>Action</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
@@ -172,14 +174,19 @@ function viewRatings() {
 
 function viewConflicts() {
   const open = state.data.conflicts.filter(c => c.status === "open");
+  const ended = state.data.conflicts.filter(c => c.status === "ended");
   const resolved = state.data.conflicts.filter(c => c.status === "resolved");
 
-  const card = c => `<div class="card conflict${c.status === "resolved" ? " resolved" : ""}"
+  const STATUS = { open: "Open", ended: "Ended", resolved: "Resolved" };
+  const card = c => `<div class="card conflict${c.status !== "open" ? " resolved" : ""}"
     id="conflict-${c.id}">
-    <h3>${c.status === "resolved" ? "✔️" : "⚠️"} ${esc(c.subject)}</h3>
+    <h3><span class="pill ${c.status === "open" ? "bad" : "ok"}">${STATUS[c.status]}</span>
+      ${esc(c.subject)}</h3>
     <div class="muted" style="font-size:12px;margin-bottom:6px">
       ${c.status === "resolved"
         ? `no longer detected as of ${day(c.resolved_at)} · first seen ${day(c.first_detected_at)}`
+        : c.status === "ended"
+        ? `the sources ended it on ${day(c.ended_on)} · first seen ${day(c.first_detected_at)}`
         : `first seen ${day(c.first_detected_at)} · still present ${day(c.last_seen_at)}`}</div>
     <div class="note">${esc(c.note)}</div>
     <div class="members">${c.members.map(m => `<div class="member">
@@ -206,6 +213,11 @@ function viewConflicts() {
 
   return `<h2>Open conflicts (${open.length})</h2>
     ${open.map(card).join("") || '<div class="empty">None.</div>'}
+    ${ended.length ? `<h2>Ended (${ended.length})</h2>
+      <div class="muted" style="font-size:12px;margin:-6px 0 10px">
+        Both views were in force together for a period that has closed — one
+        agency has since acted. Historical, not current.</div>
+      ${ended.map(card).join("")}` : ""}
     ${resolved.length ? `<h2>Resolved (${resolved.length})</h2>
       <div class="muted" style="font-size:12px;margin:-6px 0 10px">
         Detected previously, not seen in the latest run. Kept because a
@@ -224,15 +236,22 @@ function viewChanges() {
     const [agency, from, to] = key.split("|");
     return `<h2>${esc(agency)} · ${day(from)} → ${day(to)}</h2>` + items.map(c => `
       <div class="card"><h3>${esc(c.section)}
-        <span class="pill ${c.direction === "removed" ? "bad" : ""}">${c.direction}</span></h3>
+        <span class="pill ${c.direction === "removed" ? "bad" : ""}">${c.direction}</span>
+        ${c.certainty === "unconfirmed"
+          ? '<span class="pill warn" title="The report it is absent from did not meet its coverage declaration">unconfirmed</span>'
+          : ""}</h3>
         <div class="chg">
           <div>${c.from_claim_id
             ? fact(c.from_claim_id, esc(c.from_text))
-            : '<span class="muted">not stated in the earlier report</span>'}</div>
+            : `<span class="muted">${c.certainty === "unconfirmed"
+                ? "not found in the earlier report (extraction incomplete)"
+                : "not stated in the earlier report"}</span>`}</div>
           <div class="arrow" style="background:none;padding-top:8px">→</div>
           <div>${c.to_claim_id
             ? fact(c.to_claim_id, esc(c.to_text))
-            : '<span class="muted">dropped from the later report</span>'}</div>
+            : `<span class="muted">${c.certainty === "unconfirmed"
+                ? "not found in the later report (extraction incomplete)"
+                : "dropped from the later report"}</span>`}</div>
         </div></div>`).join("");
   }).join("") || '<div class="empty">No successive reports to compare.</div>';
 }
