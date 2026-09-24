@@ -7,7 +7,7 @@
 <meta name="description" content="What the IssuerGraph site stores when you request a pilot, and what it does not.">
 <link rel="canonical" href="{{site_url}}/privacy">
 <link rel="icon" href="/static/favicon.svg">
-<link rel="stylesheet" href="/static/site.css">
+<link rel="stylesheet" href="/static/site.css?v={{asset_version}}">
 </head>
 <body>
 <header class="site-header">
@@ -46,6 +46,9 @@
 
     <h3>Analytics</h3>
     <p>{{privacy_analytics}}</p>
+    <p>These are the only events the site can send, and each carries only the tab,
+    page or step it names:</p>
+    <ul>{{analytics_events}}</ul>
 
     <h3>Hosting</h3>
     <p>Our hosting provider keeps standard request logs for operating and securing the

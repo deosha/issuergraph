@@ -54,7 +54,7 @@ def _primary(conn, issuer_id: int) -> list[dict]:
     return conn.execute(
         """
         SELECT r.claim_id, r.agency, r.instrument_class, r.term, r.rating AS grade,
-               r.action, r.action_date
+               r.outlook, r.watch, r.action, r.action_date
         FROM rating_action r JOIN claim c ON c.id = r.claim_id
         WHERE c.issuer_id = %s AND r.action_date IS NOT NULL
         """,
@@ -74,6 +74,55 @@ def matches(entry: dict, action: dict) -> bool:
     return entry["grade"] == action["grade"]
 
 
+def _matched_dates(history: list[dict], primary: list[dict]) -> set[tuple]:
+    """History (agency, class, term, date, grade) keys that a primary action accounts for.
+
+    One-to-one: each primary action absorbs only its nearest history date within
+    MATCH_DAYS — an exact date first. The window exists to absorb the drift
+    between a release's date and the agency's own record of it, not to merge an
+    agency's consecutive actions: Crisil lists both 27-01-26 and 28-01-26, and
+    before this the 28 Jan action vanished into the 27 Jan rationale.
+    """
+    by_class: dict[tuple, set] = {}
+    for h in history:
+        by_class.setdefault((h["agency"], h["instrument_class"], h["term"]), set()).add(
+            (h["action_date"], h["grade"]))
+    matched: set[tuple] = set()
+    for a in primary:
+        cls = (a["agency"], a["instrument_class"], a["term"])
+        candidates = [(d, g) for d, g in by_class.get(cls, ())
+                      if abs((d - a["action_date"]).days) <= MATCH_DAYS
+                      and matches({"agency": a["agency"], "instrument_class": a["instrument_class"],
+                                   "term": a["term"], "action_date": d, "grade": g}, a)]
+        if candidates:
+            d, g = min(candidates, key=lambda dg: (abs((dg[0] - a["action_date"]).days),
+                                                   dg[0]))
+            matched.add((*cls, d, g))
+    return matched
+
+
+def _changes_view(gap: dict, history: list[dict], primary: list[dict]) -> bool:
+    """Does the missing action change the agency's view on that class?
+
+    Compared with its preceding view — the latest action before the gap's date
+    from anything we know, primary or history. With no earlier view to compare,
+    the gap is assumed to matter.
+    """
+    cls = (gap["agency"], gap["instrument_class"], gap["term"])
+    earlier: dict = {}
+    for a in primary:
+        if (a["agency"], a["instrument_class"], a["term"]) == cls and a["action_date"] < gap["action_date"]:
+            earlier.setdefault(a["action_date"], set()).add(
+                (a["grade"], a.get("outlook"), a.get("watch")))
+    for h in history:
+        if (h["agency"], h["instrument_class"], h["term"]) == cls and h["action_date"] < gap["action_date"]:
+            earlier.setdefault(h["action_date"], set()).add((h["grade"], h["outlook"], h["watch"]))
+    if not earlier:
+        return True
+    before = earlier[max(earlier)]
+    return (gap["grade"] or None, gap["outlook"], gap["watch"]) not in before
+
+
 def find_gaps(history: list[dict], primary: list[dict]) -> list[dict]:
     """Group unmatched history entries into gaps, with every entry as evidence.
 
@@ -83,12 +132,13 @@ def find_gaps(history: list[dict], primary: list[dict]) -> list[dict]:
     for a in primary:
         key = (a["agency"], a["instrument_class"], a["term"])
         earliest[key] = min(earliest.get(key, a["action_date"]), a["action_date"])
+    matched = _matched_dates(history, primary)
 
     gaps: dict[tuple, dict] = {}
     for h in history:
-        if any(matches(h, a) for a in primary):
-            continue
         cls = (h["agency"], h["instrument_class"], h["term"])
+        if (*cls, h["action_date"], h["grade"]) in matched:
+            continue
         key = (*cls, h["action_date"], h["grade"] or "")
         gap = gaps.setdefault(key, {
             "agency": h["agency"], "instrument_class": h["instrument_class"],
@@ -99,6 +149,8 @@ def find_gaps(history: list[dict], primary: list[dict]) -> list[dict]:
             "evidence": [],
         })
         gap["evidence"].append(h["claim_id"])
+    for gap in gaps.values():
+        gap["changes_view"] = _changes_view(gap, history, primary)
     return list(gaps.values())
 
 
@@ -110,20 +162,21 @@ def detect_gaps(conn, issuer_id: int) -> dict:
         row = conn.execute(
             """
             INSERT INTO corpus_gap (issuer_id, agency, instrument_class, term, action_date,
-                                    grade, outlook, watch, withdrawn, scope)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                    grade, outlook, watch, withdrawn, scope, changes_view)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             ON CONFLICT (issuer_id, agency, instrument_class, term, action_date, grade)
             DO UPDATE SET outlook      = EXCLUDED.outlook,
                           watch        = EXCLUDED.watch,
                           withdrawn    = EXCLUDED.withdrawn,
                           scope        = EXCLUDED.scope,
+                          changes_view = EXCLUDED.changes_view,
                           last_seen_at = now(),
                           resolved_at  = NULL
             RETURNING id
             """,
             (issuer_id, gap["agency"], gap["instrument_class"], gap["term"],
              gap["action_date"], gap["grade"], gap["outlook"], gap["watch"],
-             gap["withdrawn"], gap["scope"]),
+             gap["withdrawn"], gap["scope"], gap["changes_view"]),
         ).fetchone()
         seen.append(row["id"])
         conn.execute("DELETE FROM corpus_gap_evidence WHERE gap_id = %s", (row["id"],))

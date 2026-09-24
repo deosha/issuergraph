@@ -33,7 +33,7 @@ from .common import (anchor_in, find_published_date, normalized_view, parse_acti
 from .coverage import Coverage, rating_rationale_coverage
 
 EXTRACTOR = "crisil_rationale"
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 AGENCY = "CRISIL"
 
 CELL = re.compile(r"^(?P<table>.+/table(?:\[\d+\])?)/(?:tbody/)?tr(?:\[(?P<row>\d+)\])?"
@@ -58,6 +58,8 @@ UNITS = {"rs crore": "INR_CRORE", "%": "PERCENT", "times": "TIMES"}
 OUTLOOK_LINE = re.compile(r"^Outlook:?\s+(Stable|Negative|Positive|Developing)$", re.IGNORECASE)
 LIQUIDITY_LINE = re.compile(r"^Liquidity:?\s+(Superior|Strong|Adequate|Stretched|Poor)$",
                             re.IGNORECASE)
+# Crisil edits rationales in place at the same URL and says so at the foot.
+UPDATED_ON = re.compile(r"This RR was updated on ([A-Z][a-z]+ \d{1,2}, \d{4})")
 DRIVERS = {"Key Rating Drivers - Strengths": "strengths",
            "Key Rating Drivers - Weaknesses": "weaknesses"}
 KFI_HEADING = re.compile(r"Key financial indicators.*\((consolidated|standalone);[^)]*adjusted",
@@ -504,6 +506,18 @@ def read(doc_meta, units: list[dict]) -> dict:
                     value_text=" ".join(flat(b) for b in bullets), as_of_date=pub,
                     extractor=EXTRACTOR, extractor_version=VERSION,
                     anchors=[whole(b) for b in bullets]))
+
+    # "This RR was updated on May 22, 2026": anchored in the innermost unit that
+    # states it, so the date is evidence like any other fact.
+    stated = [u for u in units if UPDATED_ON.search(flat(u))]
+    if stated:
+        u = max(stated, key=lambda u: u["node_path"].count("/"))
+        when = datetime.strptime(UPDATED_ON.search(flat(u)).group(1), "%B %d, %Y").date()
+        claims.append(ExtractedClaim(
+            claim_type="rationale_point", fact_key=f"source_updated_on|{AGENCY}",
+            subject=f"{AGENCY} states this rationale was updated", value_text=str(when),
+            as_of_date=when, extractor=EXTRACTOR, extractor_version=VERSION,
+            anchors=[span(u, UPDATED_ON, 1)]))
 
     return {"claims": claims, "report": report}
 

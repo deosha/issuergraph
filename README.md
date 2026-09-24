@@ -33,6 +33,7 @@ psql -d issuergraph -f sql/008_gradeless_withdrawals.sql
 psql -d issuergraph -f sql/009_rating_history.sql
 psql -d issuergraph -f sql/010_html_evidence.sql
 psql -d issuergraph -f sql/011_agency_adjusted.sql
+psql -d issuergraph -f sql/012_gap_materiality_and_source_drift.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -161,10 +162,11 @@ difference does not mint a new conflict.
 
 ```
 sql/schema.sql              nine tables
-sql/002..011_*.sql          conflict history; coverage; reprocessing;
+sql/002..012_*.sql          conflict history; coverage; reprocessing;
                             rating states; pilot requests; withdrawals + ended;
                             gradeless withdrawals; rating history + corpus gaps;
-                            HTML evidence; agency-adjusted basis
+                            HTML evidence; agency-adjusted basis;
+                            gap materiality; source drift
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built

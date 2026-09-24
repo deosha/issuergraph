@@ -48,6 +48,10 @@
   .card h3 { margin: 0 0 4px; font-size: 13px; }
   .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }
   .members { display: grid; gap: 6px; }
+  details.history, details.covers, details.restated { font-size: 12px; }
+  details.history > summary, details.covers > summary, details.restated > summary {
+    cursor: pointer; color: var(--muted); }
+  details.history > .members { margin-top: 6px; }
   .member { display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
             padding: 6px 8px; background: var(--panel); border-radius: 6px; }
   .arrow { color: var(--muted); }

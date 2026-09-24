@@ -145,5 +145,6 @@ document.addEventListener("click", (e) => {
   if (!cta || !window.track) return;
   const map = { demo: "demo_cta_clicked", pilot: "pilot_cta_clicked",
                 booking: "booking_cta_clicked", email: "email_cta_clicked" };
-  track(map[cta.dataset.cta] || "cta_clicked", { page: "landing" });
+  // Only named events are sent: the privacy notice lists exactly these.
+  if (map[cta.dataset.cta]) track(map[cta.dataset.cta], { page: "landing" });
 });

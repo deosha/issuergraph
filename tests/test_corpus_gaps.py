@@ -320,28 +320,62 @@ def test_the_sources_summary_counts_listed_and_loaded_actions():
 
 # --- the demo gate ------------------------------------------------------------
 
-def test_the_snapshot_build_refuses_a_flagged_conflict_without_writing(monkeypatch):
-    """Given a flagged conflict, the export stops before touching any file.
-    The flag is injected, so this test can never export for real."""
+def test_the_snapshot_build_refuses_a_material_gap_without_writing(monkeypatch):
+    """Given a difference a missing document could change, the export stops
+    before touching any file. The flag is injected, so this test can never
+    export for real."""
     from scripts import export_demo
 
     real = export_demo.api.conflicts
     monkeypatch.setattr(export_demo.api, "conflicts", lambda **kw: [
         *real(**kw), {"id": 0, "fact_key": "rating_grade|ncd|long_term|X~Y|2024-01-01",
-                      "subject": "injected", "incomplete_corpus": True}])
+                      "subject": "injected", "incomplete_corpus": True,
+                      "material_gap": True}])
     snapshot = export_demo.OUT / "snapshot.json"
     pages = sorted(export_demo.PAGES.glob("*")) if export_demo.PAGES.exists() else []
     before = snapshot.read_bytes() if snapshot.exists() else None
     with pytest.raises(SystemExit) as refused:
-        export_demo.main([])
+        export_demo.main(["--offline"])
     assert refused.value.code == 2
     assert (snapshot.read_bytes() if snapshot.exists() else None) == before
     assert (sorted(export_demo.PAGES.glob("*")) if export_demo.PAGES.exists() else []) == pages
 
 
-def test_allow_gaps_is_the_only_way_past_the_gate():
+def test_allow_gaps_is_the_only_way_past_a_material_gap():
     from scripts.export_demo import gap_gate
 
-    flagged = [{"id": 1, "incomplete_corpus": True}, {"id": 2, "incomplete_corpus": False}]
+    flagged = [{"id": 1, "incomplete_corpus": True, "material_gap": True},
+               {"id": 2, "incomplete_corpus": False, "material_gap": False}]
     assert [c["id"] for c in gap_gate(flagged, allow_gaps=False)] == [1]
     assert gap_gate(flagged, allow_gaps=True) == []
+
+
+def test_a_reaffirmation_only_gap_does_not_block_the_build():
+    from scripts.export_demo import gap_gate
+
+    reaffirmed = [{"id": 1, "incomplete_corpus": True, "material_gap": False}]
+    assert gap_gate(reaffirmed, allow_gaps=False) == []
+
+
+def test_crisils_january_and_february_2026_actions_are_gaps_that_change_nothing():
+    """28 Jan 2026 sat one day after the 27 Jan rationale we hold and was
+    absorbed by its date tolerance; matching is one-to-one now."""
+    rows = query("SELECT DISTINCT action_date, changes_view FROM corpus_gap WHERE agency = "
+                 "'CRISIL' AND scope = 'within_corpus' AND resolved_at IS NULL")
+    dates = {r["action_date"] for r in rows}
+    assert {date(2026, 1, 28), date(2026, 2, 11)} <= dates
+    assert not any(r["changes_view"] for r in rows)
+    assert query("SELECT 1 FROM conflict WHERE material_gap AND resolved_at IS NULL") == []
+
+
+def test_a_gap_changes_the_view_only_if_grade_outlook_or_watch_moves():
+    from issuergraph.completeness import _changes_view
+
+    cls = {"agency": "CRISIL", "instrument_class": "ncd", "term": "long_term"}
+    history = [{**cls, "action_date": date(2025, 1, 1), "grade": "AA", "outlook": "Stable",
+                "watch": None}]
+    same = {**cls, "action_date": date(2025, 6, 1), "grade": "AA", "outlook": "Stable",
+            "watch": None}
+    down = {**same, "grade": "AA-"}
+    assert _changes_view(same, history, []) is False
+    assert _changes_view(down, history, []) is True

@@ -157,4 +157,42 @@ def build_diffs(conn, issuer_id: int) -> int:
                      old["value_text"] if old else None, new["value_text"] if new else None),
                 )
                 written += 1
+
+            # A publisher restating a figure it printed before (Brickwork's
+            # total debt appears in each of its rationales): the same value is
+            # not news; a different value for the same basis and date is.
+            for key, old, new in _restatements(conn, older["id"], newer["id"]):
+                conn.execute(
+                    """
+                    INSERT INTO rationale_diff
+                        (issuer_id, agency, from_document_id, to_document_id, from_date, to_date,
+                         section, direction, certainty, from_claim_id, to_claim_id,
+                         from_text, to_text)
+                    VALUES (%s,%s,%s,%s,%s,%s,'total debt','changed','confirmed',%s,%s,%s,%s)
+                    """,
+                    (issuer_id, agency["source_name"], older["id"], newer["id"],
+                     older["published_date"], newer["published_date"], old["id"], new["id"],
+                     f"{old['subject']}: {old['value_numeric']}",
+                     f"{new['subject']}: {new['value_numeric']}"),
+                )
+                written += 1
     return written
+
+
+def _restatements(conn, older_id: int, newer_id: int):
+    """Figures both reports state for the same basis and date, with different values."""
+    rows = conn.execute(
+        """
+        SELECT o.fact_key, o.id AS old_id, o.value_numeric AS old_value, o.subject AS old_subject,
+               n.id AS new_id, n.value_numeric AS new_value, n.subject AS new_subject
+        FROM claim o JOIN claim n ON n.fact_key = o.fact_key
+        WHERE o.document_id = %s AND n.document_id = %s
+          AND o.claim_type = 'total_borrowings' AND n.claim_type = 'total_borrowings'
+          AND o.value_numeric IS DISTINCT FROM n.value_numeric
+        """,
+        (older_id, newer_id),
+    ).fetchall()
+    for r in rows:
+        yield (r["fact_key"],
+               {"id": r["old_id"], "value_numeric": r["old_value"], "subject": r["old_subject"]},
+               {"id": r["new_id"], "value_numeric": r["new_value"], "subject": r["new_subject"]})

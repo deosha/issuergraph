@@ -1,5 +1,5 @@
 -- IssuerGraph schema. See docs/SCHEMA.md for rationale.
--- Includes migrations 002-011; existing databases apply those files instead.
+-- Includes migrations 002-012; existing databases apply those files instead.
 
 DROP TABLE IF EXISTS document_blob CASCADE;
 DROP TABLE IF EXISTS corpus_gap_evidence CASCADE;
@@ -48,6 +48,11 @@ CREATE TABLE document (
                     CONSTRAINT document_media_type_check
                     CHECK (media_type IN ('application/pdf', 'text/html')),
     content_type    TEXT,
+    -- The publisher's own "updated on" date, and whether its copy at the URL
+    -- has changed since we retrieved it (ours stays the evidence). See sql/012.
+    source_updated_on     DATE,
+    source_changed_at     TIMESTAMPTZ,
+    source_changed_sha256 TEXT,
     -- Extraction coverage: did the extractor find what this document was
     -- declared to contain? Without this, a layout change and an issuer that
     -- stopped disclosing a figure are indistinguishable. See sql/003.
@@ -247,6 +252,8 @@ CREATE TABLE conflict (
     ended_on          DATE,   -- the sources say the disagreement ended here; see sql/007
     -- Either agency has an open corpus gap inside the window; see sql/009.
     incomplete_corpus BOOLEAN NOT NULL DEFAULT false,
+    -- ...and one of those gaps changes a rating or outlook; see sql/012.
+    material_gap      BOOLEAN NOT NULL DEFAULT false,
     UNIQUE (issuer_id, fact_key, kind)
 );
 CREATE INDEX ON conflict (issuer_id, resolved_at, first_detected_at);
@@ -346,6 +353,8 @@ CREATE TABLE corpus_gap (
     outlook           TEXT,
     watch             TEXT,
     withdrawn         BOOLEAN NOT NULL DEFAULT false,
+    -- false for a reaffirmation that leaves the agency's view as it was
+    changes_view      BOOLEAN NOT NULL DEFAULT true,
     scope             TEXT NOT NULL CHECK (scope IN ('within_corpus', 'before_corpus')),
     first_detected_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now(),

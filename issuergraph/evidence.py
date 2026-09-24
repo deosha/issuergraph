@@ -17,6 +17,7 @@ from __future__ import annotations
 from urllib.parse import quote
 
 from .settings import evidence_policy
+from .wording import PUBLISHER_NAME, publisher, readable
 
 QUOTE_CAP = 200                 # characters of a quote shown under quote_and_link
 FRAGMENT_WORDS = 4              # words at each end of a textStart,textEnd fragment
@@ -77,12 +78,67 @@ def may_serve_source(media_type: str | None, source_name: str | None) -> bool:
     return media_type in (None, "application/pdf") and not quote_only(source_name)
 
 
+POLICY_NOTE = ("{source}'s terms restrict redistribution, so this is shown as a short "
+               "quote. Open it on {source}'s page to read it in context.")
+# Words that mean "we do not know", which a reader must never see in place of
+# a fact. The demo build refuses a panel containing one (export_demo.py).
+PLACEHOLDERS = ("unknown", "null", "none", "undefined", "nan")
+
+
+def _day(d) -> str:
+    return d.strftime("%d %b %Y") if d else ""
+
+
+def panel_lines(row: dict) -> list[str]:
+    """The evidence panel's descriptive lines, as a reader sees them.
+
+    Built here so the demo and the live product say the same thing and the
+    snapshot build can check the exact strings. A web page has no page number
+    or page count; a rating has no accounting basis — a line that does not
+    apply is left out, never filled with a placeholder.
+    """
+    first = row["anchors"][0] if row["anchors"] else None
+    published = (f"published {_day(row['published_date'])}" if row.get("published_date")
+                 else "publication date not stated")
+    head = [row.get("title"), publisher(row.get("source_name")), published]
+    if row.get("source_updated_on"):
+        head.append(f"updated by the publisher {_day(row['source_updated_on'])}")
+    where = []
+    if first and first.get("kind") == "html":
+        where.append(f"web page · chars {first['char_start']}–{first['char_end']}")
+    elif first and first.get("page_no"):
+        of = f" of {row['page_count']}" if row.get("page_count") else ""
+        where.append(f"page {first['page_no']}{of} · chars {first['char_start']}–{first['char_end']}")
+    if row.get("basis") in ("standalone", "consolidated"):
+        where.append(f"basis {row['basis']}")
+    if row.get("as_of_date"):
+        where.append(f"as at {_day(row['as_of_date'])}")
+    provenance = [row.get("extractor") and f"{row['extractor']} v{row['extractor_version']}",
+                  row.get("sha256") and f"sha256 {row['sha256'][:16]}…",
+                  row.get("retrieved_at") and f"retrieved {_day(row['retrieved_at'])}"]
+    lines = [" · ".join(filter(None, part)) for part in (head, where, provenance)]
+    if row.get("source_changed_at"):
+        lines.append(f"changed at source since retrieval (noticed {_day(row['source_changed_at'])}); "
+                     "the stored copy remains the evidence of record")
+    return [line for line in lines if line]
+
+
+def placeholder_in(text: str) -> str | None:
+    """The first placeholder word in `text`, if any (whole words, any case)."""
+    words = {w.strip(".,;:()[]\"'").lower() for w in text.split()}
+    return next((p for p in PLACEHOLDERS if p in words), None)
+
+
 def present_claim(row: dict) -> dict:
-    """A claim as it may leave the server: policy, capped quotes, source link."""
+    """A claim as it may leave the server: policy, capped quotes, source links,
+    and the panel's lines."""
     policy = evidence_policy(row.get("source_name"))
     row["evidence_policy"] = policy
+    row["plain_url"] = row.get("url")
+    row["subject"] = readable(row.get("subject"))
     if policy != "quote_and_link":
         row["source_link"] = row.get("url")
+        row["panel_lines"] = panel_lines(row)
         return row
     first = row["anchors"][0]["evidence_text"] if row["anchors"] else ""
     row["source_link"] = text_fragment(row["url"], first)
@@ -90,4 +146,6 @@ def present_claim(row: dict) -> dict:
     for a in row["anchors"]:
         a["evidence_text"], a["truncated"] = excerpt(a["evidence_text"])
         a["bbox"] = a["bbox_rects"] = None
+    row["policy_note"] = POLICY_NOTE.format(source=publisher(row["source_name"]))
+    row["panel_lines"] = panel_lines(row)
     return row

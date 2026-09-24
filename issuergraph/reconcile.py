@@ -120,7 +120,8 @@ def _comparable_keys(conn, issuer_id: int, column: str) -> tuple[list[str], list
 
 def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
             spread_pct: Decimal | None, note: str, rows: list[dict],
-            ended_on=None, incomplete_corpus: bool = False) -> int | None:
+            ended_on=None, incomplete_corpus: bool = False,
+            material_gap: bool = False) -> int | None:
     """Upsert a conflict. Returns None when the rows do not span two sources.
 
     `ended_on` is the date the sources say the disagreement stopped — the end
@@ -134,20 +135,21 @@ def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
     row = conn.execute(
         """
         INSERT INTO conflict (issuer_id, fact_key, subject, kind, tolerance_pct,
-                              spread_pct, note, ended_on, incomplete_corpus)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                              spread_pct, note, ended_on, incomplete_corpus, material_gap)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (issuer_id, fact_key, kind)
         DO UPDATE SET subject      = EXCLUDED.subject,
                       spread_pct   = EXCLUDED.spread_pct,
                       note         = EXCLUDED.note,
                       ended_on     = EXCLUDED.ended_on,
                       incomplete_corpus = EXCLUDED.incomplete_corpus,
+                      material_gap = EXCLUDED.material_gap,
                       last_seen_at = now(),
                       resolved_at  = NULL      -- it came back; it is open again
         RETURNING id
         """,
         (issuer_id, fact_key, subject, kind, TOLERANCE_PCT, spread_pct, note, ended_on,
-         incomplete_corpus),
+         incomplete_corpus, material_gap),
     ).fetchone()
 
     # Claim ids are rewritten whenever a document is re-extracted, so membership
@@ -252,28 +254,35 @@ def _merge_runs(windows: list[dict]) -> list[dict]:
 
 
 def _incomplete(conn, issuer_id: int, instrument_class: str, term: str,
-                agencies: list[str], run: dict) -> bool:
+                agencies: list[str], run: dict) -> tuple[bool, bool]:
     """Was this disagreement computed over a period we do not fully hold?
 
-    True when either side of it is a state known only from a history
+    Incomplete when either side of it is a state known only from a history
     annexure, or when either agency has an open gap on this class inside the
     window — an action of theirs we have not read may have changed what they
     were saying. The conflict stands either way; the flag says how much of the
     record it rests on.
+
+    Returns (incomplete, material). Material when one of those gaps changes a
+    grade, outlook or watch: a missing reaffirmation leaves the record as
+    stated, a missing downgrade does not. Only material gaps block publishing.
     """
     history_side = conn.execute(
         "SELECT 1 FROM claim WHERE id = ANY(%s) AND provenance = 'history_annexure'",
         (list(run["members"]),)).fetchone()
-    gap = conn.execute(
+    gaps = conn.execute(
         """
-        SELECT 1 FROM corpus_gap
-        WHERE issuer_id = %s AND resolved_at IS NULL AND scope = 'within_corpus'
-          AND instrument_class = %s AND term = %s AND agency = ANY(%s)
-          AND action_date >= %s AND (%s::date IS NULL OR action_date <= %s::date)
+        SELECT g.changes_view FROM corpus_gap g
+        WHERE g.issuer_id = %s AND g.resolved_at IS NULL AND g.scope = 'within_corpus'
+          AND g.instrument_class = %s AND g.term = %s AND g.agency = ANY(%s)
+          AND ((g.action_date >= %s AND (%s::date IS NULL OR g.action_date <= %s::date))
+               OR EXISTS (SELECT 1 FROM corpus_gap_evidence e
+                          WHERE e.gap_id = g.id AND e.claim_id = ANY(%s)))
         """,
-        (issuer_id, instrument_class, term, agencies, run["start"], run["end"], run["end"]),
-    ).fetchone()
-    return bool(history_side or gap)
+        (issuer_id, instrument_class, term, agencies, run["start"], run["end"], run["end"],
+         list(run["members"])),
+    ).fetchall()
+    return bool(history_side or gaps), any(g["changes_view"] for g in gaps)
 
 
 def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
@@ -329,8 +338,9 @@ def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
                 subject, "categorical_disagreement", None,
                 f"{note} — both in force {_window_text(run['start'], run['end'])}", rows,
                 ended_on=run["end"],
-                incomplete_corpus=_incomplete(conn, issuer_id, instrument_class, term,
-                                              pair.split("~"), run))
+                **dict(zip(("incomplete_corpus", "material_gap"),
+                           _incomplete(conn, issuer_id, instrument_class, term,
+                                       pair.split("~"), run))))
             if conflict_id:
                 found += 1
                 seen.append(conflict_id)

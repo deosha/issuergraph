@@ -280,8 +280,15 @@ def run(reset: bool = False, strict: bool = False, reprocess: bool = False) -> d
                 if strict:
                     raise IncompleteExtraction(f"{source.filename}: {cov.summary()}")
 
+            # A publisher's own "updated on" statement: the page at this URL is
+            # edited in place, and the document says when (sql/012).
+            updated = [c.as_of_date for c in claims if c.fact_key.startswith("source_updated_on|")]
+            conn.execute("UPDATE document SET source_updated_on = %s WHERE id = %s",
+                         (max(updated) if updated else None, document_id))
+
             # the document's own stated date, discovered during extraction
-            dates = [c.as_of_date for c in claims if c.as_of_date]
+            dates = [c.as_of_date for c in claims
+                     if c.as_of_date and not c.fact_key.startswith("source_updated_on|")]
             if source.meta.doc_type == "rating_rationale" and dates:
                 conn.execute("UPDATE document SET published_date = %s WHERE id = %s",
                              (max(set(dates), key=dates.count), document_id))

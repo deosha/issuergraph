@@ -13,13 +13,14 @@ uvicorn command keep working.
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import pathlib
 from datetime import date
 from urllib.parse import urlsplit
 
-from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import HTTPException, Request, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import demo as demo_snapshot
@@ -32,6 +33,44 @@ STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
 # visible within a day. The page images are content-addressed by document and
 # page and never change without a re-export.
 PAGE_CACHE = "public, max-age=86400"
+
+
+def asset_version() -> str:
+    """A short hash of every script and stylesheet the pages load.
+
+    Pages reference /static/app.js?v=<this>, so a deploy that changes any of
+    them changes the URL, and the scripts themselves are served no-cache. A
+    browser holding last release's app.js against this release's snapshot
+    rendered the new data with the old code.
+    """
+    digest = hashlib.sha256()
+    for path in sorted(STATIC.glob("*.js")) + sorted(STATIC.glob("*.css")):
+        digest.update(path.name.encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
+
+
+ASSET_VERSION = asset_version()
+
+# Every analytics event the site can send, as the privacy notice lists them.
+# tests/test_site_polish.py checks this against the track() calls in static/.
+ANALYTICS_EVENTS = {
+    "landing_viewed": "the home page was opened",
+    "demo_started": "the demo was opened",
+    "demo_tab_viewed": "which demo tab was opened",
+    "sources_compared": "the demo's Differences tab was opened",
+    "evidence_opened": "a piece of evidence was opened (its type, publisher and page number)",
+    "tour_started": "the guided tour was started",
+    "tour_ended": "the guided tour was finished or closed, and at which step",
+    "demo_cta_clicked": "a link to the demo was clicked",
+    "pilot_cta_clicked": "a link to the pilot form was clicked",
+    "booking_cta_clicked": "the booking link was clicked",
+    "email_cta_clicked": "the email link was clicked",
+    "pilot_form_viewed": "the pilot form was opened",
+    "pilot_submitted": "the pilot form was submitted (not what was typed into it)",
+    "pilot_submit_failed": "a submission failed, and which fields were rejected (their "
+                           "names, not their contents)",
+}
 
 
 def _page(name: str) -> HTMLResponse:
@@ -90,19 +129,24 @@ def page_values() -> dict[str, str]:
         "count_resolved": esc(counts.get("conflicts_resolved", "")),
         "count_changes": esc(counts.get("changes", "")),
         "cutoff": esc(_day(cutoff) or "its stated cutoff"),
+        "asset_version": ASSET_VERSION,
+        "analytics_events": "".join(f"<li><code>{esc(name)}</code> — {esc(what)}</li>"
+                                    for name, what in ANALYTICS_EVENTS.items()),
         # The privacy notice states what this deployment actually does.
         "privacy_crm": ("Your request is also sent to the system we use to manage replies, "
                         "with the same fields." if crm_url else
                         "It is not forwarded to any other system."),
         "privacy_analytics": (
-            "Analytics are enabled on this site. We use PostHog to count page views, "
-            "which demo views are opened and whether a form was submitted. Events carry "
+            "Analytics are enabled on this site. We use PostHog to count the events "
+            "listed below. Events carry "
             "no name, email address, organisation, typed text or document content; "
             "automatic capture, session recording and personal profiles are switched "
             "off. PostHog keeps an anonymous identifier in your browser so repeat visits "
             "can be counted." if cfg["analytics"]["enabled"] else
             "Analytics are switched off on this site: no analytics script is loaded, "
-            "no event is sent and nothing is stored in your browser for analytics."),
+            "no event is sent and nothing is stored in your browser for analytics. "
+            "If we switch them on, this notice will say so, and the events below are "
+            "the only ones that could be sent."),
     }
 
 
@@ -143,6 +187,9 @@ def client_ip(request: Request) -> str | None:
     return chain[-hops]
 
 
+# The public pages a crawler should know about; /app is the product, not the site.
+SITEMAP = ("/", "/demo", "/pilot", "/privacy")
+
 # Everything a demo-only deployment answers under /api. Anything else there is
 # the live database API and is refused, whatever the database holds.
 PUBLIC_API = ("/api/config", "/api/demo/", "/api/pilot")
@@ -157,6 +204,13 @@ def public_path(path: str) -> bool:
 
 def register(app) -> None:
     # --- demo-only gate -----------------------------------------------------
+
+    @app.middleware("http")
+    async def revalidate_assets(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/static/") and request.url.path.endswith((".js", ".css")):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
 
     @app.middleware("http")
     async def apex_only(request: Request, call_next):
@@ -202,7 +256,17 @@ def register(app) -> None:
 
     @app.get("/robots.txt", include_in_schema=False)
     def robots():
-        return FileResponse(STATIC / "robots.txt", media_type="text/plain")
+        body = (STATIC / "robots.txt").read_text().rstrip("\n")
+        return Response(f"{body}\nSitemap: {site_url()}/sitemap.xml\n",
+                        media_type="text/plain")
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    def sitemap():
+        urls = "".join(f"<url><loc>{html.escape(site_url() + path)}</loc></url>"
+                       for path in SITEMAP)
+        return Response('<?xml version="1.0" encoding="UTF-8"?>'
+                        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                        f"{urls}</urlset>", media_type="application/xml")
 
     @app.get("/healthz", include_in_schema=False)
     def healthz():

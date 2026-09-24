@@ -15,13 +15,14 @@ from __future__ import annotations
 
 import io
 from datetime import date
+from decimal import Decimal
 import pathlib
 
 import pymupdf
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 
-from . import evidence
+from . import evidence, reconcile, wording
 from .db import one, query
 from .reconcile import TOLERANCE_ABS_CR, TOLERANCE_PCT, _excluded
 
@@ -76,6 +77,7 @@ def issuer(issuer_id: int | None = None):
     row["documents"] = query(
         """
         SELECT id, doc_type, source_name, title, url, sha256, byte_size, page_count,
+               media_type, source_updated_on, source_changed_at,
                retrieved_at, published_date, extraction_status, extraction_expected,
                extraction_found, extraction_missing, extracted_at
         FROM document WHERE issuer_id = %s
@@ -126,16 +128,67 @@ def debt(issuer_id: int | None = None):
         """,
         (issuer_id,),
     )
-    return {"totals": totals, "instruments": instruments}
+    return {"totals": totals, "rows": _debt_rows(totals), "instruments": instruments}
+
+
+def _debt_rows(totals: list[dict]) -> list[dict]:
+    """One row per (basis, as-of date), one cell per publisher.
+
+    Three Brickwork rationales restating the same figure are one source, not
+    three: the cell shows the latest statement and keeps every rationale, each
+    with its own anchor. Agreement is counted over distinct publishers and
+    tested with the reconciler's own tolerances.
+    """
+    groups: dict[tuple, dict[str, list[dict]]] = {}
+    for t in totals:
+        groups.setdefault((t["basis"], t["as_of_date"]), {}).setdefault(
+            t["source_name"], []).append(t)
+    rows = []
+    for (basis, as_of), by_source in sorted(groups.items(), key=lambda g: (g[0][0], g[0][1]),
+                                            reverse=True):
+        cells = []
+        for source, items in sorted(by_source.items()):
+            items = sorted(items, key=lambda i: (i["published_date"] or date.min, i["claim_id"]))
+            latest = items[-1]
+            cells.append({
+                "source_name": source, "claim_id": latest["claim_id"],
+                "value_numeric": latest["value_numeric"], "value_unit": latest["value_unit"],
+                "published_date": latest["published_date"], "title": latest["title"],
+                "statements": [{"claim_id": i["claim_id"], "title": i["title"],
+                                "published_date": i["published_date"],
+                                "value_numeric": i["value_numeric"]} for i in items],
+                "changed_within": len({i["value_numeric"] for i in items}) > 1,
+            })
+        conflict = next((i["conflict"] for items in by_source.values() for i in items
+                         if i["conflict"]), None)
+        values = [c["value_numeric"] for c in cells]
+        if len(cells) < 2:
+            agreement = {"kind": "single", "label": "single source"}
+        else:
+            over, spread, _ = reconcile.disagrees(min(values), max(values),
+                                                  cells[0]["value_unit"])
+            gap = max(values) - min(values)
+            if conflict or over:
+                spread = Decimal(conflict["spread_pct"]) if conflict else spread
+                agreement = {"kind": "difference", "conflict_id": conflict and conflict["id"],
+                             "label": f"difference {spread:.3f}%"}
+            else:
+                agreement = {"kind": "agree", "gap": gap,
+                             "label": f"{len(cells)} sources agree"
+                                      + (f" ±₹{gap:,} crore" if gap else "")}
+        rows.append({"basis": basis, "as_of_date": as_of, "cells": cells,
+                     "agreement": agreement})
+    return rows
 
 
 @app.get("/api/ratings")
 def ratings(issuer_id: int | None = None):
     issuer_id = resolve_issuer(issuer_id)
-    return query(
+    rows = query(
         """
         SELECT c.id AS claim_id, r.agency, r.instrument, r.instrument_class, r.term,
                r.rated_amount_cr, r.rating, r.outlook, r.watch, r.action, r.action_date,
+               r.previous_rating,
                s.effective_from, s.effective_to, s.end_basis, s.superseded_by_claim_id,
                d.title, d.source_name
         FROM rating_action r
@@ -147,6 +200,11 @@ def ratings(issuer_id: int | None = None):
         """,
         (issuer_id,),
     )
+    for r in rows:
+        r["display_name"] = wording.display_name(r["instrument"], r["instrument_class"])
+        r["action_text"] = wording.action_text(r["action"], r["rating"], r["outlook"],
+                                               r["watch"], r["previous_rating"])
+    return rows
 
 
 @app.get("/api/rating-timeline")
@@ -190,6 +248,7 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
         """
         SELECT id, fact_key, subject, kind, tolerance_pct, spread_pct, note,
                first_detected_at, last_seen_at, resolved_at, ended_on, incomplete_corpus,
+               material_gap,
                CASE WHEN resolved_at IS NOT NULL THEN 'resolved'
                     WHEN ended_on IS NOT NULL THEN 'ended'
                     ELSE 'open' END AS status
@@ -203,11 +262,14 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
         row["members"] = query(
             """
             SELECT c.id AS claim_id, c.value_numeric, c.value_text, m.stated_value,
-                   c.subject, c.basis, c.provenance,
+                   c.subject, c.basis, c.provenance, d.id AS document_id,
+                   coalesce(r.instrument, h.instrument) AS instrument,
                    c.as_of_date, d.source_name, d.title, d.published_date
             FROM conflict_member m
             JOIN claim c ON c.id = m.claim_id
             JOIN document d ON d.id = c.document_id
+            LEFT JOIN rating_action r ON r.claim_id = c.id
+            LEFT JOIN rating_history_entry h ON h.claim_id = c.id
             WHERE m.conflict_id = %s
             ORDER BY d.published_date NULLS LAST, d.source_name
             """,
@@ -215,50 +277,87 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
         )
         for member in row["members"]:
             member["value_text"] = evidence.cap_for(member["source_name"], member["value_text"])
-        row["evidence"] = (_rating_periods(row) if row["fact_key"].startswith("rating_")
-                           else _grouped(row["members"]))
+        row["evidence"] = (_rating_evidence(row) if row["fact_key"].startswith("rating_")
+                           else _numeric_evidence(row))
+        row["subject"], row["note"] = wording.readable(row["subject"]), wording.readable(row["note"])
     return rows
 
 
-def _grouped(members: list[dict], key=("source_name", "title", "published_date",
-                                       "stated_value", "value_text", "value_numeric")) -> list[dict]:
-    """One evidence row per document and quote, with how many instruments it covers.
+ASPECT_COLUMN = {"rating_grade": "grade", "rating_outlook": "outlook", "rating_watch": "watch"}
+VISIBLE_LATER = 2           # later actions shown per side before the rest go to "history"
 
-    A rating action usually rates several tranches of one class identically;
-    listing each tranche repeated the same document and quote two or three
-    times. The claim id of the first is kept so the row still opens its evidence.
+
+def _actions(rows: list[dict]) -> list[dict]:
+    """One row per (agency, document): its stated value, distinct quotes and instruments.
+
+    A rating action rates several tranches identically and a rating-history
+    annexure lists many dated actions with the same wording; listing each
+    repeated the same document and quote up to 39 times. Quotes are grouped
+    within the document, each with the instruments and dates it covers.
     """
     out: dict[tuple, dict] = {}
-    for m in members:
-        k = tuple(m.get(f) for f in key)
-        if k in out:
-            out[k]["instruments"] += 1
-        else:
-            out[k] = {**m, "instruments": 1}
-    return list(out.values())
+    for r in rows:
+        key = (r["source_name"], r["document_id"], r.get("stated_value"))
+        action = out.setdefault(key, {
+            "source_name": r["source_name"], "document_id": r["document_id"],
+            "title": r["title"], "published_date": r["published_date"],
+            "stated_value": r.get("stated_value"), "claim_id": r["claim_id"],
+            "provenance": r.get("provenance"), "first": r.get("since"), "quotes": {}})
+        if r.get("since") and (action["first"] is None or r["since"] < action["first"]):
+            action["first"] = r["since"]
+        quote = action["quotes"].setdefault(
+            " ".join((r.get("value_text") or "").split()),
+            {"text": r.get("value_text"), "claim_id": r["claim_id"], "instruments": [],
+             "dates": []})
+        name = r.get("instrument") and wording.display_name(r["instrument"],
+                                                            r.get("instrument_class"))
+        if name and name not in quote["instruments"]:
+            quote["instruments"].append(name)
+        if r.get("since") and r["since"] not in quote["dates"]:
+            quote["dates"].append(r["since"])
+    actions = list(out.values())
+    for a in actions:
+        a["quotes"] = list(a["quotes"].values())
+        for q in a["quotes"]:
+            q["text"] = evidence.cap_for(a["source_name"], q["text"])
+            q["dates"].sort()
+        a["instruments"] = sum(len(q["instruments"]) or 1 for q in a["quotes"])
+    return actions
 
 
-ASPECT_COLUMN = {"rating_grade": "grade", "rating_outlook": "outlook", "rating_watch": "watch"}
+def _sides(rows: list[dict], agencies: list[str], start) -> list[dict]:
+    """Per agency: the action in force at the start of the overlap, then its
+    later actions in date order; anything else behind a "history" disclosure."""
+    sides = []
+    for agency in agencies:
+        actions = sorted(_actions([r for r in rows if r["source_name"] == agency]),
+                         key=lambda a: (a["first"] or a["published_date"] or date.min,
+                                        a["published_date"] or date.min))
+        at_start = [a for a in actions if start is None or (a["first"] or date.min) <= start]
+        opening = at_start[-1:] if at_start else actions[:1]
+        later = [a for a in actions if a not in opening
+                 and (start is None or (a["first"] or date.min) > start)]
+        visible = opening + later[-VISIBLE_LATER:]
+        history = [a for a in actions if a not in visible]
+        sides.append({"agency": agency, "actions": visible, "history": history})
+    return sides
 
 
-def _rating_periods(conflict: dict) -> list[dict]:
-    """The overlap split wherever either agency's in-force action changes.
+def _rating_evidence(conflict: dict) -> list[dict]:
+    """Evidence for a rating difference, per agency, over the overlap.
 
-    A rating difference can run across several actions by one side — Brickwork's
-    AA+ against ICRA's AA held through ICRA's Sep 2024, Sep 2025 and Feb 2026
-    actions — and citing whichever action was first in force misstates what the
-    other agency was saying later. Each period names, for each agency, the
-    action in force throughout it, grouped by document and quote.
+    Built from the in-force states while the difference is live; a resolved
+    one no longer has them, and uses the members it recorded.
     """
-    aspect, instrument_class, term, pair, start = conflict["fact_key"].split("|")
+    aspect, instrument_class, term, pair, start_text = conflict["fact_key"].split("|")
     column = ASPECT_COLUMN[aspect]
     agencies = pair.split("~")
-    end = conflict["ended_on"]
-    states = query(
+    start, end = date.fromisoformat(start_text), conflict["ended_on"]
+    rows = query(
         f"""
-        SELECT s.agency, s.{column} AS value, s.effective_from, s.effective_to, s.claim_id,
-               s.provenance, c.value_text, d.id AS document_id, d.title, d.source_name,
-               d.published_date
+        SELECT s.agency AS source_name, s.{column} AS stated_value, s.effective_from AS since,
+               s.claim_id, s.instrument, s.provenance, c.value_text,
+               d.id AS document_id, d.title, d.published_date
         FROM rating_state s JOIN claim c ON c.id = s.claim_id
         JOIN document d ON d.id = c.document_id
         WHERE s.issuer_id = (SELECT issuer_id FROM conflict WHERE id = %s)
@@ -270,35 +369,35 @@ def _rating_periods(conflict: dict) -> list[dict]:
         """,
         (conflict["id"], agencies, instrument_class, term, end, start),
     )
-    cuts = sorted({date.fromisoformat(start), *(s["effective_from"] for s in states),
-                   *(s["effective_to"] for s in states if s["effective_to"])})
-    lo_bound = date.fromisoformat(start)
-    cuts = [c for c in cuts if c >= lo_bound and (end is None or c < end)]
-    periods: list[dict] = []
-    for i, lo in enumerate(cuts):
-        hi = cuts[i + 1] if i + 1 < len(cuts) else end
-        live = [s for s in states if s["effective_from"] <= lo
-                and (s["effective_to"] is None or s["effective_to"] > lo)]
-        sides = []
-        for agency in agencies:
-            mine = [{**s, "source_name": s["agency"], "stated_value": s["value"]}
-                    for s in live if s["agency"] == agency]
-            sides.extend(_grouped(mine, key=("source_name", "document_id", "stated_value",
-                                              "value_text")))
-        if {s["source_name"] for s in sides} != set(agencies):
-            continue                    # not both in force: not part of the difference
-        signature = [(s["source_name"], s["document_id"], s["stated_value"]) for s in sides]
-        if periods and periods[-1]["signature"] == signature and periods[-1]["to"] == lo:
-            periods[-1]["to"] = hi
-            continue
-        periods.append({"from": lo, "to": hi, "sides": sides, "signature": signature})
-    for p in periods:
-        p.pop("signature")
-        for s in p["sides"]:
-            for k in ("effective_from", "effective_to", "value", "agency"):
-                s.pop(k, None)
-            s["value_text"] = evidence.cap_for(s["source_name"], s["value_text"])
-    return periods
+    if conflict["status"] == "resolved" or {r["source_name"] for r in rows} != set(agencies):
+        rows = _member_rows(conflict)
+    for r in rows:
+        r["instrument_class"] = instrument_class
+    return _sides(rows, agencies, start)
+
+
+def _member_rows(conflict: dict) -> list[dict]:
+    return [{**m, "since": m["as_of_date"], "document_id": m.get("document_id"),
+             "instrument": m.get("instrument")} for m in conflict["members"]]
+
+
+def _numeric_evidence(conflict: dict) -> list[dict]:
+    """Per publisher: its latest statement of the figure, earlier restatements
+    behind "history" — three Brickwork rationales repeating one number are one
+    source, not three."""
+    rows = _member_rows(conflict)
+    agencies = sorted({r["source_name"] for r in rows})
+    for r in rows:
+        r["stated_value"] = str(r["value_numeric"])
+    sides = []
+    for agency in agencies:
+        actions = sorted(_actions([r for r in rows if r["source_name"] == agency]),
+                         key=lambda a: a["published_date"] or date.min)
+        latest = actions[-1:]
+        for a in latest:
+            a["restated_in"] = len(actions)
+        sides.append({"agency": agency, "actions": latest, "history": actions[:-1]})
+    return sides
 
 
 @app.get("/api/corpus-gaps")
@@ -320,18 +419,24 @@ def corpus_gaps(issuer_id: int | None = None):
             FROM rating_history_entry h JOIN claim c ON c.id = h.claim_id
             WHERE c.issuer_id = %s
         ), missing AS (
-            SELECT agency, action_date, bool_or(scope = 'within_corpus') AS within
+            SELECT agency, action_date, bool_or(scope = 'within_corpus') AS within,
+                   bool_or(changes_view) AS changes_view
             FROM corpus_gap WHERE issuer_id = %s AND resolved_at IS NULL
             GROUP BY agency, action_date
         )
         SELECT l.agency,
-               count(*) AS listed,
+               count(*) AS listed, min(l.action_date) AS listed_since,
                count(*) FILTER (WHERE m.action_date IS NULL) AS loaded,
                count(*) FILTER (WHERE m.within) AS missing_within,
                count(*) FILTER (WHERE m.action_date IS NOT NULL AND NOT m.within)
                    AS missing_before,
                array_agg(l.action_date ORDER BY l.action_date)
-                   FILTER (WHERE m.within) AS missing_within_dates
+                   FILTER (WHERE m.within) AS missing_within_dates,
+               coalesce(json_agg(json_build_object('date', l.action_date,
+                                                   'changes_view', m.changes_view)
+                                 ORDER BY l.action_date) FILTER (WHERE m.within), '[]')
+                   AS missing_within_detail,
+               count(*) FILTER (WHERE m.within AND m.changes_view) AS missing_material
         FROM listed l LEFT JOIN missing m USING (agency, action_date)
         GROUP BY l.agency ORDER BY l.agency
         """,
@@ -340,7 +445,7 @@ def corpus_gaps(issuer_id: int | None = None):
     gaps = query(
         """
         SELECT g.id, g.agency, g.instrument_class, g.term, g.action_date,
-               nullif(g.grade, '') AS grade, g.outlook, g.watch, g.withdrawn,
+               nullif(g.grade, '') AS grade, g.outlook, g.watch, g.withdrawn, g.changes_view,
                g.first_detected_at, g.last_seen_at,
                array_agg(e.claim_id ORDER BY e.claim_id) AS evidence_claim_ids
         FROM corpus_gap g JOIN corpus_gap_evidence e ON e.gap_id = g.id
@@ -386,6 +491,8 @@ def corroborations(issuer_id: int | None = None):
         """,
         (resolve_issuer(issuer_id), TOLERANCE_PCT, TOLERANCE_ABS_CR),
     )
+    for row in rows:
+        row["subject"] = wording.readable(row["subject"])
     # same exclusions reconcile() applies, so the two views cannot drift apart
     return [row for row in rows if not _excluded(row["fact_key"])]
 
@@ -415,7 +522,8 @@ def claim(claim_id: int):
         SELECT c.id, c.claim_type, c.fact_key, c.subject, c.value_numeric, c.value_unit,
                c.value_text, c.basis, c.as_of_date, c.extractor, c.extractor_version,
                d.id AS document_id, d.title, d.source_name, d.url, d.sha256,
-               d.retrieved_at, d.published_date, d.page_count, d.media_type
+               d.retrieved_at, d.published_date, d.page_count, d.media_type,
+               d.source_updated_on, d.source_changed_at
         FROM claim c JOIN document d ON d.id = c.document_id WHERE c.id = %s
         """,
         (claim_id,),

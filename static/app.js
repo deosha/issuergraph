@@ -14,6 +14,9 @@ const day = (d) => d ? new Date(d).toLocaleDateString("en-GB",
 const UNIT_LABEL = { INR_CRORE: "₹ crore", PERCENT: "%", TIMES: "times" };
 const unitLabel = (u) => UNIT_LABEL[u] ?? u ?? "";
 // A document that states no publication date says so, rather than showing "—".
+// A publisher's name as it writes it ("Crisil"), not the key we store it under.
+const PUBLISHER = { CRISIL: "Crisil" };
+const pub = (name) => PUBLISHER[name] ?? name;
 const published = (d) => d ? `published ${day(d)}` : "publication date not stated";
 // Internal keys are for debugging, not for readers: ?debug=1 shows them.
 const DEBUG = new URLSearchParams(location.search).has("debug");
@@ -98,39 +101,38 @@ function render() {
 
 // Agreement within tolerance is not the same claim as an exact match. If the
 // sources differ at all, say by how much rather than rendering a bare "agree".
-function agreeBadge(items) {
-  const values = items.map(i => Number(i.value_numeric));
-  const gap = Math.max(...values) - Math.min(...values);
-  const label = `${items.length} sources agree`;
-  return gap === 0
-    ? `<span class="pill ok">${label}</span>`
-    : `<span class="pill ok">${label} ±${inr(gap)}</span>`;
+// Agreement is decided by the server over distinct publishers — three
+// Brickwork rationales restating one figure are one source, not three.
+function agreeBadge(a) {
+  const cls = a.kind === "difference" ? "diff" : a.kind === "agree" ? "ok" : "";
+  return `<span class="pill ${cls}">${esc(a.label)}</span>`;
+}
+
+function debtCell(c) {
+  const more = c.statements.length > 1;
+  return `<td class="num">${fact(c.claim_id, inr(c.value_numeric))}
+    <div class="muted" style="font-size:11px">${esc(pub(c.source_name))}${more
+      ? ` · ${c.statements.length} rationales` : ""}${c.changed_within
+      ? ` · <span title="This publisher stated different figures; see What changed">restated</span>` : ""}</div>
+    ${more ? `<details class="restated"><summary>each rationale</summary>
+      ${c.statements.map(st => `<div>${fact(st.claim_id, inr(st.value_numeric))}
+        <span class="muted">${esc(st.title)} · ${published(st.published_date)}</span></div>`)
+        .join("")}</details>` : ""}</td>`;
 }
 
 function viewDebt() {
-  const { totals, instruments } = state.data.debt;
-  const groups = {};
-  for (const t of totals) (groups[`${t.basis}|${t.as_of_date}`] ||= []).push(t);
-
-  const rows = Object.entries(groups).sort().reverse().map(([key, items]) => {
-    const [basis, asOf] = key.split("|");
-    const conflicted = items.find(i => i.conflict);
-    return `<tr>
-      <td>${esc(basis)}<div class="muted" style="font-size:12px">as at ${day(asOf)}</div></td>
-      ${items.map(i => `<td class="num">${fact(i.claim_id, inr(i.value_numeric))}
-        <div class="muted" style="font-size:11px">${esc(i.source_name)}</div></td>`).join("")}
-      <td>${conflicted
-        ? `<span class="pill diff">difference ${Number(conflicted.conflict.spread_pct).toFixed(3)}%</span>`
-        : items.length > 1 ? agreeBadge(items)
-        : `<span class="pill">single source</span>`}</td></tr>`;
-  }).join("");
+  const { rows: grouped, instruments } = state.data.debt;
+  const rows = grouped.map(r => `<tr>
+      <td>${esc(r.basis)}<div class="muted" style="font-size:12px">as at ${day(r.as_of_date)}</div></td>
+      ${r.cells.map(debtCell).join("")}
+      <td>${agreeBadge(r.agreement)}</td></tr>`).join("");
 
   const instRows = instruments.map(i => `<tr>
       <td>${fact(i.claim_id, esc(i.instrument_name))}</td>
       <td><span class="pill">${esc(i.instrument_type)}</span></td>
       <td class="num">${inr(i.amount_cr)}</td>
       <td class="num">${day(i.maturity_date)}</td>
-      <td class="muted">${esc(i.source_name)}</td></tr>`).join("");
+      <td class="muted">${esc(pub(i.source_name))}</td></tr>`).join("");
 
   return `<h2>Total borrowings — every figure is a link to its source</h2>
     <table><thead><tr><th>Basis</th><th colspan="9"></th></tr></thead>
@@ -163,8 +165,8 @@ function inForce(r) {
 function viewRatings() {
   const rows = state.data.ratings.map(r => `<tr>
     <td class="muted">${day(r.action_date)}</td>
-    <td>${esc(r.agency)}</td>
-    <td>${fact(r.claim_id, esc(r.instrument))}
+    <td>${esc(pub(r.agency))}</td>
+    <td>${fact(r.claim_id, esc(r.display_name))}
       <div class="muted" style="font-size:11px">
         ${esc(CLASS_LABEL[r.instrument_class] ?? r.instrument_class)} ·
         ${r.term === "short_term" ? "short-term scale" : "long-term scale"}</div></td>
@@ -172,7 +174,7 @@ function viewRatings() {
     <td><b>${esc(r.rating ?? "—")}</b>${r.outlook ? ` <span class="pill">${esc(r.outlook)}</span>` : ""}
         ${r.watch ? ` <span class="pill bad">${esc(r.watch)}</span>` : ""}
         <div class="muted" style="font-size:11px">${inForce(r)}</div></td>
-    <td class="muted">${esc(r.action ?? "")}</td></tr>`).join("");
+    <td class="muted">${esc(r.action_text)}</td></tr>`).join("");
   return `<h2>Rating actions across agencies</h2>
     <div class="muted" style="font-size:12px;margin:-6px 0 10px">
       A rating stands from its action date until the same agency next acts on the
@@ -189,34 +191,41 @@ function viewConflicts() {
   const resolved = state.data.conflicts.filter(c => c.status === "resolved");
 
   const STATUS = { open: "Open", ended: "Ended", resolved: "Resolved" };
-  // One evidence row per document and quote, with the instruments it covers.
-  const side = m => `<div class="member">
-      <span><b>${esc(m.source_name)}</b>
-        <span class="muted">· ${esc(m.title)} · ${day(m.published_date)}${
-          m.provenance === "history_annexure" ? " · from its rating-history annexure" : ""}</span>
-        ${m.value_text && m.stated_value ? `<div class="muted" style="font-size:11px">
-          quoting: ${esc(m.value_text)}</div>` : ""}
-        ${m.instruments > 1 ? `<div class="muted" style="font-size:11px">
-          covers ${m.instruments} instruments</div>` : ""}</span>
-      <span>${fact(m.claim_id, m.stated_value ? esc(m.stated_value)
-        : (m.value_numeric != null ? inr(m.value_numeric) : esc(m.value_text)))}</span>
+  // One row per agency document: its value, and each distinct quote with the
+  // dates it was stated on and the instruments it covers (listed on demand).
+  const quote = (q, many) => `<div class="muted" style="font-size:11px">
+      “${esc(q.text)}”${q.dates.length > 1 || many
+        ? ` · ${q.dates.map(day).join(", ")}` : ""}
+      ${q.instruments.length > 1 ? `<details class="covers"><summary>covers
+        ${q.instruments.length} instruments</summary>${q.instruments.map(esc).join("<br>")}</details>`
+        : q.instruments.length ? ` · ${esc(q.instruments[0])}` : ""}</div>`;
+  const action = a => `<div class="member">
+      <span><b>${esc(pub(a.source_name))}</b>
+        <span class="muted">· ${esc(a.title)} · ${published(a.published_date)}${
+          a.provenance === "history_annexure" ? " · from its rating-history annexure" : ""}${
+          a.restated_in > 1 ? ` · latest of ${a.restated_in} rationales` : ""}</span>
+        ${a.quotes.map(q => quote(q, a.quotes.length > 1)).join("")}</span>
+      <span>${fact(a.claim_id, esc(a.stated_value))}</span>
     </div>`;
-  // A rating difference can span several actions by either side; each period
-  // cites the action in force during it.
-  const evidence = c => (c.evidence || []).length && c.evidence[0].sides
-    ? c.evidence.map(p => `<div class="period">
-        <div class="muted" style="font-size:12px;margin:8px 0 2px">
-          ${day(p.from)} → ${p.to ? day(p.to) : "now"}</div>
-        <div class="members">${p.sides.map(side).join("")}</div></div>`).join("")
-    : `<div class="members">${(c.evidence || c.members).map(side).join("")}</div>`;
+  // Per agency: the action in force when the difference began, then its later
+  // actions in date order; older or superseded ones behind "history".
+  const evidence = c => `<div class="members">${(c.evidence || []).map(sd =>
+      sd.actions.map(action).join("") + (sd.history.length
+        ? `<details class="history"><summary>${esc(pub(sd.agency))} history
+            (${sd.history.length})</summary><div class="members">
+            ${sd.history.map(action).join("")}</div></details>` : "")).join("")}</div>`;
   const card = c => `<div class="card conflict${c.status !== "open" ? " resolved" : ""}"
     id="conflict-${c.id}" data-fact-key="${esc(c.fact_key)}">
     <h3><span class="pill ${c.status === "open" ? "diff" : "ok"}">${STATUS[c.status]}</span>
-      ${c.incomplete_corpus ? `<span class="pill warn">incomplete corpus</span>` : ""}
+      ${c.material_gap ? `<span class="pill warn">missing document</span>`
+        : c.incomplete_corpus ? `<span class="pill">documents missing, no change of view</span>` : ""}
       ${esc(c.subject)}</h3>
-    ${c.incomplete_corpus ? `<div class="note">Computed over a period in which an
-      agency took an action we hold only from its rating-history annexure, not its
-      own rationale. See Sources.</div>` : ""}
+    ${c.material_gap ? `<div class="note">Computed over a period in which an agency
+      changed its view in an action we hold only from its rating-history annexure,
+      not its own rationale. See Sources.</div>`
+      : c.incomplete_corpus ? `<div class="muted" style="font-size:12px;margin-bottom:6px">
+      Some of this period's actions are known only from rating-history annexures;
+      each reaffirmed the view shown. See Sources.</div>` : ""}
     <div class="muted" style="font-size:12px;margin-bottom:6px">
       ${c.status === "resolved"
         ? `no longer detected as of ${day(c.resolved_at)} · first seen ${day(c.first_detected_at)}`
@@ -236,7 +245,7 @@ function viewConflicts() {
       agree within tolerance, residual variance ${inr(c.variance_cr)}
       (${Number(c.spread_pct).toFixed(3)}%)</div>` : ""}
     <div class="members">${c.members.map(m => `<div class="member">
-      <span class="muted">${esc(m.source)}</span>
+      <span class="muted">${esc(pub(m.source))}</span>
       <span>${fact(m.claim_id, inr(m.value))}</span></div>`).join("")}</div>
   </div>`).join("");
 
@@ -297,27 +306,36 @@ function coverageBadge(d) {
   return `<span class="pill">coverage not checked</span>`;
 }
 
+// "History lists N actions since <date>; M loaded; gaps: <dates>", with each
+// missing date saying whether it changed the agency's view.
 function viewHistoryCoverage() {
   const g = state.data.gaps;
   if (!g || !g.agencies.length) return "";
   const missing = g.gaps.reduce((by, x) => ((by[x.agency] ??= []).push(x), by), {});
+  const gapDates = a => (a.missing_within_detail || []).map(m => {
+    const at = (missing[a.agency] || []).find(x => x.action_date === m.date);
+    const label = `${day(m.date)}${m.changes_view ? "" : " (reaffirmation, no change)"}`;
+    return at ? fact(at.claim_id, label) : label;
+  }).join(", ");
   return `<h2>Rating-history coverage</h2>
     <div class="muted" style="font-size:12px;margin:-6px 0 10px">
       Each agency's rationale lists that agency's own past actions. An action it
       lists that we hold no rationale for is a document we are missing.</div>` +
-    g.agencies.map(a => `<div class="card"><h3>${esc(a.agency)}
-      ${a.missing_within ? `<span class="pill bad">${a.missing_within} missing</span>` : ""}</h3>
-      History lists ${a.listed} action${a.listed === 1 ? "" : "s"};
-      ${a.loaded} loaded.
-      ${a.missing_within ? `<div class="note">Missing within the period our documents
-        cover: ${(missing[a.agency] || []).map(x => fact(x.claim_id,
-          `${day(x.action_date)} · ${esc(CLASS_LABEL[x.instrument_class] ?? x.instrument_class)} ${esc(x.grade ?? "withdrawn")}`))
-          .join(", ")}</div>` : ""}
+    g.agencies.map(a => `<div class="card"><h3>${esc(pub(a.agency))}
+      ${a.missing_material ? `<span class="pill warn">${a.missing_material} missing, view changed</span>`
+        : a.missing_within ? `<span class="pill">${a.missing_within} missing, reaffirmations</span>` : ""}</h3>
+      History lists ${a.listed} action${a.listed === 1 ? "" : "s"} since
+      ${day(a.listed_since)}; ${a.loaded} loaded;
+      ${a.missing_within ? `gaps: ${gapDates(a)}.` : "no gaps in the period our documents cover."}
       ${a.missing_before ? `<div class="muted" style="font-size:12px;margin-top:4px">
         ${a.missing_before} earlier action${a.missing_before === 1 ? "" : "s"} predate
-        our earliest ${esc(a.agency)} document.</div>` : ""}
+        our earliest ${esc(pub(a.agency))} document.</div>` : ""}
     </div>`).join("");
 }
+
+// A web page has no pages; a PDF says how many it has.
+const extent = d => d.media_type === "text/html" ? "web page"
+  : `${d.page_count} page${d.page_count === 1 ? "" : "s"}`;
 
 function viewSources() {
   return viewHistoryCoverage() +
@@ -330,8 +348,13 @@ function viewSources() {
         <div style="margin-top:6px">Absent facts below reflect parsing, not disclosure.</div>
       </div>` : ""}
       <div class="muted" style="font-size:12px">
-        ${esc(d.source_name)} · ${esc(d.doc_type)} · ${d.page_count} pages ·
-        ${published(d.published_date)} · retrieved ${day(d.retrieved_at)}<br>
+        ${esc(pub(d.source_name))} · ${esc(d.doc_type.replace(/_/g, " "))} · ${extent(d)} ·
+        ${published(d.published_date)}${d.source_updated_on
+          ? ` · updated by the publisher ${day(d.source_updated_on)}` : ""} ·
+        retrieved ${day(d.retrieved_at)}<br>
+        ${d.source_changed_at ? `<div class="note">Changed at source since retrieval
+          (noticed ${day(d.source_changed_at)}). The stored copy, with the hash below,
+          remains the evidence of record.</div>` : ""}
         <code>sha256 ${esc(d.sha256)}</code><br>
         <a href="${esc(d.url)}" target="_blank" rel="noopener">original URL</a>${
           IG.demo ? "" : ` · <a href="/api/pdf/${d.id}" target="_blank">stored copy</a>`}
@@ -373,9 +396,11 @@ async function showClaim(claimId) {
     .flatMap(a => a.bbox_rects || []);
 
   const pageView = quoteOnly
-    ? `<div class="note">This publisher's page is not reproduced here.
-        <a href="${esc(c.source_link)}" target="_blank" rel="noopener noreferrer">Open it on
-        ${esc(c.source_name)}'s site</a> — supporting browsers highlight the quoted text.</div>`
+    ? `<div class="note">${esc(c.policy_note)}
+        <div style="margin-top:6px"><a href="${esc(c.source_link)}" target="_blank"
+          rel="noopener noreferrer">Open the quoted passage</a> ·
+        <a href="${esc(c.plain_url)}" target="_blank" rel="noopener noreferrer">open the page</a>
+        <span class="muted">(if your browser does not jump to the passage)</span></div></div>`
     : IG.demo
     ? (page ? `<div class="pagewrap" id="pagewrap">
         <img class="pageimg" id="pageimg" alt="Page ${primary.page_no} of ${esc(c.title)}"
@@ -395,17 +420,10 @@ async function showClaim(claimId) {
     <div style="font-size:20px;font-weight:600;margin-bottom:2px">${value}</div>
     <div class="meta">${esc(c.subject)}</div>
     <div class="meta">
-      <b>${esc(c.title)}</b> · ${esc(c.source_name)} · ${published(c.published_date)}<br>
-      ${primary.kind === "html"
-        ? `HTML node <code>${esc(primary.node_path)}</code>`
-        : `Page ${primary.page_no} of ${c.page_count}`} ·
-      chars ${primary.char_start}–${primary.char_end} ·
-      basis ${esc(c.basis)} · as at ${day(c.as_of_date)}<br>
-      <code>${esc(c.extractor)} v${esc(c.extractor_version)}</code> ·
-      <code>sha256 ${esc(c.sha256).slice(0, 16)}…</code> ·
-      retrieved ${day(c.retrieved_at)}<br>
-      <a href="${esc(c.source_link ?? c.url)}" target="_blank"
-         rel="noopener noreferrer">source URL</a>${pdfLink}
+      ${c.panel_lines.map((line, i) => i === 0 ? `<b>${esc(line)}</b>` : esc(line)).join("<br>")}
+      ${DEBUG && primary.kind === "html" ? `<br><code>${esc(primary.node_path)}</code>` : ""}
+      ${quoteOnly ? "" : `<br><a href="${esc(c.source_link ?? c.url)}" target="_blank"
+         rel="noopener noreferrer">source URL</a>${pdfLink}`}
     </div>
     ${c.anchors.map(a => `<blockquote>${esc(a.evidence_text)}${a.truncated
       ? ` <span class="muted">(quote shortened)</span>` : ""}</blockquote>`).join("")}
