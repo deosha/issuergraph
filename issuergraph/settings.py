@@ -86,3 +86,36 @@ def rate_limit() -> tuple[int, int]:
     """(max submissions, window in seconds) per client for the pilot form."""
     return (int(_env("ISSUERGRAPH_PILOT_RATE_MAX", "5")),
             int(_env("ISSUERGRAPH_PILOT_RATE_WINDOW", "3600")))
+
+
+# How each publisher's evidence may be shown. 'page_image' renders the page the
+# anchor sits on with the span highlighted. 'quote_and_link' serves no copy of
+# the source at all — a short quote, the anchor's metadata, and a link to the
+# publisher's own page with a text fragment — for publishers whose terms
+# restrict redistribution (CRISIL). Anything not listed is 'page_image'.
+EVIDENCE_POLICIES = ("page_image", "quote_and_link")
+DEFAULT_EVIDENCE_POLICY = {"CRISIL": "quote_and_link"}
+
+
+@lru_cache(maxsize=1)
+def evidence_policies() -> dict[str, str]:
+    """Publisher → policy. ISSUERGRAPH_EVIDENCE_POLICY adds or overrides
+    entries as "CRISIL=quote_and_link,ICRA=page_image"; an unknown policy name
+    is an error, never a silent fallback to showing the page."""
+    policies = dict(DEFAULT_EVIDENCE_POLICY)
+    for item in filter(None, (p.strip() for p in _env("ISSUERGRAPH_EVIDENCE_POLICY").split(","))):
+        publisher, _, policy = item.partition("=")
+        if policy.strip() not in EVIDENCE_POLICIES:
+            raise ValueError(f"unknown evidence policy {policy!r} for {publisher!r}")
+        policies[publisher.strip()] = policy.strip()
+    return policies
+
+
+def evidence_policy(source_name: str | None) -> str:
+    return evidence_policies().get(source_name or "", "page_image")
+
+
+def site_url() -> str:
+    """The public site's absolute base URL: canonical links, Open Graph URLs
+    and the www → apex redirect are built from it."""
+    return _env("ISSUERGRAPH_SITE_URL", "https://issuergraph.com").rstrip("/")

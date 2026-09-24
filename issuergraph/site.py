@@ -13,15 +13,18 @@ uvicorn command keep working.
 """
 from __future__ import annotations
 
+import html
 import pathlib
+from datetime import date
+from urllib.parse import urlsplit
 
 from fastapi import HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import demo as demo_snapshot
 from . import pilot as pilot_module
-from .settings import demo_only, site_config, trusted_proxy_hops
+from .settings import crm_webhook, demo_only, site_config, site_url, trusted_proxy_hops
 
 STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
 
@@ -31,12 +34,87 @@ STATIC = pathlib.Path(__file__).resolve().parent.parent / "static"
 PAGE_CACHE = "public, max-age=86400"
 
 
-def _page(name: str) -> FileResponse:
+def _page(name: str) -> HTMLResponse:
+    """A page with its {{tokens}} filled in on the server.
+
+    The browser still updates the same values from /api/config and the demo
+    snapshot, but a crawler or a link preview reads the HTML as sent — before
+    any script runs — so the founder, the counts and the dataset cutoff are in
+    it already rather than "—".
+    """
     path = STATIC / name
     if not path.exists():
         raise HTTPException(404, f"{name} not found")
-    return FileResponse(path, media_type="text/html",
-                        headers={"Cache-Control": "no-cache"})
+    body = path.read_text()
+    for key, value in page_values().items():
+        body = body.replace("{{" + key + "}}", value)
+    return HTMLResponse(body, headers={"Cache-Control": "no-cache"})
+
+
+def _day(value) -> str:
+    if not value:
+        return ""
+    d = value if isinstance(value, date) else date.fromisoformat(str(value)[:10])
+    return f"{d.day:02d} {d:%b %Y}"
+
+
+def page_values() -> dict[str, str]:
+    """Every {{token}} a page may use, HTML-escaped (raw HTML only where built here)."""
+    cfg = site_config()
+    esc = lambda v: html.escape(str(v or ""), quote=True)
+    try:
+        overview = demo_snapshot.overview()
+        counts, cutoff = overview["counts"], overview["document_cutoff"]
+    except Exception:                    # no snapshot in this environment
+        counts, cutoff = {}, None
+    crm_url, _ = crm_webhook()
+    linkedin = cfg.get("founder_linkedin")
+    bio = cfg.get("founder_bio")
+    return {
+        "site_url": esc(site_url()),
+        "product_name": esc(cfg["product_name"]),
+        "founder_name": esc(cfg["founder_name"]),
+        "founder_role": esc(cfg["founder_role"]),
+        "founder_bio_block": (f'<p id="founder-bio" data-cfg="founder_bio">{esc(bio)}</p>'
+                              if bio else ""),
+        # With no profile configured there is no link at all, not a dead href="#".
+        "founder_linkedin_link": (f'<a id="founder-linkedin" href="{esc(linkedin)}" '
+                                  f'rel="me noopener" target="_blank">LinkedIn</a>'
+                                  if linkedin else ""),
+        "contact_email": esc(cfg["contact_email"]),
+        "booking_link": (f'<a class="btn" id="booking-link" href="{esc(cfg["booking_url"])}" '
+                         f'data-cta="booking">Book a call</a>' if cfg.get("booking_url") else ""),
+        "count_documents": esc(counts.get("documents", "several")),
+        "count_facts": esc(counts.get("claims", "")),
+        "count_open_differences": esc(counts.get("conflicts_open", "")),
+        "count_resolved": esc(counts.get("conflicts_resolved", "")),
+        "count_changes": esc(counts.get("changes", "")),
+        "cutoff": esc(_day(cutoff) or "its stated cutoff"),
+        # The privacy notice states what this deployment actually does.
+        "privacy_crm": ("Your request is also sent to the system we use to manage replies, "
+                        "with the same fields." if crm_url else
+                        "It is not forwarded to any other system."),
+        "privacy_analytics": (
+            "Analytics are enabled on this site. We use PostHog to count page views, "
+            "which demo views are opened and whether a form was submitted. Events carry "
+            "no name, email address, organisation, typed text or document content; "
+            "automatic capture, session recording and personal profiles are switched "
+            "off. PostHog keeps an anonymous identifier in your browser so repeat visits "
+            "can be counted." if cfg["analytics"]["enabled"] else
+            "Analytics are switched off on this site: no analytics script is loaded, "
+            "no event is sent and nothing is stored in your browser for analytics."),
+    }
+
+
+def canonical_redirect(request: Request) -> RedirectResponse | None:
+    """www.<site> answers with a permanent redirect to the apex, path kept."""
+    host = (request.headers.get("x-forwarded-host") or request.headers.get("host") or "")
+    host = host.split(",")[0].strip().lower()
+    apex = urlsplit(site_url()).hostname or ""
+    if not host.startswith("www.") or host.split(":")[0][4:] != apex:
+        return None
+    query = f"?{request.url.query}" if request.url.query else ""
+    return RedirectResponse(f"{site_url()}{request.url.path}{query}", status_code=301)
 
 
 def client_ip(request: Request) -> str | None:
@@ -81,6 +159,11 @@ def register(app) -> None:
     # --- demo-only gate -----------------------------------------------------
 
     @app.middleware("http")
+    async def apex_only(request: Request, call_next):
+        redirect = canonical_redirect(request)
+        return redirect or await call_next(request)
+
+    @app.middleware("http")
     async def gate_live_api(request: Request, call_next):
         # Hiding /app was not enough: the JSON routes behind it stayed
         # reachable, so a public host pointed at a workspace database would have
@@ -105,6 +188,10 @@ def register(app) -> None:
     @app.get("/pilot", include_in_schema=False)
     def pilot_page():
         return _page("pilot.html")
+
+    @app.get("/privacy", include_in_schema=False)
+    def privacy_page():
+        return _page("privacy.html")
 
     @app.get("/app", include_in_schema=False)
     def product_page():

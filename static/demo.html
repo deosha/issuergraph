@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IssuerGraph demo — IIFL Finance sample dataset</title>
 <meta name="description" content="Explore a sample issuer: debt figures, rating actions and documented differences between sources — click any figure to read the exact source text on the page it came from. No signup.">
-<link rel="canonical" href="/demo">
+<link rel="canonical" href="{{site_url}}/demo">
+<meta property="og:url" content="{{site_url}}/demo">
 <meta property="og:type" content="website">
 <meta property="og:title" content="IssuerGraph demo — a sample issuer, with the evidence">
-<meta property="og:description" content="Click any figure to see the page and sentence it came from. Sample dataset, six public documents, no signup.">
-<meta property="og:image" content="/static/og-demo.svg">
+<meta property="og:description" content="Click any figure to see the evidence it came from. Sample dataset, {{count_documents}} public documents, {{count_facts}} facts, no signup.">
+<meta property="og:image" content="{{site_url}}/static/og-demo.svg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/app.css">
@@ -30,8 +31,8 @@
      after which it knows nothing. -->
 <div class="demobar">
   <span><b>Sample dataset</b> · IIFL Finance Limited · read-only</span>
-  <span><b id="doccount">—</b> public documents, latest published <b id="cutoff">—</b></span>
-  <span id="snapcounts"></span>
+  <span><b id="doccount">{{count_documents}}</b> public documents, latest published <b id="cutoff">{{cutoff}}</b></span>
+  <span id="snapcounts">{{count_facts}} facts · {{count_open_differences}} open differences · {{count_resolved}} resolved · {{count_changes}} tracked changes</span>
   <span class="spacer"></span>
   <button type="button" class="btn" id="tour-start">Take the guided tour</button>
 </div>
@@ -73,7 +74,7 @@ document.addEventListener("ig:loaded", (e) => {
   document.getElementById("doccount").textContent = c.documents;
   // Every number here is computed from the snapshot by the exporter.
   document.getElementById("snapcounts").textContent =
-    `${c.claims} anchored facts · ${c.conflicts_open} open differences · ` +
+    `${c.claims} facts · ${c.conflicts_open} open differences · ` +
     `${c.conflicts_resolved} resolved · ${c.changes} tracked changes`;
   track("demo_started", { demo: true });
 });

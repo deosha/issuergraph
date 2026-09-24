@@ -15,11 +15,18 @@ same way the live product does; nothing is re-searched or approximated.
 views the demo actually renders, so the snapshot is a curated subset rather than
 a database dump served from a public route.
 
+*It does not show a disagreement over a record it knows is incomplete.* A
+conflict flagged incomplete_corpus was computed across an action an agency took
+that we hold only from its rating-history annexure. The export refuses such a
+snapshot unless --allow-gaps is passed, and records the override in the
+snapshot when it is.
+
 The snapshot is committed, so `git diff` after a re-export shows exactly what
 changed about the demo.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 import shutil
@@ -31,8 +38,9 @@ import pymupdf
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from issuergraph import api                                    # noqa: E402
+from issuergraph import api, evidence, htmldoc                 # noqa: E402
 from issuergraph.db import connect, one, query                 # noqa: E402
+from issuergraph.loader import _html_tree                      # noqa: E402
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "static" / "demo"
 PAGES = OUT / "pages"
@@ -95,7 +103,26 @@ def render_page(document_id: int, page_no: int) -> dict:
 UNDISPLAYED = ("extracted_at",)
 
 
-def main() -> int:
+class IncompleteCorpus(SystemExit):
+    """A conflict the demo would show rests on a document we do not hold."""
+
+
+def gap_gate(conflicts: list[dict], allow_gaps: bool) -> list[dict]:
+    """The conflicts that block an export, or [] when the export may proceed.
+
+    Checked before anything is written, so a refused export leaves the
+    committed snapshot and page images exactly as they were.
+    """
+    flagged = [c for c in conflicts if c.get("incomplete_corpus")]
+    return [] if allow_gaps else flagged
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    args.add_argument("--allow-gaps", action="store_true",
+                      help="export even if a shown conflict has incomplete_corpus = true")
+    opts = args.parse_args(argv)
+
     issuer = api.issuer()
     for document in issuer["documents"]:
         for field in UNDISPLAYED:
@@ -107,9 +134,25 @@ def main() -> int:
     conflicts = api.conflicts(issuer_id=issuer_id, include_resolved=True)
     corroborations = api.corroborations(issuer_id=issuer_id)
     changes = api.changes(issuer_id=issuer_id)
+    gaps = api.corpus_gaps(issuer_id=issuer_id)
+
+    blocking = gap_gate(conflicts, opts.allow_gaps)
+    if blocking:
+        print("refusing to export: these conflicts were computed over an incomplete corpus",
+              file=sys.stderr)
+        for c in blocking:
+            print(f"  #{c['id']} {c['fact_key']} — {c['subject']}", file=sys.stderr)
+        missing = [f"{g['agency']} {g['action_date']} ({g['instrument_class']})"
+                   for g in gaps["gaps"]]
+        print(f"missing primary documents: {', '.join(missing) or 'none recorded'}",
+              file=sys.stderr)
+        print("load the missing rationales, or pass --allow-gaps to export anyway",
+              file=sys.stderr)
+        raise IncompleteCorpus(2)
 
     views = {"issuer": issuer, "debt": debt, "ratings": ratings, "timeline": timeline,
-             "conflicts": conflicts, "corroborations": corroborations, "changes": changes}
+             "conflicts": conflicts, "corroborations": corroborations, "changes": changes,
+             "gaps": gaps}
 
     claim_ids = sorted(claim_ids_in(views))
     claims = {str(cid): export_claim(cid) for cid in claim_ids}
@@ -121,6 +164,8 @@ def main() -> int:
     pages: dict[str, dict] = {}
     for claim in claims.values():
         for anchor in claim["anchors"]:
+            if not rendered(claim, anchor):
+                continue                # quote_and_link or HTML: no page, ever
             key = f"{claim['document_id']}-{anchor['page_no']}"
             if key not in pages:
                 pages[key] = render_page(claim["document_id"], anchor["page_no"])
@@ -141,6 +186,10 @@ def main() -> int:
         "conflicts": jsonable(conflicts),
         "corroborations": jsonable(corroborations),
         "changes": jsonable(changes),
+        "gaps": jsonable(gaps),
+        # True only when --allow-gaps overrode a flagged conflict.
+        "incomplete_corpus_allowed": bool(
+            opts.allow_gaps and any(c.get("incomplete_corpus") for c in conflicts)),
         "claims": claims,
         "pages": pages,
     }
@@ -161,16 +210,46 @@ def main() -> int:
     return 0
 
 
+def rendered(claim: dict, anchor: dict) -> bool:
+    """Is this anchor shown on a page image? Only a PDF anchor from a
+    publisher whose page we may reproduce."""
+    return anchor.get("kind", "pdf") == "pdf" and claim.get("evidence_policy") == "page_image"
+
+
 def verify(snapshot: dict) -> None:
     """The snapshot must be able to prove what it displays.
 
     Checked against the live database while it is still available, because the
-    demo has no way to re-derive any of it later.
+    demo has no way to re-derive any of it later. An HTML anchor is re-resolved
+    from the stored bytes, and what the snapshot carries must be exactly the
+    excerpt of that text the publisher's policy allows — never more.
     """
     with connect() as conn:
+        trees: dict[int, object] = {}
         for claim_id, claim in snapshot["claims"].items():
             assert claim["anchors"], f"claim {claim_id} exported without evidence"
             for anchor in claim["anchors"]:
+                if anchor.get("kind") == "html":
+                    if claim["document_id"] not in trees:
+                        trees[claim["document_id"]] = _html_tree(conn, claim["document_id"])[0]
+                    node = htmldoc.resolve(trees[claim["document_id"]], anchor["node_path"])
+                    assert node is not None, f"claim {claim_id} anchor names no node"
+                    actual = node.text_content()[anchor["char_start"]:anchor["char_end"]]
+                    shown = (evidence.excerpt(actual)[0]
+                             if claim.get("evidence_policy") == "quote_and_link" else actual)
+                    assert anchor["evidence_text"] == shown, (
+                        f"claim {claim_id} exports text its source does not support")
+                    continue
+                if claim.get("evidence_policy") == "quote_and_link":
+                    # a quoted PDF span: capped, verified against its page text
+                    page = conn.execute(
+                        "SELECT text FROM document_page WHERE document_id = %s "
+                        "AND page_no = %s", (claim["document_id"], anchor["page_no"]),
+                    ).fetchone()
+                    actual = page["text"][anchor["char_start"]:anchor["char_end"]]
+                    assert anchor["evidence_text"] == evidence.excerpt(actual)[0], (
+                        f"claim {claim_id} exports text its source does not support")
+                    continue
                 page = conn.execute(
                     "SELECT text FROM document_page WHERE document_id = %s AND page_no = %s",
                     (claim["document_id"], anchor["page_no"]),
@@ -182,6 +261,8 @@ def verify(snapshot: dict) -> None:
 
     for claim in snapshot["claims"].values():
         for anchor in claim["anchors"]:
+            if not rendered(claim, anchor):
+                continue
             key = f"{claim['document_id']}-{anchor['page_no']}"
             assert key in snapshot["pages"], f"no page image for {key}"
             assert (OUT / snapshot["pages"][key]["image"]).exists()

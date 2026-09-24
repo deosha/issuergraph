@@ -55,7 +55,19 @@ EXCLUDED_KEYS: tuple[tuple[str, str], ...] = (
     ("instrument|",
      "the key embeds the amount itself, so any cross-document match is "
      "tautological agreement rather than independent corroboration"),
+    ("rating_history|",
+     "an agency's record of its own past actions: the key embeds the agency, "
+     "so two documents agreeing are one source repeating itself; history enters "
+     "comparison only through rating states (effective.py, completeness.py)"),
 )
+
+
+# Not a key prefix but a property of the claims under a key: an agency's
+# restatement of the accounts ("Crisil Ratings-adjusted") and the reported
+# figure differ by definition, so their difference is not a disagreement.
+# Checked on the data, not trusted to key naming. See sql/011.
+ADJUSTED_VS_REPORTED = ("agency-adjusted figures are compared only with agency-adjusted "
+                        "figures, never with reported ones")
 
 
 def _excluded(fact_key: str) -> str | None:
@@ -85,7 +97,10 @@ def _comparable_keys(conn, issuer_id: int, column: str) -> tuple[list[str], list
     """Fact keys held by >1 document AND >1 source. Returns (kept, skipped)."""
     rows = conn.execute(
         f"""
-        SELECT c.fact_key FROM claim c JOIN document d ON d.id = c.document_id
+        SELECT c.fact_key,
+               bool_or(c.basis = 'agency_adjusted') AND bool_or(c.basis <> 'agency_adjusted')
+                   AS mixes_adjusted
+        FROM claim c JOIN document d ON d.id = c.document_id
         WHERE c.issuer_id = %s AND c.{column} IS NOT NULL
         GROUP BY c.fact_key
         HAVING count(DISTINCT c.document_id) > 1
@@ -97,14 +112,15 @@ def _comparable_keys(conn, issuer_id: int, column: str) -> tuple[list[str], list
 
     kept, skipped = [], []
     for row in rows:
-        reason = _excluded(row["fact_key"])
+        reason = _excluded(row["fact_key"]) or (ADJUSTED_VS_REPORTED
+                                                 if row["mixes_adjusted"] else None)
         (skipped.append((row["fact_key"], reason)) if reason else kept.append(row["fact_key"]))
     return kept, skipped
 
 
 def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
             spread_pct: Decimal | None, note: str, rows: list[dict],
-            ended_on=None) -> int | None:
+            ended_on=None, incomplete_corpus: bool = False) -> int | None:
     """Upsert a conflict. Returns None when the rows do not span two sources.
 
     `ended_on` is the date the sources say the disagreement stopped — the end
@@ -118,18 +134,20 @@ def _record(conn, issuer_id: int, fact_key: str, subject: str, kind: str,
     row = conn.execute(
         """
         INSERT INTO conflict (issuer_id, fact_key, subject, kind, tolerance_pct,
-                              spread_pct, note, ended_on)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                              spread_pct, note, ended_on, incomplete_corpus)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         ON CONFLICT (issuer_id, fact_key, kind)
         DO UPDATE SET subject      = EXCLUDED.subject,
                       spread_pct   = EXCLUDED.spread_pct,
                       note         = EXCLUDED.note,
                       ended_on     = EXCLUDED.ended_on,
+                      incomplete_corpus = EXCLUDED.incomplete_corpus,
                       last_seen_at = now(),
                       resolved_at  = NULL      -- it came back; it is open again
         RETURNING id
         """,
-        (issuer_id, fact_key, subject, kind, TOLERANCE_PCT, spread_pct, note, ended_on),
+        (issuer_id, fact_key, subject, kind, TOLERANCE_PCT, spread_pct, note, ended_on,
+         incomplete_corpus),
     ).fetchone()
 
     # Claim ids are rewritten whenever a document is re-extracted, so membership
@@ -209,8 +227,15 @@ def _merge_runs(windows: list[dict]) -> list[dict]:
     pair of values, so merging is purely temporal: contiguous or overlapping
     intervals become one, and a gap (someone agreed for a while) correctly
     starts a new run.
+
+    Ties on the start date are broken by what the window says — the agencies,
+    values and instrument names — never by row order. A run's note quotes its
+    first window's instrument names, and an agency that rated several tranches
+    of one class the same day ("NCD", "Non-convertible debenture programme
+    (NCD)") otherwise had its note reworded whenever rating_state was rebuilt
+    in a different order.
     """
-    ordered = sorted(windows, key=lambda w: w["start"])
+    ordered = sorted(windows, key=lambda w: (w["start"], w.get("stated", ())))
     runs: list[dict] = []
     for window in ordered:
         current = runs[-1] if runs else None
@@ -224,6 +249,31 @@ def _merge_runs(windows: list[dict]) -> list[dict]:
             current["end"] = (None if window["end"] is None
                               else max(current["end"], window["end"]))
     return runs
+
+
+def _incomplete(conn, issuer_id: int, instrument_class: str, term: str,
+                agencies: list[str], run: dict) -> bool:
+    """Was this disagreement computed over a period we do not fully hold?
+
+    True when either side of it is a state known only from a history
+    annexure, or when either agency has an open gap on this class inside the
+    window — an action of theirs we have not read may have changed what they
+    were saying. The conflict stands either way; the flag says how much of the
+    record it rests on.
+    """
+    history_side = conn.execute(
+        "SELECT 1 FROM claim WHERE id = ANY(%s) AND provenance = 'history_annexure'",
+        (list(run["members"]),)).fetchone()
+    gap = conn.execute(
+        """
+        SELECT 1 FROM corpus_gap
+        WHERE issuer_id = %s AND resolved_at IS NULL AND scope = 'within_corpus'
+          AND instrument_class = %s AND term = %s AND agency = ANY(%s)
+          AND action_date >= %s AND (%s::date IS NULL OR action_date <= %s::date)
+        """,
+        (issuer_id, instrument_class, term, agencies, run["start"], run["end"], run["end"]),
+    ).fetchone()
+    return bool(history_side or gap)
 
 
 def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
@@ -278,7 +328,9 @@ def _rating_conflicts(conn, issuer_id: int, seen: list[int]) -> int:
                 f"{prefix}|{instrument_class}|{term}|{pair}|{run['start'].isoformat()}",
                 subject, "categorical_disagreement", None,
                 f"{note} — both in force {_window_text(run['start'], run['end'])}", rows,
-                ended_on=run["end"])
+                ended_on=run["end"],
+                incomplete_corpus=_incomplete(conn, issuer_id, instrument_class, term,
+                                              pair.split("~"), run))
             if conflict_id:
                 found += 1
                 seen.append(conflict_id)

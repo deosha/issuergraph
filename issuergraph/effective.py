@@ -35,16 +35,29 @@ def is_withdrawal(action: str | None) -> bool:
     return bool(action) and "withdrawn" in action.casefold()
 
 
-def _states(rows: list[dict]) -> list[dict]:
+def _states(rows: list[dict], history: list[dict] = ()) -> list[dict]:
     """Close each state where the same agency next acts on the same class.
+
+    `rows` are primary rating actions. `history` are actions known only from
+    an agency's rating-history annexure — open corpus gaps inside the period
+    our documents cover. Both are actions, so both end what came before:
+    a state ends at the earliest later action from either source, and when
+    that action is history-only the state records which history claim
+    superseded it (end_basis 'history'): superseded, primary document not
+    loaded. A history action also opens a state of its own, with provenance
+    'history_annexure', so the agency's view between our documents is neither
+    invented nor left blank.
 
     A withdrawal closes its own state on the action date instead. It applies to
     the tranche the row names, not to the whole class: an agency withdrawing
     one repaid NCD tranche while reaffirming the others leaves the class rated,
     so the other rows of the same action keep their open-ended state.
     """
+    events = [{**r, "provenance": r.get("provenance", "primary_rationale")} for r in rows]
+    events += [{**h, "provenance": "history_annexure"} for h in history]
+
     timelines: dict[tuple[str, str, str], list[dict]] = {}
-    for row in rows:
+    for row in events:
         key = (row["agency"], row["instrument_class"], row["term"])
         timelines.setdefault(key, []).append(row)
 
@@ -54,15 +67,27 @@ def _states(rows: list[dict]) -> list[dict]:
         # One action can rate several tranches of the same class identically;
         # those are one state, not several, so successive dates are the unit.
         dates = sorted({r["action_date"] for r in timeline})
-        next_date = {d: dates[i + 1] if i + 1 < len(dates) else None
-                     for i, d in enumerate(dates)}
+        primary_on = {r["action_date"] for r in timeline
+                      if r["provenance"] == "primary_rationale"}
+        history_on = {}
+        for r in timeline:
+            if r["provenance"] == "history_annexure":
+                history_on.setdefault(r["action_date"], r["claim_id"])
         for row in timeline:
-            withdrawn = is_withdrawal(row.get("action"))
+            day = row["action_date"]
+            later = [d for d in dates if d > day]
+            if is_withdrawal(row.get("action")):
+                end, basis, superseded = day, "withdrawn", None
+            elif not later:
+                end, basis, superseded = None, None, None
+            elif later[0] in primary_on:
+                end, basis, superseded = later[0], "primary", None
+            else:
+                end, basis, superseded = later[0], "history", history_on[later[0]]
             states.append({**row,
-                           "effective_from": row["action_date"],
-                           "effective_to": (row["action_date"] if withdrawn
-                                            else next_date[row["action_date"]]),
-                           "withdrawn": withdrawn})
+                           "effective_from": day, "effective_to": end,
+                           "withdrawn": basis == "withdrawn",
+                           "end_basis": basis, "superseded_by_claim_id": superseded})
     return states
 
 
@@ -81,8 +106,28 @@ def overlaps(a: dict, b: dict) -> tuple[date, date | None] | None:
     return start, end
 
 
+def history_actions(conn, issuer_id: int) -> list[dict]:
+    """Open within-corpus gaps as actions: what the agency did, per its own
+    annexure, in a period whose primary document we do not hold."""
+    from .completeness import open_gaps
+
+    actions = []
+    for gap in open_gaps(conn, issuer_id):
+        instrument = conn.execute(
+            "SELECT instrument FROM rating_history_entry WHERE claim_id = %s",
+            (gap["claim_id"],)).fetchone()["instrument"]
+        actions.append({"claim_id": gap["claim_id"], "agency": gap["agency"],
+                        "instrument": instrument, "instrument_class": gap["instrument_class"],
+                        "term": gap["term"], "grade": gap["grade"] or None,
+                        "outlook": gap["outlook"], "watch": gap["watch"],
+                        "action": "withdrawn" if gap["withdrawn"] else None,
+                        "action_date": gap["action_date"]})
+    return actions
+
+
 def build_rating_states(conn, issuer_id: int) -> int:
-    """Rebuild the issuer's rating timelines from its rating actions."""
+    """Rebuild the issuer's rating timelines from its rating actions and the
+    actions its agencies' history annexures say we are missing."""
     rows = conn.execute(
         """
         SELECT r.claim_id, r.agency, r.instrument, r.instrument_class, r.term,
@@ -96,19 +141,21 @@ def build_rating_states(conn, issuer_id: int) -> int:
     ).fetchall()
 
     conn.execute("DELETE FROM rating_state WHERE issuer_id = %s", (issuer_id,))
-    states = _states([dict(r) for r in rows])
+    states = _states([dict(r) for r in rows], history_actions(conn, issuer_id))
     for state in states:
         conn.execute(
             """
             INSERT INTO rating_state (issuer_id, claim_id, agency, instrument_class,
                                       term, instrument, grade, outlook, watch,
-                                      effective_from, effective_to, withdrawn)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                      effective_from, effective_to, withdrawn,
+                                      provenance, end_basis, superseded_by_claim_id)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             """,
             (issuer_id, state["claim_id"], state["agency"], state["instrument_class"],
              state["term"], state["instrument"], state["grade"], state["outlook"],
              state["watch"], state["effective_from"], state["effective_to"],
-             state["withdrawn"]),
+             state["withdrawn"], state["provenance"], state["end_basis"],
+             state["superseded_by_claim_id"]),
         )
     return len(states)
 

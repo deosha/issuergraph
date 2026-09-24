@@ -1,6 +1,10 @@
 -- IssuerGraph schema. See docs/SCHEMA.md for rationale.
--- Includes migrations 002-007; existing databases apply those files instead.
+-- Includes migrations 002-011; existing databases apply those files instead.
 
+DROP TABLE IF EXISTS document_blob CASCADE;
+DROP TABLE IF EXISTS corpus_gap_evidence CASCADE;
+DROP TABLE IF EXISTS corpus_gap CASCADE;
+DROP TABLE IF EXISTS rating_history_entry CASCADE;
 DROP TABLE IF EXISTS pilot_submission_log CASCADE;
 DROP TABLE IF EXISTS pilot_request CASCADE;
 DROP TABLE IF EXISTS rationale_diff CASCADE;
@@ -37,7 +41,13 @@ CREATE TABLE document (
     local_path      TEXT NOT NULL,
     retrieved_at    TIMESTAMPTZ NOT NULL,   -- when WE fetched it
     published_date  DATE,                   -- what the document says about itself
-    page_count      INT NOT NULL,
+    page_count      INT NOT NULL,             -- 0 for an HTML document
+    -- What kind of source this is, and the Content-Type it was served with
+    -- (an HTML page's charset may live only there). See sql/010.
+    media_type      TEXT NOT NULL DEFAULT 'application/pdf'
+                    CONSTRAINT document_media_type_check
+                    CHECK (media_type IN ('application/pdf', 'text/html')),
+    content_type    TEXT,
     -- Extraction coverage: did the extractor find what this document was
     -- declared to contain? Without this, a layout change and an issuer that
     -- stopped disclosing a figure are indistinguishable. See sql/003.
@@ -70,7 +80,8 @@ CREATE TABLE claim (
     document_id       BIGINT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
     claim_type        TEXT NOT NULL
                       CHECK (claim_type IN ('total_borrowings', 'debt_instrument',
-                                            'rating', 'rationale_point')),
+                                            'rating', 'rationale_point', 'rating_history',
+                                            'financial_indicator')),
     fact_key          TEXT NOT NULL,        -- reconciliation key
     subject           TEXT NOT NULL,        -- human label, e.g. 'Total borrowings'
     value_numeric     NUMERIC,
@@ -78,10 +89,19 @@ CREATE TABLE claim (
     value_text        TEXT,                 -- verbatim, for evidence display
     normalized_value  TEXT,                 -- casefolded/whitespace-collapsed, for comparison
     basis             TEXT NOT NULL DEFAULT 'unknown'
-                      CHECK (basis IN ('standalone', 'consolidated', 'unknown')),
+                      -- agency_adjusted: an agency's restatement, never compared
+                      -- with reported figures (sql/011, reconcile.py)
+                      CHECK (basis IN ('standalone', 'consolidated', 'unknown',
+                                       'agency_adjusted')),
     as_of_date        DATE,
     extractor         TEXT NOT NULL,
     extractor_version TEXT NOT NULL,
+    -- What the document says it is doing now, or what its rating-history
+    -- annexure says the agency did before. See sql/009.
+    provenance        TEXT NOT NULL DEFAULT 'primary_rationale'
+                      CONSTRAINT claim_provenance_check
+                      CHECK (provenance IN ('primary_rationale', 'primary_report',
+                                            'history_annexure')),
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     CHECK (value_numeric IS NOT NULL OR value_text IS NOT NULL)
 );
@@ -112,7 +132,12 @@ CREATE TABLE evidence_anchor (
     id            BIGSERIAL PRIMARY KEY,
     claim_id      BIGINT NOT NULL REFERENCES claim(id) ON DELETE CASCADE,
     document_id   BIGINT NOT NULL REFERENCES document(id) ON DELETE CASCADE,
-    page_no       INT NOT NULL,
+    -- 'pdf': page_no + offsets into document_page.text, with rectangles.
+    -- 'html': node_path (lxml getpath) + offsets into that node's
+    -- text_content(), exactly as lxml returns it. See sql/010.
+    kind          TEXT NOT NULL DEFAULT 'pdf',
+    page_no       INT,
+    node_path     TEXT,
     char_start    INT NOT NULL,
     char_end      INT NOT NULL,
     evidence_text TEXT NOT NULL,
@@ -120,6 +145,10 @@ CREATE TABLE evidence_anchor (
     bbox_rects    JSONB,                    -- per-line rects for drawing
     ordinal       INT NOT NULL DEFAULT 0,
     CHECK (char_end > char_start),
+    CONSTRAINT evidence_anchor_locator_check
+        CHECK ((kind = 'pdf'  AND page_no IS NOT NULL AND node_path IS NULL)
+            OR (kind = 'html' AND node_path IS NOT NULL AND page_no IS NULL
+                              AND bbox IS NULL AND bbox_rects IS NULL)),
     FOREIGN KEY (document_id, page_no)
         REFERENCES document_page(document_id, page_no) ON DELETE CASCADE
 );
@@ -137,12 +166,17 @@ CREATE TABLE rating_action (
     term          TEXT NOT NULL DEFAULT 'long_term'
                   CHECK (term IN ('long_term', 'short_term')),
     rated_amount_cr NUMERIC,
-    rating        TEXT NOT NULL,
+    rating        TEXT,                     -- null only for a gradeless withdrawal (sql/008)
     outlook       TEXT,                     -- Stable / Negative / Positive
     watch         TEXT,                     -- e.g. 'Watch with Negative Implications'
     action        TEXT,                     -- reaffirmed / withdrawn / placed on watch
     previous_rating TEXT,
-    action_date   DATE
+    action_date   DATE,
+    -- publisher-marked qualifiers: ppmld, legacy_r, interchangeable_subordinated,
+    -- retail, not_yet_issued. Informational only. See sql/011.
+    qualifiers    TEXT[] NOT NULL DEFAULT '{}',
+    CONSTRAINT rating_action_grade_or_withdrawn
+        CHECK (rating IS NOT NULL OR action ILIKE '%withdrawn%')
 );
 CREATE INDEX ON rating_action (agency, action_date);
 
@@ -157,7 +191,7 @@ CREATE TABLE rating_state (
     instrument_class TEXT NOT NULL,
     term             TEXT NOT NULL,
     instrument       TEXT NOT NULL,
-    grade            TEXT NOT NULL,
+    grade            TEXT,                 -- null only when withdrawn (sql/008)
     outlook          TEXT,
     watch            TEXT,
     effective_from   DATE NOT NULL,
@@ -165,9 +199,22 @@ CREATE TABLE rating_state (
     -- A withdrawn tranche is in force on its action date and not after: an
     -- empty half-open interval that overlaps nothing. See sql/007.
     withdrawn        BOOLEAN NOT NULL DEFAULT false,
+    -- Opened by a primary action or by a history entry; how it ended, and the
+    -- history claim that ended it when no primary document for that action is
+    -- loaded. See sql/009.
+    provenance       TEXT NOT NULL DEFAULT 'primary_rationale'
+                     CONSTRAINT rating_state_provenance_check
+                     CHECK (provenance IN ('primary_rationale', 'history_annexure')),
+    end_basis        TEXT,
+    superseded_by_claim_id BIGINT REFERENCES claim(id) ON DELETE CASCADE,
+    CONSTRAINT rating_state_end_basis_check
+        CHECK ((effective_to IS NULL) = (end_basis IS NULL)
+               AND (end_basis IS NULL OR end_basis IN ('primary', 'history', 'withdrawn'))
+               AND ((end_basis = 'history') = (superseded_by_claim_id IS NOT NULL))),
     CHECK (effective_to IS NULL
            OR effective_to > effective_from
-           OR (withdrawn AND effective_to = effective_from))
+           OR (withdrawn AND effective_to = effective_from)),
+    CONSTRAINT rating_state_grade_or_withdrawn CHECK (grade IS NOT NULL OR withdrawn)
 );
 CREATE INDEX ON rating_state (issuer_id, instrument_class, term, effective_from);
 
@@ -198,6 +245,8 @@ CREATE TABLE conflict (
     last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now(),  -- refreshed each run
     resolved_at       TIMESTAMPTZ,                         -- set when it stops recurring
     ended_on          DATE,   -- the sources say the disagreement ended here; see sql/007
+    -- Either agency has an open corpus gap inside the window; see sql/009.
+    incomplete_corpus BOOLEAN NOT NULL DEFAULT false,
     UNIQUE (issuer_id, fact_key, kind)
 );
 CREATE INDEX ON conflict (issuer_id, resolved_at, first_detected_at);
@@ -263,3 +312,56 @@ CREATE TABLE pilot_submission_log (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX ON pilot_submission_log (client_hash, created_at DESC);
+
+
+-- One row of an agency's rating-history annexure: that agency's own record of
+-- an action on one instrument on one date. See sql/009.
+CREATE TABLE rating_history_entry (
+    id               BIGSERIAL PRIMARY KEY,
+    claim_id         BIGINT NOT NULL UNIQUE REFERENCES claim(id) ON DELETE CASCADE,
+    agency           TEXT NOT NULL,
+    instrument       TEXT NOT NULL,
+    instrument_class TEXT NOT NULL,
+    term             TEXT NOT NULL CHECK (term IN ('long_term', 'short_term')),
+    action_date      DATE NOT NULL,
+    grade            TEXT,
+    outlook          TEXT,
+    watch            TEXT,
+    withdrawn        BOOLEAN NOT NULL DEFAULT false,
+    CHECK (grade IS NOT NULL OR withdrawn)
+);
+CREATE INDEX rating_history_entry_lookup
+    ON rating_history_entry (agency, instrument_class, term, action_date);
+
+-- A history action with no matching primary action: a document we do not
+-- hold. Durable like conflict. See sql/009.
+CREATE TABLE corpus_gap (
+    id                BIGSERIAL PRIMARY KEY,
+    issuer_id         BIGINT NOT NULL REFERENCES issuer(id) ON DELETE CASCADE,
+    agency            TEXT NOT NULL,
+    instrument_class  TEXT NOT NULL,
+    term              TEXT NOT NULL,
+    action_date       DATE NOT NULL,
+    grade             TEXT NOT NULL DEFAULT '',   -- '' for a gradeless withdrawal
+    outlook           TEXT,
+    watch             TEXT,
+    withdrawn         BOOLEAN NOT NULL DEFAULT false,
+    scope             TEXT NOT NULL CHECK (scope IN ('within_corpus', 'before_corpus')),
+    first_detected_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    resolved_at       TIMESTAMPTZ,
+    UNIQUE (issuer_id, agency, instrument_class, term, action_date, grade)
+);
+
+CREATE TABLE corpus_gap_evidence (
+    gap_id   BIGINT NOT NULL REFERENCES corpus_gap(id) ON DELETE CASCADE,
+    claim_id BIGINT NOT NULL REFERENCES claim(id) ON DELETE CASCADE,
+    PRIMARY KEY (gap_id, claim_id)
+);
+
+-- An HTML document's bytes exactly as received; anchors are verified against
+-- these (re-hashed, re-parsed), not a local file. See sql/010.
+CREATE TABLE document_blob (
+    document_id BIGINT PRIMARY KEY REFERENCES document(id) ON DELETE CASCADE,
+    bytes       BYTEA NOT NULL
+);

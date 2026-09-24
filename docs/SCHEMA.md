@@ -5,11 +5,13 @@ Minimum model required by the acceptance test:
 > open IIFL Finance → see a debt/rating fact → click it → see the exact source
 > evidence → see when another document disagrees with it.
 
-Twelve tables. Nothing speculative: no scores, no embeddings, no tenancy. Nine
-carry the evidence graph; three exist because of what the first nine could not
-say — `extraction_run` (which parser produced these facts), `rating_state`
-(when each agency's view was in force), and the coverage columns on `document`
-(what this document was supposed to yield and did not).
+Sixteen tables. Nothing speculative: no scores, no embeddings, no tenancy. Nine
+carry the evidence graph; the rest exist because of what the first nine could
+not say — `extraction_run` (which parser produced these facts), `rating_state`
+(when each agency's view was in force), the coverage columns on `document`
+(what this document was supposed to yield and did not), and
+`rating_history_entry` / `corpus_gap` (which of an agency's own actions we do
+not hold a document for).
 
 ## Core invariant
 
@@ -77,6 +79,15 @@ run: one row per (agency, instrument class, rating scale, period), where a
 rating stands from its action date until the same agency next acts on the same
 class. `effective_to IS NULL` means still in force.
 
+"Next acts" includes actions known only from a rating-history annexure (see
+`corpus_gap`): a state ends at the earliest later action from either a primary
+rationale or an open within-corpus gap. `end_basis` says which (`primary`,
+`history`, `withdrawn`, or null while in force); when it is `history`,
+`superseded_by_claim_id` is the history claim that ended it — superseded,
+primary document not loaded. A gap also opens a state of its own with
+`provenance = 'history_annexure'`, so the agency's view between our documents is
+its own annexure's record rather than a blank or the stale earlier view.
+
 This table is what makes cross-agency comparison meaningful. Comparing on the
 publisher's own instrument wording cannot work — ICRA's "Non-convertible
 debenture programme", CARE's "Non Convertible Debentures" and Brickwork's "NCDs
@@ -106,16 +117,60 @@ The atomic extracted assertion. One row = one fact from one document.
   conflict.
 - `extractor` + `extractor_version` — provenance of the *code*, so a bad
   extractor's output can be found and requeried later.
+- `provenance` — `primary_rationale` (what a rationale says the agency is doing
+  now), `primary_report` (annual report), or `history_annexure` (what a
+  rationale's rating-history table says the agency did before). Only a
+  `rating_history` claim may be `history_annexure`; the model enforces both
+  directions, so a history row is never read as a primary action.
 - No `confidence` float. A claim is either anchored or it does not exist.
 
 ### `evidence_anchor`
 Where the claim came from. N anchors per claim (a debt figure may be supported
 by the label cell *and* the amount cell). `ordinal` orders them.
 
+`kind` is `pdf` (`page_no` + offsets into `document_page.text`, with `bbox` /
+`bbox_rects` for highlighting) or `html` (`node_path` — lxml `getpath()` on the
+parsed raw HTML — + offsets into that node's `text_content()` exactly as lxml
+returns it, and no geometry). `evidence_anchor_locator_check` makes each kind
+carry only its own locator. An HTML anchor is verified by re-hashing the
+document's stored bytes, re-parsing them and resolving the path to exactly one
+node.
+
+### `document_blob`
+An HTML document's bytes exactly as received, 1:1 with `document`. The loader
+verifies HTML anchors against these rather than a local file, after checking
+they still hash to `document.sha256`. `document.media_type` says whether a
+document is a PDF or HTML, and `document.content_type` keeps the Content-Type
+it was served with, whose charset decodes the bytes. Nothing in this table is
+ever served: what a publisher's evidence may show is decided by its display
+policy (`settings.evidence_policy`, `evidence.py`).
+
 ### `rating_action`
 Rating-specific projection of a claim: agency, instrument, rated amount, rating,
 outlook, watch, action verb, and the previous rating where the document states
 it. Joined 1:1 to its `claim`, so it inherits the claim's evidence.
+
+### `rating_history_entry`
+History-specific projection of a `rating_history` claim: one row of an agency's
+rating-history annexure — agency, the annexure's instrument wording, instrument
+class and scale, action date, grade, outlook, watch, withdrawn. Same 1:1-to-claim
+rule, so every entry carries anchors (the row's instrument name and the dated
+cell). The cell under the document's own action date is that document's primary
+action and is not stored as history.
+
+### `corpus_gap` / `corpus_gap_evidence`
+A history action with no matching primary action: same agency, class and scale,
+action dates within 3 days, same grade (a gradeless withdrawal matches a
+primary withdrawal). One gap per (issuer, agency, class, scale, date, grade);
+`corpus_gap_evidence` links every history claim that lists it — ICRA's
+25 September 2024 action is listed by two later ICRA rationales.
+
+`scope` is `within_corpus` when the gap falls after the agency's earliest
+primary action on that class — it truncates a state, opens one, and flags
+conflicts across it — and `before_corpus` otherwise: recorded, truncates
+nothing. Durable like `conflict`: `first_detected_at` written once,
+`last_seen_at` advanced each run, `resolved_at` stamped when the missing
+document is loaded. Never deleted.
 
 ### `debt_observation`
 Debt-specific projection: instrument name/type, amount in ₹ crore, maturity,
@@ -169,9 +224,17 @@ signal:
   back. A disagreement that quietly goes away is itself worth knowing about, so
   the row survives.
 
-Claim ids are rewritten whenever a document is re-extracted, so each run
-refreshes `conflict_member` while the conflict's own identity and timestamps
-survive.
+Claim ids are rewritten whenever a document is re-extracted. Open conflicts
+re-record their members each run; the pipeline also carries every member (and
+every `corpus_gap_evidence` row) across to the replacement claim that states
+the same value, and aborts if none does — otherwise a resolved conflict, which
+is not re-recorded, would cascade-lose its evidence.
+
+`incomplete_corpus` is set on a rating conflict when either side is a
+history-annexure state, or when either agency has an open within-corpus gap on
+that class inside the window. The conflict is kept and shown; the flag says it
+rests on a record we know is incomplete. The demo export refuses to publish a
+flagged conflict without `--allow-gaps`.
 
 `conflict_member.stated_value` holds what that member said about the disputed
 aspect when it is narrower than the claim's own text: the claim quotes the whole

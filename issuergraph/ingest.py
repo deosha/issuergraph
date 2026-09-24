@@ -131,3 +131,35 @@ def psycopg_json(value):
     from psycopg.types.json import Jsonb
 
     return Jsonb(value)
+
+
+def ingest_html_document(conn, issuer_id: int, path: pathlib.Path, meta: DocumentMeta,
+                         content_type: str | None,
+                         retrieved_at: datetime | None = None) -> int:
+    """Insert an HTML document and its bytes exactly as received. Idempotent on sha256.
+
+    The hash covers the bytes as they arrived — no re-encoding, no newline or
+    whitespace clean-up — and those same bytes are stored, because the loader
+    verifies every HTML anchor by re-hashing and re-parsing them. Nothing from
+    the page is rendered or kept anywhere else.
+    """
+    data = path.read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    existing = conn.execute("SELECT id FROM document WHERE sha256 = %s", (digest,)).fetchone()
+    if existing:
+        return existing["id"]
+
+    row = conn.execute(
+        """
+        INSERT INTO document (issuer_id, doc_type, source_name, title, url, sha256,
+                              byte_size, local_path, retrieved_at, published_date,
+                              page_count, media_type, content_type)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,'text/html',%s) RETURNING id
+        """,
+        (issuer_id, meta.doc_type, meta.source_name, meta.title, meta.url, digest,
+         len(data), str(path), retrieved_at or datetime.now(timezone.utc),
+         meta.published_date, content_type),
+    ).fetchone()
+    conn.execute("INSERT INTO document_blob (document_id, bytes) VALUES (%s, %s)",
+                 (row["id"], data))
+    return row["id"]

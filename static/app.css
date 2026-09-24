@@ -39,9 +39,11 @@
   .pill.bad { color: var(--bad); border-color: #4a2731; background: #2a1a1e; }
   .pill.warn { color: var(--warn); border-color: #4a3a1c; background: #241d12; }
   .pill.ok { color: var(--ok); border-color: #234238; background: #16241f; }
+  /* A difference between sources is for an analyst to judge, not an error. */
+  .pill.diff { color: var(--text); border-color: var(--line); background: var(--panel); }
   .card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
           margin-bottom: 12px; background: var(--panel2); }
-  .card.conflict { border-color: #4a2731; }
+  .card.conflict { border-color: var(--line); }
   .card.conflict.resolved { border-color: #2c3a2c; opacity: .72; }
   .card h3 { margin: 0 0 4px; font-size: 13px; }
   .note { color: var(--warn); font-size: 12px; margin: 4px 0 10px; }

@@ -13,7 +13,7 @@ function applyConfig(cfg) {
   document.querySelectorAll("[data-cfg]").forEach(el => {
     const value = cfg[el.dataset.cfg];
     if (value) { el.textContent = value; el.hidden = false; }
-    else if (el.hasAttribute("hidden") || el.dataset.cfg === "founder_bio") el.hidden = true;
+    else if (el.dataset.cfg === "founder_bio") el.remove();
   });
 
   const mail = `mailto:${cfg.contact_email}?subject=IssuerGraph`;
@@ -83,7 +83,7 @@ function renderPreview(data) {
 
   mount.innerHTML = `
     <div class="grid four" style="margin-bottom:22px">
-      ${statTile(c.claims, "anchored facts")}
+      ${statTile(c.claims, "facts")}
       ${statTile(c.documents, "public documents")}
       ${statTile(c.conflicts_open, "open differences")}
       ${statTile(c.changes, "tracked changes")}

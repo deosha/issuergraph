@@ -112,8 +112,21 @@ def test_the_demo_states_its_cutoff():
         d["published_date"] for d in data["issuer"]["documents"] if d["published_date"])
 
 
+def shown_on_a_page(claim: dict) -> bool:
+    """Page-image evidence; the rest is quote-and-link (evidence.py)."""
+    return claim.get("evidence_policy", "page_image") == "page_image"
+
+
+def page_anchors(snapshot: dict):
+    for claim in snapshot["claims"].values():
+        if shown_on_a_page(claim):
+            for anchor in claim["anchors"]:
+                yield claim, anchor
+
+
 def test_demo_claims_carry_verifiable_evidence():
-    """Offsets, quoted text and geometry all survive the export."""
+    """Offsets, quoted text and — for page-image evidence — geometry all
+    survive the export."""
     snapshot = demo.snapshot()
     assert snapshot["claims"], "no claims in the snapshot"
     for claim_id, claim in snapshot["claims"].items():
@@ -121,28 +134,47 @@ def test_demo_claims_carry_verifiable_evidence():
         for anchor in claim["anchors"]:
             assert anchor["evidence_text"].strip()
             assert anchor["char_end"] > anchor["char_start"] >= 0
-            assert anchor["bbox_rects"], "a highlight needs geometry"
+            if shown_on_a_page(claim):
+                assert anchor["bbox_rects"], "a highlight needs geometry"
+
+
+def test_quote_and_link_evidence_ships_no_copy_of_the_source():
+    """Crisil: a short quote and a link, no geometry, no page image — in the
+    public snapshot as much as in the live API."""
+    from issuergraph.evidence import QUOTE_CAP
+
+    snapshot = demo.snapshot()
+    quoted = [c for c in snapshot["claims"].values() if not shown_on_a_page(c)]
+    assert quoted, "no quote-and-link claim in the snapshot"
+    for claim in quoted:
+        assert "#:~:text=" in claim["source_link"]
+        assert len(claim.get("value_text") or "") <= QUOTE_CAP + 1
+        for anchor in claim["anchors"]:
+            assert len(anchor["evidence_text"]) <= QUOTE_CAP + 1
+            assert anchor["bbox"] is None and anchor["bbox_rects"] is None
+    documents = {c["document_id"] for c in quoted}
+    assert not [k for k in snapshot["pages"] if int(k.split("-")[0]) in documents]
+    assert not [p for p in (STATIC / "demo" / "pages").glob("*.jpg")
+                if int(p.stem.split("-")[0]) in documents]
 
 
 def test_every_anchor_has_its_page_image_on_disk():
     snapshot = demo.snapshot()
-    for claim in snapshot["claims"].values():
-        for anchor in claim["anchors"]:
-            key = f"{claim['document_id']}-{anchor['page_no']}"
-            assert key in snapshot["pages"], key
-            image = STATIC / "demo" / snapshot["pages"][key]["image"]
-            assert image.exists() and image.stat().st_size > 1000, image
+    for claim, anchor in page_anchors(snapshot):
+        key = f"{claim['document_id']}-{anchor['page_no']}"
+        assert key in snapshot["pages"], key
+        image = STATIC / "demo" / snapshot["pages"][key]["image"]
+        assert image.exists() and image.stat().st_size > 1000, image
 
 
 def test_highlight_rectangles_lie_inside_their_page():
     """What makes the overlay trustworthy: the geometry is in page space."""
     snapshot = demo.snapshot()
-    for claim in snapshot["claims"].values():
-        for anchor in claim["anchors"]:
-            page = snapshot["pages"][f"{claim['document_id']}-{anchor['page_no']}"]
-            for x0, y0, x1, y1 in anchor["bbox_rects"]:
-                assert 0 <= x0 < x1 <= page["width"] + 1, (x0, x1, page["width"])
-                assert 0 <= y0 < y1 <= page["height"] + 1, (y0, y1, page["height"])
+    for claim, anchor in page_anchors(snapshot):
+        page = snapshot["pages"][f"{claim['document_id']}-{anchor['page_no']}"]
+        for x0, y0, x1, y1 in anchor["bbox_rects"]:
+            assert 0 <= x0 < x1 <= page["width"] + 1, (x0, x1, page["width"])
+            assert 0 <= y0 < y1 <= page["height"] + 1, (y0, y1, page["height"])
 
 
 def test_demo_claim_endpoint_returns_pages_for_its_anchors():

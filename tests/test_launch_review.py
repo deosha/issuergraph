@@ -27,7 +27,7 @@ import asgi
 
 LIVE_ROUTES = ("/api/issuers", "/api/issuer", "/api/debt", "/api/ratings",
                "/api/rating-timeline", "/api/conflicts", "/api/corroborations",
-               "/api/changes", "/api/claim/1", "/api/pdf/1",
+               "/api/changes", "/api/corpus-gaps", "/api/claim/1", "/api/pdf/1",
                "/api/page.png?document_id=1&page_no=1")
 
 
@@ -127,7 +127,7 @@ def test_the_timeline_api_does_not_call_a_withdrawn_rating_current():
 def icra_pages():
     rows = query(
         """
-        SELECT page_no, text FROM document_page p JOIN document d ON d.id = p.document_id
+        SELECT page_no, text, word_map FROM document_page p JOIN document d ON d.id = p.document_id
         WHERE d.source_name = 'ICRA' AND d.published_date = '2025-09-24'
         ORDER BY page_no
         """
@@ -138,7 +138,18 @@ def icra_pages():
 
 
 def mutate(pages, old, new):
-    return [{"page_no": p["page_no"], "text": p["text"].replace(old, new)} for p in pages]
+    """Rename text on the pages that contain it. Word boxes are kept only
+    where the text is unchanged: an edited page's boxes no longer line up with
+    its offsets, and a table parser handed them would read misaligned columns
+    rather than fail."""
+    out = []
+    for p in pages:
+        text = p["text"].replace(old, new)
+        page = {"page_no": p["page_no"], "text": text}
+        if text == p["text"] and "word_map" in p:
+            page["word_map"] = p["word_map"]
+        out.append(page)
+    return out
 
 
 def test_the_icra_rationale_extracts_completely(icra_pages):
@@ -168,7 +179,7 @@ def test_each_essential_section_is_its_own_requirement(icra_pages):
 def test_a_material_event_release_requires_only_the_table():
     rows = query(
         """
-        SELECT page_no, text FROM document_page p JOIN document d ON d.id = p.document_id
+        SELECT page_no, text, word_map FROM document_page p JOIN document d ON d.id = p.document_id
         WHERE d.source_name = 'ICRA' AND d.published_date = '2024-03-12'
         ORDER BY page_no
         """
@@ -234,7 +245,9 @@ def test_a_closed_window_records_when_it_ended():
     if not rows:
         pytest.skip("corpus not loaded")
     for row in rows:
-        assert row["ended_on"] == date(2025, 9, 24), row["fact_key"]
+        # CARE moved its own watch from Developing to Negative on 13 April 2024
+        # (care_20240413.pdf), matching ICRA's; the direction dispute ended there.
+        assert row["ended_on"] == date(2024, 4, 13), row["fact_key"]
         assert row["resolved_at"] is None       # still detected; the rows are history
 
 
@@ -243,8 +256,33 @@ def test_the_conflicts_api_separates_open_from_ended():
     assert all(r["status"] == "open" and r["ended_on"] is None for r in open_rows)
     everything = asgi.get("/api/conflicts?include_resolved=true").json()
     ended = [r for r in everything if r["status"] == "ended"]
-    assert len(ended) == 2
-    assert len(open_rows) == len(everything) - len(ended)
+    # The three CARE~ICRA watch-direction windows (ended 13 Apr 2024); CARE's
+    # AA- against ICRA's AA on bank facilities and on subordinated debt, ended
+    # by CARE's withdrawal of both on 20 Sep 2024; and Crisil's Stable against
+    # ICRA's Negative on bank facilities, ended by ICRA's Feb 2026 withdrawal.
+    assert sorted(r["fact_key"] for r in ended) == [
+        "rating_grade|bank_facility|long_term|CARE~ICRA|2024-09-19",
+        "rating_grade|subordinated_debt|long_term|CARE~ICRA|2024-09-19",
+        "rating_outlook|bank_facility|long_term|CRISIL~ICRA|2025-09-24",
+        "rating_watch|bank_facility|long_term|CARE~ICRA|2024-03-12",
+        "rating_watch|ncd|long_term|CARE~ICRA|2024-03-12",
+        "rating_watch|subordinated_debt|long_term|CARE~ICRA|2024-03-12",
+    ]
+    # Resolved, kept, not deleted: Brickwork~CARE on debentures (CARE withdrew
+    # them 19 Sep 2024); the seven Crisil rows keyed on 27 Jan 2026 (superseded
+    # when Crisil's 30 Sep 2024 rationale moved their start); and the four
+    # that rested on CARE ratings CARE withdrew on 20 Sep 2024.
+    resolved = [r for r in everything if r["status"] == "resolved"]
+    assert sorted(r["fact_key"] for r in resolved) == sorted(
+        ["rating_grade|ncd|long_term|Brickwork~CARE|2025-09-15",
+         "rating_outlook|bank_facility|long_term|CARE~ICRA|2025-09-24",
+         "rating_outlook|subordinated_debt|long_term|CARE~ICRA|2025-09-24",
+         "rating_grade|bank_facility|long_term|CARE~CRISIL|2024-09-30",
+         "rating_grade|subordinated_debt|long_term|CARE~CRISIL|2024-09-30"] +
+        [r["fact_key"] for r in everything if r["status"] == "resolved"
+         and r["fact_key"].endswith("|2026-01-27") and "CRISIL" in r["fact_key"]])
+    assert len(resolved) == 12
+    assert len(open_rows) == len(everything) - len(ended) - len(resolved)
 
 
 def test_an_open_rating_conflict_is_still_in_force():

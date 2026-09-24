@@ -44,9 +44,15 @@ def test_anchor_text_matches_the_page_exactly(conn):
     assert mismatches == [], f"{len(mismatches)} anchors drifted from their page text"
 
 
-def test_every_anchor_has_geometry(conn):
-    missing = query("SELECT id FROM evidence_anchor WHERE bbox IS NULL OR bbox_rects IS NULL")
-    assert missing == [], f"{len(missing)} anchors cannot be highlighted"
+def test_every_anchor_can_be_shown(conn):
+    """A PDF anchor has rectangles to highlight; an HTML anchor has a node
+    path instead, and no geometry (its evidence is shown as a quote and a link)."""
+    missing = query("SELECT id FROM evidence_anchor WHERE kind = 'pdf' "
+                    "AND (bbox IS NULL OR bbox_rects IS NULL)")
+    assert missing == [], f"{len(missing)} PDF anchors cannot be highlighted"
+    unlocated = query("SELECT id FROM evidence_anchor WHERE kind = 'html' "
+                      "AND (node_path IS NULL OR bbox IS NOT NULL)")
+    assert unlocated == [], f"{len(unlocated)} HTML anchors are not located by node path"
 
 
 # --- the numbers ------------------------------------------------------------
@@ -167,12 +173,16 @@ def test_successive_icra_reports_are_diffed(conn):
 
 
 def test_watch_to_outlook_transition_is_visible(conn):
-    rows = query(
-        """
-        SELECT direction, from_text, to_text FROM rationale_diff
-        WHERE agency = 'ICRA' AND section = 'rating' AND to_date = '2025-09-24'
-        """
-    )
-    texts = {(r["direction"], r["from_text"] or r["to_text"]) for r in rows}
-    assert ("removed", "Watch with Negative Implications") in texts
-    assert ("added", "Negative") in texts
+    """ICRA dropped its watch for a Stable outlook on 25 Sep 2024, then moved
+    the outlook to Negative on 24 Sep 2025. Each change shows up between the
+    two reports that actually contain it."""
+    def diffs(to_date):
+        return {(r["direction"], r["from_text"], r["to_text"]) for r in query(
+            """
+            SELECT direction, from_text, to_text FROM rationale_diff
+            WHERE agency = 'ICRA' AND section = 'rating' AND to_date = %s
+            """, (to_date,))}
+    september_2024 = diffs("2024-09-25")
+    assert ("removed", "Watch with Negative Implications", None) in september_2024
+    assert ("added", None, "Stable") in september_2024
+    assert diffs("2025-09-24") == {("changed", "Stable", "Negative")}

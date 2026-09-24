@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Request a pilot — IssuerGraph</title>
 <meta name="description" content="Tell us which issuers you cover and which workflow you want help with, and we will come back with a scoped pilot: fixed price, fixed schedule, and a written account of what could not be extracted.">
-<link rel="canonical" href="/pilot">
+<link rel="canonical" href="{{site_url}}/pilot">
+<meta property="og:url" content="{{site_url}}/pilot">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Request an IssuerGraph pilot">
 <meta property="og:description" content="Your issuers, loaded from their own public documents, with every fact anchored to its source.">
-<meta property="og:image" content="/static/og.svg">
+<meta property="og:image" content="{{site_url}}/static/og.svg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/static/favicon.svg">
 <link rel="stylesheet" href="/static/site.css">
@@ -109,7 +110,7 @@
           <button class="btn primary" type="submit" id="submit">Send request</button>
           <p class="small muted" style="margin:12px 0 0">
             Used to reply about a pilot. You are not added to a mailing list and no
-            outreach sequence is triggered.
+            outreach sequence is triggered. <a href="/privacy">How this is stored</a>.
           </p>
         </div>
       </form>
@@ -133,7 +134,7 @@
         <a class="btn small primary" href="/demo" data-cta="demo" data-where="pilot-aside">Explore sample issuer →</a>
       </div>
       <p class="small muted" style="margin-top:18px">
-        Prefer email? <a id="contact-email" href="#">Write to us</a> and it reaches the
+        Prefer email? <a id="contact-email" href="mailto:{{contact_email}}?subject=IssuerGraph">Write to us</a> and it reaches the
         same place.
       </p>
     </aside>
@@ -147,7 +148,8 @@
     <span class="spacer"></span>
     <a href="/">Home</a>
     <a href="/demo">Sample issuer</a>
-    <a id="footer-email" href="#">Contact</a>
+    <a id="footer-email" href="mailto:{{contact_email}}?subject=IssuerGraph">Contact</a>
+    <a href="/privacy">Privacy</a>
   </div>
 </footer>
 

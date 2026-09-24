@@ -125,6 +125,21 @@ def test_consecutive_windows_merge_into_one_run():
     assert set(runs[0]["members"]) == {1, 2, 3}
 
 
+def test_a_runs_wording_does_not_depend_on_row_order():
+    """Same-day tranches under two names: the note must not flip between them."""
+    windows = [
+        {"start": date(2025, 9, 24), "end": None, "members": {1: "ICRA"},
+         "stated": (("Brickwork", "Stable", "NCDs Public Issue"),
+                    ("ICRA", "Negative", "Non-convertible debenture programme (NCD)"))},
+        {"start": date(2025, 9, 24), "end": None, "members": {2: "ICRA"},
+         "stated": (("Brickwork", "Stable", "NCDs Public Issue"),
+                    ("ICRA", "Negative", "NCD"))},
+    ]
+    forward, backward = _merge_runs(windows), _merge_runs(windows[::-1])
+    assert forward[0]["stated"] == backward[0]["stated"]
+    assert set(forward[0]["members"]) == set(backward[0]["members"]) == {1, 2}
+
+
 def test_a_gap_starts_a_new_run():
     """They agreed for a while, then diverged again: two disagreements."""
     windows = [

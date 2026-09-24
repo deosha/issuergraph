@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IssuerGraph — issuer debt and rating changes, with the source behind every figure</title>
 <meta name="description" content="Review an issuer's debt and rating actions, see where two documents disagree, and click any figure to read the exact sentence and page it came from. Built for credit-research and private-credit teams.">
-<link rel="canonical" href="/">
+<link rel="canonical" href="{{site_url}}/">
+<meta property="og:url" content="{{site_url}}/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="IssuerGraph — issuer facts, with the evidence attached">
 <meta property="og:description" content="Debt figures, rating timelines and documented differences between sources — every fact anchored to the page it came from. Explore a sample issuer, no signup.">
-<meta property="og:image" content="/static/og.svg">
+<meta property="og:image" content="{{site_url}}/static/og.svg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="IssuerGraph — issuer facts, with the evidence attached">
 <meta name="twitter:description" content="Every figure links to the page and sentence it came from. Explore a sample issuer, no signup.">
@@ -53,16 +54,16 @@
     <div class="hero-actions">
       <a class="btn primary" href="/demo" data-cta="demo" data-where="hero">Explore sample issuer →</a>
       <a class="btn" href="/pilot" data-cta="pilot" data-where="hero">Request a pilot</a>
-      <a class="btn" id="booking-link" href="#" hidden data-cta="booking">Book a call</a>
+      {{booking_link}}
     </div>
     <p class="hero-note">
       The demo opens immediately — no signup, no email, no calendar. It is a fixed
-      sample dataset built from <span data-count="documents">six</span> public documents.
+      sample dataset built from <span data-count="documents">{{count_documents}}</span> public documents.
     </p>
 
     <figure class="shot hero-shot">
       <img src="/static/shots/product.png" width="2200" height="1350" loading="lazy"
-           alt="The IssuerGraph workspace. On the left, a table of total borrowings by basis and date, each figure underlined as a link, with two rows badged as conflicts and two as agreeing within tolerance. On the right, page 438 of the annual report with four highlights: the three balance-sheet rows that make up the selected total, and the statement's own rupees-in-crores header.">
+           alt="The IssuerGraph workspace. On the left, a table of total borrowings by basis and date, each figure underlined as a link, with two rows badged as differences and two as agreeing within tolerance. On the right, page 438 of the annual report with four highlights: the three balance-sheet rows that make up the selected total, and the statement's own rupees-in-crores header.">
       <figcaption>
         The workspace: every figure on the left is a link; the right pane is the page it
         came from. The selected total is not printed anywhere in the report — it is the
@@ -181,20 +182,26 @@
         <h3>What works now</h3>
         <ul class="plain">
           <li>Indian NBFC annual reports — Ind AS balance sheets, consolidated and standalone.</li>
-          <li>Rating rationales from ICRA, CARE and Brickwork: rating tables, instrument
-              annexures, liquidity sections, strengths and challenges.</li>
+          <li>Rating rationales from ICRA, CARE, Brickwork and Crisil: rating tables,
+              instrument annexures, rating-history annexures, liquidity sections, strengths
+              and challenges.</li>
+          <li>Crisil publishes its rationales as web pages whose terms restrict
+              redistribution, so Crisil evidence is shown as a short quote with a link to
+              Crisil's own page — which highlights the quoted text in supporting browsers —
+              rather than as a page image.</li>
           <li>Debt figures, rated instruments and maturities, rating grade, outlook and watch.</li>
           <li>Cross-document comparison with two tolerances, and effective-dated rating
               comparison per instrument class.</li>
-          <li>Every stored fact carries verified character offsets and page geometry.</li>
+          <li>Every stored fact carries verified character offsets — and, for PDFs, page
+              geometry; for web pages, the position in the page's structure.</li>
         </ul>
       </div>
       <div>
         <h3>What it does not do yet</h3>
         <ul class="plain">
           <li>One issuer is loaded in the public sample. It is a vertical slice, not a universe.</li>
-          <li>Four extractors, tuned to four publishers' current layouts. A new publisher
-              needs a new extractor.</li>
+          <li>Five extractors, tuned to five publishers' current layouts — the annual report
+              and four rating agencies. A new publisher needs a new extractor.</li>
           <li>Each extractor declares what its document must yield — balance-sheet rows,
               the rating table, liquidity, sensitivities — and a shortfall is recorded as
               incomplete with reasons rather than passed as complete.</li>
@@ -207,7 +214,7 @@
 
     <p class="small muted" style="margin-top:22px">
       The sample dataset is fixed, with documents published up to
-      <b id="cutoff-inline">its stated cutoff</b>. It is not updated as new filings appear.
+      <b id="cutoff-inline">{{cutoff}}</b>. It is not updated as new filings appear.
     </p>
   </div>
 </section>
@@ -285,6 +292,10 @@
         characters highlighted. The highlight is drawn from geometry recorded at
         extraction time, so it cannot land on a different occurrence of the same text on
         the page.</p>
+        <p>Crisil is the exception: its rationales are web pages whose terms restrict
+        redistribution, so no copy is shown. You get a short quote, the same document
+        details, and a link to Crisil's own page that asks your browser to highlight the
+        quoted text. The full text is still verified before it is stored.</p>
         <p>Before anything is stored, the loader re-reads the page and asserts that the
         quoted evidence equals the characters at those offsets. If it does not, the whole
         document fails to load rather than storing a fact it cannot prove.</p>
@@ -309,8 +320,9 @@
       <summary>Which issuers and documents are supported?</summary>
       <div class="body">
         <p>Today: Indian NBFC annual reports with Ind AS balance sheets, and rating
-        rationales from ICRA, CARE and Brickwork. The public sample is one issuer, IIFL
-        Finance, across six documents.</p>
+        rationales from ICRA, CARE, Brickwork and Crisil. The public sample is one issuer,
+        IIFL Finance, across <span data-count="documents">{{count_documents}}</span>
+        documents.</p>
         <p>A new publisher needs an extractor written for its layout — that is the honest
         unit of work in a pilot, and it is why scoping asks which documents you treat as
         authoritative.</p>
@@ -334,7 +346,8 @@
         <p>The pilot form stores what you type so we can reply about a pilot. You are not
         added to a mailing list and no outreach sequence is triggered. Analytics, when
         enabled, records that a page was viewed or a form submitted — never your name,
-        your email address, what you typed, or any document content.</p>
+        your email address, what you typed, or any document content. The details are in
+        the <a href="/privacy">privacy notice</a>.</p>
       </div>
     </details>
   </div>
@@ -343,12 +356,12 @@
 <section id="contact" class="founder">
   <div class="wrap narrow">
     <p class="eyebrow">Who is behind this</p>
-    <h2 data-cfg="founder_name">—</h2>
-    <p class="role"><span data-cfg="founder_role">Founder</span></p>
-    <p id="founder-bio" hidden data-cfg="founder_bio"></p>
+    <h2 data-cfg="founder_name">{{founder_name}}</h2>
+    <p class="role"><span data-cfg="founder_role">{{founder_role}}</span></p>
+    {{founder_bio_block}}
     <div class="links">
-      <a id="founder-linkedin" href="#" hidden rel="me noopener" target="_blank">LinkedIn</a>
-      <a id="contact-email" href="#" data-cta="email">Email</a>
+      {{founder_linkedin_link}}
+      <a id="contact-email" href="mailto:{{contact_email}}?subject=IssuerGraph" data-cta="email">{{contact_email}}</a>
     </div>
     <p style="margin-top:22px">
       Questions, or something in the sample that looks wrong? A specific correction
@@ -369,7 +382,8 @@
     <span class="spacer"></span>
     <a href="/demo">Sample issuer</a>
     <a href="/pilot">Request a pilot</a>
-    <a id="footer-email" href="#">Contact</a>
+    <a id="footer-email" href="mailto:{{contact_email}}?subject=IssuerGraph">Contact</a>
+    <a href="/privacy">Privacy</a>
   </div>
 </footer>
 

@@ -10,13 +10,14 @@ from __future__ import annotations
 import re
 
 from ..models import DebtDetail, ExtractedClaim, RatingDetail
+from . import history
 from .coverage import Coverage, rating_rationale_coverage
 from .common import (anchor, classify_instrument, find_published_date, lines_with_offsets,
                      normalise_grade, parse_action, parse_amount, parse_outlook,
                      parse_short_date, parse_watch, quarter_key, rating_identity)
 
 EXTRACTOR = "icra_rationale"
-VERSION = "2.1.0"
+VERSION = "2.3.0"
 
 AGENCY = "ICRA"
 SUMMARY_HEADS = ("Summary of rating action", "Summary of rating(s) outstanding")
@@ -30,11 +31,14 @@ RATING_COMPLETE = re.compile(
 ISIN_CELL = re.compile(r"^(INE[A-Z0-9]{9}|Not placed|NA)$")
 HEADER_CELL = re.compile(
     r"^(Instrument\*?|Previous rated|Current rated|Previous Rated|Current Rated|amount|Amount|"
-    r"\(Rs\. crore\)|Rating action|Rating Outstanding|Rating outstanding)$"
+    r"\(Rs\. crore\)|Rating [Aa]ction|Rating Outstanding|Rating outstanding)$"
 )
 LIQUIDITY_RE = re.compile(r"Liquidity position:\s*(?P<grade>[A-Za-z ]+)\n(?P<body>[^\n]+)")
 SENSITIVITY_RE = re.compile(r"(?m)^(?P<kind>Positive|Negative) factors\s+–\s+(?P<body>[^\n]+)")
 BULLET_HEAD = re.compile(r"(?m)^(?P<head>[A-Z][^\n]{14,159}?)\s+–\s+")
+HISTORY_HEAD = "Rating history for past three years"
+HISTORY_END = ("Complexity level",)
+PAGE_FURNITURE = re.compile(r"www\.icra|^Page \| \d+$|^Sensitivity Label")
 
 
 def _summary_block(text: str) -> tuple[int, int] | None:
@@ -188,12 +192,20 @@ def check_coverage(doc_meta, pages: list[dict], claims) -> Coverage:
     the table, so only the table is required of it."""
     if is_material_event_release(pages):
         return rating_rationale_coverage(AGENCY, claims, (), liquidity=False)
-    return rating_rationale_coverage(AGENCY, claims, (
+    cov = rating_rationale_coverage(AGENCY, claims, (
         (f"rating_sensitivity|{AGENCY}|positive", "positive rating sensitivities"),
         (f"rating_sensitivity|{AGENCY}|negative", "negative rating sensitivities"),
         (f"rationale|{AGENCY}|strengths|", "credit strengths"),
         (f"rationale|{AGENCY}|weaknesses|", "credit challenges"),
     ))
+    _, unreadable = _history(doc_meta, pages)
+    return cov.merge(history.history_coverage(AGENCY, claims, unreadable))
+
+
+def _history(doc_meta, pages: list[dict]):
+    pub = getattr(doc_meta, "published_date", None) or find_published_date(pages[0]["text"])
+    return history.read_annexure(AGENCY, EXTRACTOR, VERSION, pages, pub,
+                                 HISTORY_HEAD, HISTORY_END, PAGE_FURNITURE)
 
 
 def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
@@ -320,4 +332,5 @@ def extract(doc_meta, pages: list[dict]) -> list[ExtractedClaim]:
                     anchors=[anchor(pno, text, *hspan)],
                 ))
 
+    claims += _history(doc_meta, pages)[0]
     return claims

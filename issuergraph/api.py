@@ -14,12 +14,14 @@ rather than a silent pick of the lowest id.
 from __future__ import annotations
 
 import io
+from datetime import date
 import pathlib
 
 import pymupdf
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 
+from . import evidence
 from .db import one, query
 from .reconcile import TOLERANCE_ABS_CR, TOLERANCE_PCT, _excluded
 
@@ -134,7 +136,8 @@ def ratings(issuer_id: int | None = None):
         """
         SELECT c.id AS claim_id, r.agency, r.instrument, r.instrument_class, r.term,
                r.rated_amount_cr, r.rating, r.outlook, r.watch, r.action, r.action_date,
-               s.effective_from, s.effective_to, d.title, d.source_name
+               s.effective_from, s.effective_to, s.end_basis, s.superseded_by_claim_id,
+               d.title, d.source_name
         FROM rating_action r
         JOIN claim c ON c.id = r.claim_id
         JOIN document d ON d.id = c.document_id
@@ -157,6 +160,7 @@ def rating_timeline(issuer_id: int | None = None):
         """
         SELECT instrument_class, term, agency, instrument, grade, outlook, watch,
                effective_from, effective_to, claim_id, withdrawn,
+               provenance, end_basis, superseded_by_claim_id,
                effective_to IS NULL AS current
         FROM rating_state
         WHERE issuer_id = %s
@@ -185,7 +189,7 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
     rows = query(
         """
         SELECT id, fact_key, subject, kind, tolerance_pct, spread_pct, note,
-               first_detected_at, last_seen_at, resolved_at, ended_on,
+               first_detected_at, last_seen_at, resolved_at, ended_on, incomplete_corpus,
                CASE WHEN resolved_at IS NOT NULL THEN 'resolved'
                     WHEN ended_on IS NOT NULL THEN 'ended'
                     ELSE 'open' END AS status
@@ -199,7 +203,7 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
         row["members"] = query(
             """
             SELECT c.id AS claim_id, c.value_numeric, c.value_text, m.stated_value,
-                   c.subject, c.basis,
+                   c.subject, c.basis, c.provenance,
                    c.as_of_date, d.source_name, d.title, d.published_date
             FROM conflict_member m
             JOIN claim c ON c.id = m.claim_id
@@ -209,7 +213,146 @@ def conflicts(issuer_id: int | None = None, include_resolved: bool = False):
             """,
             (row["id"],),
         )
+        for member in row["members"]:
+            member["value_text"] = evidence.cap_for(member["source_name"], member["value_text"])
+        row["evidence"] = (_rating_periods(row) if row["fact_key"].startswith("rating_")
+                           else _grouped(row["members"]))
     return rows
+
+
+def _grouped(members: list[dict], key=("source_name", "title", "published_date",
+                                       "stated_value", "value_text", "value_numeric")) -> list[dict]:
+    """One evidence row per document and quote, with how many instruments it covers.
+
+    A rating action usually rates several tranches of one class identically;
+    listing each tranche repeated the same document and quote two or three
+    times. The claim id of the first is kept so the row still opens its evidence.
+    """
+    out: dict[tuple, dict] = {}
+    for m in members:
+        k = tuple(m.get(f) for f in key)
+        if k in out:
+            out[k]["instruments"] += 1
+        else:
+            out[k] = {**m, "instruments": 1}
+    return list(out.values())
+
+
+ASPECT_COLUMN = {"rating_grade": "grade", "rating_outlook": "outlook", "rating_watch": "watch"}
+
+
+def _rating_periods(conflict: dict) -> list[dict]:
+    """The overlap split wherever either agency's in-force action changes.
+
+    A rating difference can run across several actions by one side — Brickwork's
+    AA+ against ICRA's AA held through ICRA's Sep 2024, Sep 2025 and Feb 2026
+    actions — and citing whichever action was first in force misstates what the
+    other agency was saying later. Each period names, for each agency, the
+    action in force throughout it, grouped by document and quote.
+    """
+    aspect, instrument_class, term, pair, start = conflict["fact_key"].split("|")
+    column = ASPECT_COLUMN[aspect]
+    agencies = pair.split("~")
+    end = conflict["ended_on"]
+    states = query(
+        f"""
+        SELECT s.agency, s.{column} AS value, s.effective_from, s.effective_to, s.claim_id,
+               s.provenance, c.value_text, d.id AS document_id, d.title, d.source_name,
+               d.published_date
+        FROM rating_state s JOIN claim c ON c.id = s.claim_id
+        JOIN document d ON d.id = c.document_id
+        WHERE s.issuer_id = (SELECT issuer_id FROM conflict WHERE id = %s)
+          AND s.agency = ANY(%s) AND s.instrument_class = %s AND s.term = %s
+          AND s.{column} IS NOT NULL AND NOT s.withdrawn
+          AND s.effective_from < COALESCE(%s::date, 'infinity')
+          AND (s.effective_to IS NULL OR s.effective_to > %s::date)
+        ORDER BY s.effective_from, s.claim_id
+        """,
+        (conflict["id"], agencies, instrument_class, term, end, start),
+    )
+    cuts = sorted({date.fromisoformat(start), *(s["effective_from"] for s in states),
+                   *(s["effective_to"] for s in states if s["effective_to"])})
+    lo_bound = date.fromisoformat(start)
+    cuts = [c for c in cuts if c >= lo_bound and (end is None or c < end)]
+    periods: list[dict] = []
+    for i, lo in enumerate(cuts):
+        hi = cuts[i + 1] if i + 1 < len(cuts) else end
+        live = [s for s in states if s["effective_from"] <= lo
+                and (s["effective_to"] is None or s["effective_to"] > lo)]
+        sides = []
+        for agency in agencies:
+            mine = [{**s, "source_name": s["agency"], "stated_value": s["value"]}
+                    for s in live if s["agency"] == agency]
+            sides.extend(_grouped(mine, key=("source_name", "document_id", "stated_value",
+                                              "value_text")))
+        if {s["source_name"] for s in sides} != set(agencies):
+            continue                    # not both in force: not part of the difference
+        signature = [(s["source_name"], s["document_id"], s["stated_value"]) for s in sides]
+        if periods and periods[-1]["signature"] == signature and periods[-1]["to"] == lo:
+            periods[-1]["to"] = hi
+            continue
+        periods.append({"from": lo, "to": hi, "sides": sides, "signature": signature})
+    for p in periods:
+        p.pop("signature")
+        for s in p["sides"]:
+            for k in ("effective_from", "effective_to", "value", "agency"):
+                s.pop(k, None)
+            s["value_text"] = evidence.cap_for(s["source_name"], s["value_text"])
+    return periods
+
+
+@app.get("/api/corpus-gaps")
+def corpus_gaps(issuer_id: int | None = None):
+    """Which of each agency's own listed actions we hold.
+
+    An agency's rating-history annexure lists its past actions by date. Per
+    agency: how many distinct action dates its annexures list, how many of
+    those we hold a primary rationale for, and how many are missing — split
+    into those inside the period our documents cover (they change what is
+    computed; see completeness.py) and those before the agency's earliest
+    document we hold (recorded, but they truncate nothing).
+    """
+    issuer_id = resolve_issuer(issuer_id)
+    agencies = query(
+        """
+        WITH listed AS (
+            SELECT DISTINCT h.agency, h.action_date
+            FROM rating_history_entry h JOIN claim c ON c.id = h.claim_id
+            WHERE c.issuer_id = %s
+        ), missing AS (
+            SELECT agency, action_date, bool_or(scope = 'within_corpus') AS within
+            FROM corpus_gap WHERE issuer_id = %s AND resolved_at IS NULL
+            GROUP BY agency, action_date
+        )
+        SELECT l.agency,
+               count(*) AS listed,
+               count(*) FILTER (WHERE m.action_date IS NULL) AS loaded,
+               count(*) FILTER (WHERE m.within) AS missing_within,
+               count(*) FILTER (WHERE m.action_date IS NOT NULL AND NOT m.within)
+                   AS missing_before,
+               array_agg(l.action_date ORDER BY l.action_date)
+                   FILTER (WHERE m.within) AS missing_within_dates
+        FROM listed l LEFT JOIN missing m USING (agency, action_date)
+        GROUP BY l.agency ORDER BY l.agency
+        """,
+        (issuer_id, issuer_id),
+    )
+    gaps = query(
+        """
+        SELECT g.id, g.agency, g.instrument_class, g.term, g.action_date,
+               nullif(g.grade, '') AS grade, g.outlook, g.watch, g.withdrawn,
+               g.first_detected_at, g.last_seen_at,
+               array_agg(e.claim_id ORDER BY e.claim_id) AS evidence_claim_ids
+        FROM corpus_gap g JOIN corpus_gap_evidence e ON e.gap_id = g.id
+        WHERE g.issuer_id = %s AND g.resolved_at IS NULL AND g.scope = 'within_corpus'
+        GROUP BY g.id ORDER BY g.agency, g.action_date, g.instrument_class
+        """,
+        (issuer_id,),
+    )
+    for gap in gaps:
+        # one clickable piece of evidence per gap is enough for display
+        gap["claim_id"] = gap["evidence_claim_ids"][0]
+    return {"agencies": agencies, "gaps": gaps}
 
 
 @app.get("/api/corroborations")
@@ -249,7 +392,7 @@ def corroborations(issuer_id: int | None = None):
 
 @app.get("/api/changes")
 def changes(issuer_id: int | None = None):
-    return query(
+    rows = query(
         """
         SELECT id, agency, from_date, to_date, section, direction, certainty,
                from_claim_id, to_claim_id, from_text, to_text
@@ -259,6 +402,10 @@ def changes(issuer_id: int | None = None):
         """,
         (resolve_issuer(issuer_id),),
     )
+    for row in rows:           # quoted rationale text, as that publisher allows
+        row["from_text"] = evidence.cap_for(row["agency"], row["from_text"])
+        row["to_text"] = evidence.cap_for(row["agency"], row["to_text"])
+    return rows
 
 
 @app.get("/api/claim/{claim_id}")
@@ -268,7 +415,7 @@ def claim(claim_id: int):
         SELECT c.id, c.claim_type, c.fact_key, c.subject, c.value_numeric, c.value_unit,
                c.value_text, c.basis, c.as_of_date, c.extractor, c.extractor_version,
                d.id AS document_id, d.title, d.source_name, d.url, d.sha256,
-               d.retrieved_at, d.published_date, d.page_count
+               d.retrieved_at, d.published_date, d.page_count, d.media_type
         FROM claim c JOIN document d ON d.id = c.document_id WHERE c.id = %s
         """,
         (claim_id,),
@@ -277,19 +424,28 @@ def claim(claim_id: int):
         raise HTTPException(404, "no such claim")
     row["anchors"] = query(
         """
-        SELECT page_no, char_start, char_end, evidence_text, bbox, bbox_rects, ordinal
+        SELECT kind, page_no, node_path, char_start, char_end, evidence_text,
+               bbox, bbox_rects, ordinal
         FROM evidence_anchor WHERE claim_id = %s ORDER BY ordinal
         """,
         (claim_id,),
     )
+    return evidence.present_claim(row)
+
+
+def _servable(document_id: int) -> dict:
+    """The document's file, if its publisher allows serving a copy of it."""
+    row = one("SELECT local_path, title, media_type, source_name FROM document "
+              "WHERE id = %s", (document_id,))
+    if not row or not evidence.may_serve_source(row["media_type"], row["source_name"]):
+        # Same answer as "no such document": a restricted source has no copy here.
+        raise HTTPException(404, "no such document")
     return row
 
 
 @app.get("/api/page.png")
 def page_png(document_id: int, page_no: int, claim_id: int | None = None):
-    doc_row = one("SELECT local_path FROM document WHERE id = %s", (document_id,))
-    if not doc_row:
-        raise HTTPException(404, "no such document")
+    doc_row = _servable(document_id)
 
     rects = []
     if claim_id is not None:
@@ -312,9 +468,7 @@ def page_png(document_id: int, page_no: int, claim_id: int | None = None):
 
 @app.get("/api/pdf/{document_id}")
 def pdf(document_id: int):
-    row = one("SELECT local_path, title FROM document WHERE id = %s", (document_id,))
-    if not row:
-        raise HTTPException(404, "no such document")
+    row = _servable(document_id)
     return FileResponse(row["local_path"], media_type="application/pdf")
 
 

@@ -10,11 +10,13 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+from .completeness import detect_gaps
 from .corpus import ISSUER, SOURCES
 from .db import connect
 from .diff import build_diffs
 from .extractors import coverage as coverage_check
-from .ingest import RAW_DIR, ingest_document
+from . import htmldoc
+from .ingest import RAW_DIR, ingest_document, ingest_html_document
 from .loader import load_claims
 from .reconcile import reconcile
 
@@ -29,10 +31,31 @@ def fetch_missing() -> list[str]:
         path = RAW_DIR / source.filename
         if path.exists() and path.stat().st_size > 0:
             continue
-        subprocess.run(["curl", "-sSL", "--fail", "--max-time", "180", "-A", UA,
+        # No --compressed: the stored bytes are the body exactly as served,
+        # which is what the SHA-256 covers. An HTML page's charset may be
+        # declared only in its Content-Type, so its headers are kept too.
+        headers = ["-D", str(headers_path(path))] if source.media_type == "text/html" else []
+        subprocess.run(["curl", "-sSL", "--fail", "--max-time", "180", "-A", UA, *headers,
                         "-o", str(path), source.url], check=True)
         fetched.append(source.filename)
     return fetched
+
+
+def headers_path(path: pathlib.Path) -> pathlib.Path:
+    return path.with_name(path.name + ".headers")
+
+
+def content_type_of(path: pathlib.Path) -> str | None:
+    """The last Content-Type in a saved header dump (after any redirects)."""
+    hp = headers_path(path)
+    if not hp.exists():
+        return None
+    found = None
+    for line in hp.read_text(errors="replace").splitlines():
+        name, _, value = line.partition(":")
+        if name.strip().lower() == "content-type":
+            found = value.strip()
+    return found
 
 
 def ensure_issuer(conn) -> int:
@@ -48,14 +71,131 @@ def ensure_issuer(conn) -> int:
 
 
 def pages_of(conn, document_id: int) -> list[dict]:
+    """The units an extractor reads: a PDF's pages, or an HTML page's nodes
+    parsed from its stored bytes — the same bytes the loader verifies against."""
+    doc = conn.execute(
+        """
+        SELECT d.media_type, d.content_type, b.bytes
+        FROM document d LEFT JOIN document_blob b ON b.document_id = d.id WHERE d.id = %s
+        """,
+        (document_id,),
+    ).fetchone()
+    if doc and doc["media_type"] == "text/html":
+        return htmldoc.units(htmldoc.parse(bytes(doc["bytes"]), doc["content_type"]))
     return conn.execute(
-        "SELECT page_no, text FROM document_page WHERE document_id = %s ORDER BY page_no",
+        "SELECT page_no, text, word_map FROM document_page "
+        "WHERE document_id = %s ORDER BY page_no",
         (document_id,),
     ).fetchall()
 
 
 class IncompleteExtraction(RuntimeError):
     """Raised in strict mode when a document does not meet its own declaration."""
+
+
+class ConflictEvidenceLost(RuntimeError):
+    """Re-extraction would leave a recorded conflict without its evidence."""
+
+
+def conflict_members_of(conn, document_id: int) -> list[dict]:
+    """The conflict membership this document's claims hold, by what they state.
+
+    Re-extraction replaces a document's claims and conflict_member cascades on
+    claim deletion. An open conflict is re-recorded by reconcile in the same
+    run, but a resolved one is not, so without carrying membership across a
+    resolved conflict silently lost this document's side and read as one
+    source disagreeing with nobody.
+    """
+    return conn.execute(
+        """
+        SELECT m.conflict_id, m.stated_value, c.fact_key, c.value_text, c.value_numeric
+        FROM conflict_member m JOIN claim c ON c.id = m.claim_id
+        WHERE c.document_id = %s
+        """,
+        (document_id,),
+    ).fetchall()
+
+
+def relink_conflict_members(conn, document_id: int, members: list[dict]) -> None:
+    """Point carried membership at the replacement claims stating the same thing.
+
+    Matched on fact key *and* on still saying what the conflict recorded: a
+    replacement that states something else is not that evidence, and attaching
+    history to it would misreport what the source said. That case aborts the
+    run. For a rating the recorded value is the grade, outlook or watch named
+    in stated_value — not the claim's display text, which an extractor fix may
+    legitimately trim (CARE 2.2.0 stopped folding the action wording into it).
+    """
+    lost = []
+    for m in members:
+        replacements = conn.execute(
+            """
+            SELECT c.id FROM claim c
+            LEFT JOIN rating_action r ON r.claim_id = c.id
+            LEFT JOIN rating_history_entry h ON h.claim_id = c.id
+            WHERE c.document_id = %(doc)s AND c.fact_key = %(key)s
+              AND CASE WHEN r.claim_id IS NOT NULL AND %(stated)s::text IS NOT NULL
+                       THEN %(stated)s::text IN (r.rating, r.outlook, r.watch)
+                       WHEN h.claim_id IS NOT NULL AND %(stated)s::text IS NOT NULL
+                       THEN %(stated)s::text IN (h.grade, h.outlook, h.watch)
+                       ELSE c.value_text IS NOT DISTINCT FROM %(text)s
+                        AND c.value_numeric IS NOT DISTINCT FROM %(num)s
+                  END
+            """,
+            {"doc": document_id, "key": m["fact_key"], "stated": m["stated_value"],
+             "text": m["value_text"], "num": m["value_numeric"]},
+        ).fetchall()
+        if not replacements:
+            lost.append(f"conflict {m['conflict_id']}: {m['fact_key']}")
+        for r in replacements:
+            conn.execute(
+                "INSERT INTO conflict_member (conflict_id, claim_id, stated_value) "
+                "VALUES (%s,%s,%s) ON CONFLICT (conflict_id, claim_id) DO NOTHING",
+                (m["conflict_id"], r["id"], m["stated_value"]),
+            )
+    if lost:
+        raise ConflictEvidenceLost(
+            f"document {document_id}: re-extraction no longer states "
+            + "; ".join(sorted(set(lost))))
+
+
+def gap_evidence_of(conn, document_id: int) -> list[dict]:
+    """Corpus-gap evidence held by this document's history claims. Open gaps
+    are recomputed each run; a resolved one is not, so, as with conflicts, its
+    evidence is carried across a re-extraction rather than cascaded away."""
+    return conn.execute(
+        """
+        SELECT e.gap_id, c.fact_key, h.grade, g.resolved_at IS NOT NULL AS resolved
+        FROM corpus_gap_evidence e
+        JOIN claim c ON c.id = e.claim_id
+        JOIN rating_history_entry h ON h.claim_id = c.id
+        JOIN corpus_gap g ON g.id = e.gap_id
+        WHERE c.document_id = %s
+        """,
+        (document_id,),
+    ).fetchall()
+
+
+def relink_gap_evidence(conn, document_id: int, evidence: list[dict]) -> None:
+    lost = []
+    for e in evidence:
+        replacements = conn.execute(
+            """
+            SELECT c.id FROM claim c JOIN rating_history_entry h ON h.claim_id = c.id
+            WHERE c.document_id = %s AND c.fact_key = %s
+              AND h.grade IS NOT DISTINCT FROM %s
+            """,
+            (document_id, e["fact_key"], e["grade"]),
+        ).fetchall()
+        if not replacements and e["resolved"]:
+            lost.append(f"gap {e['gap_id']}: {e['fact_key']}")
+        for r in replacements:
+            conn.execute("INSERT INTO corpus_gap_evidence (gap_id, claim_id) VALUES (%s,%s) "
+                         "ON CONFLICT DO NOTHING", (e["gap_id"], r["id"]))
+    if lost:
+        raise ConflictEvidenceLost(
+            f"document {document_id}: re-extraction no longer states "
+            + "; ".join(sorted(set(lost))))
 
 
 def record_coverage(conn, document_id: int, cov) -> None:
@@ -113,9 +253,14 @@ def run(reset: bool = False, strict: bool = False, reprocess: bool = False) -> d
 
         for source in SOURCES:
             path = pathlib.Path(RAW_DIR / source.filename)
-            document_id = ingest_document(conn, issuer_id, path, source.meta,
-                                          retrieved_at=datetime.fromtimestamp(
-                                              path.stat().st_mtime, tz=timezone.utc))
+            retrieved_at = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            if source.media_type == "text/html":
+                document_id = ingest_html_document(conn, issuer_id, path, source.meta,
+                                                   content_type_of(path),
+                                                   retrieved_at=retrieved_at)
+            else:
+                document_id = ingest_document(conn, issuer_id, path, source.meta,
+                                              retrieved_at=retrieved_at)
 
             reason, already, previous = extraction_needed(
                 conn, document_id, source.extractor, force=reprocess)
@@ -141,13 +286,18 @@ def run(reset: bool = False, strict: bool = False, reprocess: bool = False) -> d
                 conn.execute("UPDATE document SET published_date = %s WHERE id = %s",
                              (max(set(dates), key=dates.count), document_id))
 
+            members, gap_evidence = [], []
             if already:
                 # Replaced, not appended: two versions of the same fact from one
                 # document are not two sources agreeing, they are one parser
                 # changing its mind, and reconciliation must never see both.
+                members = conflict_members_of(conn, document_id)
+                gap_evidence = gap_evidence_of(conn, document_id)
                 conn.execute("DELETE FROM claim WHERE document_id = %s", (document_id,))
 
             load_claims(conn, issuer_id, document_id, claims)
+            relink_conflict_members(conn, document_id, members)
+            relink_gap_evidence(conn, document_id, gap_evidence)
             conn.execute(
                 """
                 INSERT INTO extraction_run (document_id, extractor, extractor_version,
@@ -169,6 +319,8 @@ def run(reset: bool = False, strict: bool = False, reprocess: bool = False) -> d
                      "to": source.extractor.VERSION, "was": already, "now": len(claims)})
             stats["claims"] += len(claims)
 
+        # Before reconciliation: the gaps shape the rating states it compares.
+        stats.update(detect_gaps(conn, issuer_id))
         stats.update(reconcile(conn, issuer_id))
         stats["diffs"] = build_diffs(conn, issuer_id)
         conn.commit()
@@ -193,5 +345,7 @@ if __name__ == "__main__":
     print(f"\nclaims={result['claims']}  conflicts={result['conflicts']}  "
           f"corroborations={result['corroborations']}  resolved={result['resolved']}  "
           f"diffs={result['diffs']}")
+    print(f"corpus gaps={result['gaps']} ({result['gaps_within_corpus']} within the "
+          f"period our documents cover)  gaps resolved={result['gaps_resolved']}")
     for fact_key, reason in result["excluded_keys"]:
         print(f"  not reconciled: {fact_key} — {reason}")

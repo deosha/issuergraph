@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — {{product_name}}</title>
+<meta name="description" content="What the IssuerGraph site stores when you request a pilot, and what it does not.">
+<link rel="canonical" href="{{site_url}}/privacy">
+<link rel="icon" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img class="mark" src="/static/favicon.svg" alt="" width="22" height="22">
+      <span>{{product_name}}</span>
+    </a>
+  </div>
+</header>
+
+<main id="main">
+<section>
+  <div class="wrap narrow">
+    <p class="eyebrow">Privacy</p>
+    <h1>What this site stores</h1>
+
+    <h3>The sample issuer</h3>
+    <p>The demo needs no signup and stores nothing about you. It is a fixed dataset built
+    from public documents.</p>
+
+    <h3>The pilot form</h3>
+    <p>When you request a pilot we store what you enter — name, email address,
+    organisation, role, the issuers and workflow you describe and any notes — with the
+    time it arrived and which page of this site you came from. If you send the form again with the same
+    email address, the same record is updated rather than a second one created.
+    {{privacy_crm}}</p>
+    <p>We use it only to reply to you about a pilot. You are not added to a mailing
+    list, no outreach sequence is started, and it is not sold or shared for marketing.
+    It is kept in our database, hosted on AWS in Mumbai (ap-south-1), until you ask us
+    to delete it.</p>
+    <p>To stop the form being flooded, each submission records a salted one-way hash of
+    the address it came from. The hash cannot be turned back into an address, is used
+    only to count recent submissions, and is deleted when the rate-limit window passes.
+    Your IP address itself is not stored.</p>
+
+    <h3>Analytics</h3>
+    <p>{{privacy_analytics}}</p>
+
+    <h3>Hosting</h3>
+    <p>Our hosting provider keeps standard request logs for operating and securing the
+    service.</p>
+
+    <h3>Your requests</h3>
+    <p>To see, correct or delete what you sent, email
+    <a href="mailto:{{contact_email}}?subject=Privacy">{{contact_email}}</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>{{product_name}}</span>
+    <span class="spacer"></span>
+    <a href="/">Home</a>
+    <a href="/demo">Sample issuer</a>
+    <a href="/pilot">Request a pilot</a>
+    <a href="mailto:{{contact_email}}?subject=IssuerGraph">Contact</a>
+  </div>
+</footer>
+</body>
+</html>

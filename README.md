@@ -29,6 +29,10 @@ psql -d issuergraph -f sql/004_extraction_runs.sql
 psql -d issuergraph -f sql/005_rating_states.sql
 psql -d issuergraph -f sql/006_pilot_requests.sql
 psql -d issuergraph -f sql/007_withdrawn_and_ended.sql
+psql -d issuergraph -f sql/008_gradeless_withdrawals.sql
+psql -d issuergraph -f sql/009_rating_history.sql
+psql -d issuergraph -f sql/010_html_evidence.sql
+psql -d issuergraph -f sql/011_agency_adjusted.sql
 
 uv venv -p 3.13 .venv
 uv pip install --python .venv/bin/python fastapi 'uvicorn[standard]' 'psycopg[binary]' \
@@ -157,8 +161,10 @@ difference does not mint a new conflict.
 
 ```
 sql/schema.sql              nine tables
-sql/002..007_*.sql          conflict history; coverage; reprocessing;
-                            rating states; pilot requests; withdrawals + ended
+sql/002..011_*.sql          conflict history; coverage; reprocessing;
+                            rating states; pilot requests; withdrawals + ended;
+                            gradeless withdrawals; rating history + corpus gaps;
+                            HTML evidence; agency-adjusted basis
 docs/SCHEMA.md              why each one exists
 issuergraph/
   models.py                 Pydantic contract; an anchorless claim cannot be built
@@ -200,7 +206,8 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
 
 ## Known limits of this slice
 
-- Four extractors, tuned to four publishers' current layouts. A format change is
+- Five extractors, tuned to five publishers' current layouts (Crisil's is HTML,
+  anchored by node path). A format change is
   caught two ways, and an earlier version of this README overstated the first:
   offset assertions fail loudly only when a pattern *matches* and the text has
   moved. A pattern that stops matching raises nothing, so it is caught instead by
@@ -216,12 +223,22 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   stacked; `extraction_run` keeps the version history that replacement would
   erase, and conflicts keep `first_detected_at` because they are upserted on
   the fact key rather than rebuilt from claim ids.
-- Only ICRA has ≥2 reports here, so only ICRA produces diffs.
+- ICRA and CARE each have three reports here, so they produce diffs; Brickwork
+  has one and produces none.
 - A rating is treated as in force until the same agency acts again or withdraws
-  it on that tranche, with no staleness horizon. CARE last acted in March 2024, so its AA still counts as
-  concurrent with Brickwork's September 2025 AA+ and is reported as an open
-  conflict. That is faithful to what the documents say and probably not what an
-  analyst wants after two years; a maximum age per agency is the missing piece.
+  it on that tranche. "Acts again" includes actions we know of only from the
+  agency's own rating-history annexure: each rationale's history table is read
+  as anchored `rating_history` claims, and an action it lists with no primary
+  rationale to match is a `corpus_gap` that ends the earlier period, opens one
+  of its own, and flags conflicts across it `incomplete_corpus` (see
+  `completeness.py`). For IIFL that finds one missing document, ICRA's
+  25 September 2024 action; the demo export refuses to publish the three
+  conflicts it flags without `--allow-gaps`.
+- The annexures can only list actions up to the agency's latest document we
+  hold. Anything an agency did after that is invisible — CARE's AA-/Stable of
+  September 2024 is the last CARE action we can see, and there is still no
+  staleness horizon: it counts as current. A maximum age per agency remains the
+  missing piece, and a separate decision.
 - ICRA's Feb 2026 rationale carries no market-linked-debenture rating, so the
   change feed reports one removed — confirmed, because that report met its
   coverage declaration, and consistent with the Sept 2025 rows being

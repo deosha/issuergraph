@@ -51,6 +51,8 @@ def overview() -> dict:
         "conflicts": conflicts,
         "corroborations": data["corroborations"],
         "changes": data["changes"],
+        # absent from snapshots exported before rating-history coverage existed
+        "gaps": data.get("gaps", {"agencies": [], "gaps": []}),
         "counts": {
             "documents": len(data["issuer"]["documents"]),
             "claims": data["issuer"]["claim_count"],

@@ -5,3 +5,4 @@ pydantic
 pymupdf
 python-dateutil
 pytest
+lxml==6.1.3             # pinned: HTML anchors are node paths into lxml's parse (see htmldoc.py)
