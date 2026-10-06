@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>IssuerGraph Assess</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/assess.css?v={{asset_version}}">
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><span class="mark">IG</span> IssuerGraph</div>
+  <nav class="products" aria-label="Products">
+    <a href="/app">Corporate Research</a>
+    <a class="on" href="/assess" aria-current="page">Borrower Assessment <span class="pilot">Pilot</span></a>
+  </nav>
+  <label class="case-pick">Case
+    <select id="case-select" aria-label="Case"></select>
+  </label>
+  <button class="ghost" id="new-case">New case</button>
+  <span class="private" title="Served to this machine only; not part of the public catalogue or demo">Local · private case</span>
+  <span class="spacer"></span>
+  <a class="btn primary" id="export" href="#" download>Export review pack</a>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+
+<main class="layout">
+  <section class="work">
+    <div class="case-head" id="case-head"></div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <div id="view" class="view" role="tabpanel" tabindex="-1"><p class="empty">Loading…</p></div>
+  </section>
+  <aside class="evidence" id="evidence" aria-live="polite">
+    <div class="ev-empty">
+      <h3>Source evidence</h3>
+      <p>Click any underlined figure to open the page it was read from, with the exact text
+      highlighted. Unverified values show the quote proposed by the model and are never highlighted.</p>
+      <ul class="legend">
+        <li><span class="v reported">12,300.00</span> Reported — verified against the source</li>
+        <li><span class="v unverified">2,100.00</span> Unverified — model proposal, not used</li>
+        <li><span class="v analyst">12,300.00</span> Analyst — corrected or confirmed, with reason</li>
+        <li><span class="v inferred">12,300.00</span> Inferred — a match or classification to confirm</li>
+        <li><span class="v calculated link">29.45%</span> Calculated — click to see the figures or transactions it was computed from</li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<dialog id="dialog">
+  <form method="dialog" id="dialog-form">
+    <h3 id="dialog-title"></h3>
+    <div id="dialog-body"></div>
+    <p class="err" id="dialog-err" hidden></p>
+    <menu>
+      <button value="cancel" class="ghost" formnovalidate>Cancel</button>
+      <button value="ok" class="primary" id="dialog-ok">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<script src="/static/assess.js?v={{asset_version}}"></script>
+</body>
+</html>

@@ -374,3 +374,8 @@ CREATE TABLE document_blob (
     document_id BIGINT PRIMARY KEY REFERENCES document(id) ON DELETE CASCADE,
     bytes       BYTEA NOT NULL
 );
+
+-- IssuerGraph Assess: private case-scoped schema (sql/013).
+\ir 013_assess.sql
+\ir 014_assess_kinds.sql
+\ir 015_assess_business.sql

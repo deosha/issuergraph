@@ -479,4 +479,8 @@ document.addEventListener("keydown", (e) => {
 
 window.IGApp = { showClaim, selectTab, state };
 
-boot();
+// #claim=<id> opens that fact's evidence on load (a shareable link to one figure).
+Promise.resolve(boot()).then(() => {
+  const m = location.hash.match(/claim=(\d+)/);
+  if (m) showClaim(Number(m[1]));
+});

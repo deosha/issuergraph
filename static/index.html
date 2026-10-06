@@ -27,6 +27,7 @@
       <span data-cfg="product_name">IssuerGraph</span>
     </a>
     <nav class="site-nav" aria-label="Sections">
+      <a href="#products">Products</a>
       <a href="#workflow">Workflow</a>
       <a href="#preview">Product</a>
       <a href="#coverage">Coverage</a>
@@ -44,12 +45,13 @@
 
 <section class="hero">
   <div class="wrap">
-    <p class="eyebrow">For credit-research and private-credit teams</p>
+    <p class="eyebrow">Source-verifiable credit and due-diligence analysis</p>
     <h1>Issuer debt and rating changes,<br>with the source behind every figure.</h1>
     <p class="lede">
-      Review an issuer's debt, track its rating changes, and verify every figure
-      against the document it came from. Where two sources disagree, both are shown,
-      dated, side by side — and no winner is picked for you.
+      Every figure IssuerGraph shows opens the page it came from, with the exact text
+      highlighted. Review an issuer's debt, track its rating changes, and verify each
+      number against its document. Where two sources disagree, both are shown, dated,
+      side by side — and no winner is picked for you.
     </p>
     <div class="hero-actions">
       <a class="btn primary" href="/demo" data-cta="demo" data-where="hero">Explore sample issuer →</a>
@@ -62,15 +64,95 @@
     </p>
 
     <figure class="shot hero-shot">
-      <img src="/static/shots/product.png" width="2200" height="1350" loading="lazy"
-           alt="The IssuerGraph workspace. On the left, a table of total borrowings by basis and date, each figure underlined as a link, with two rows badged as differences and two as agreeing within tolerance. On the right, page 438 of the annual report with four highlights: the three balance-sheet rows that make up the selected total, and the statement's own rupees-in-crores header.">
+      <img src="/static/shots/product.png" width="2201" height="1350" loading="lazy"
+           alt="The IssuerGraph workspace. On the left, a table of total borrowings by basis and date, each figure underlined as a link, with rows badged as differences or as agreeing within tolerance; one consolidated total is selected. On the right, that total's arithmetic, the three amounts it adds together quoted from the annual report, the statement's rupees-in-crores header, and page 438 of the report with the header highlighted.">
       <figcaption>
         The workspace: every figure on the left is a link; the right pane is the page it
-        came from. The selected total is not printed anywhere in the report — it is the
-        three highlighted rows added together, and the fourth highlight is the header
-        that establishes they are crores.
+        came from. The selected total is not printed anywhere in the report — it is three
+        balance-sheet rows added together, each quoted with its location, and the
+        highlighted header is what establishes they are crores.
       </figcaption>
     </figure>
+  </div>
+</section>
+
+<section id="products">
+  <div class="wrap">
+    <p class="eyebrow">Products</p>
+    <h2>One evidence engine, two workflows</h2>
+    <div class="grid two" style="margin-top:26px">
+      <div class="card">
+        <h3>Corporate Research <span class="pill ok">Available</span></h3>
+        <p>Issuer debt, rated instruments and rating actions across an annual report and
+        agency rationales — each figure linked to its page, differences between sources
+        shown side by side and dated.</p>
+        <p class="small muted">Works today on the sample issuer: <span data-count="documents">{{count_documents}}</span> public documents,
+        every figure verified against its page before it is stored.</p>
+        <p style="margin-top:16px"><a class="btn primary" href="/demo" data-cta="demo" data-where="products">View sample dossier →</a></p>
+      </div>
+      <div class="card">
+        <h3>Borrower Assessment <span class="pill warn">Pilot</span></h3>
+        <p>For loan advisors and credit teams: a borrower's statements, salary slips,
+        credit report and tax documents become a liability schedule, income review and
+        an illustrative eligibility worksheet — every figure linked to its page, every
+        analyst decision recorded with its reason.</p>
+        <p class="small muted">Illustrative worksheets only — never a lender approval, a risk score or an
+        approval probability.</p>
+        <p style="margin-top:16px"><a class="btn" href="/pilot" data-cta="pilot" data-where="products-assess">Discuss an assessment pilot →</a></p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px">Borrower Assessment in three steps</h3>
+    <div class="steps" style="margin-top:14px">
+      <div>
+        <span class="n">01</span>
+        <h3>Provide documents</h3>
+        <p>Bank statements, salary slips, the applicant's credit report, Form 16 or ITR. Each
+        is identified from its content and read on its own terms.</p>
+      </div>
+      <div>
+        <span class="n">02</span>
+        <h3>Review source-linked findings</h3>
+        <p>Missing information, possible discrepancies and items needing confirmation, each
+        with its control. A bureau loan and the bank debit that repays it count once; an
+        overdraft limit is never treated as debt.</p>
+      </div>
+      <div>
+        <span class="n">03</span>
+        <h3>Export the pack</h3>
+        <p>An Excel review pack built from exactly what is on screen: schedules, findings
+        with their status, assumptions with their basis, and the source page of every figure.</p>
+      </div>
+    </div>
+
+    <figure class="shot" style="margin-top:30px">
+      <img src="/static/shots/assess.png" width="2160" height="1350" loading="lazy"
+           alt="The Borrower Assessment workspace on a synthetic case. On the left, an eligibility worksheet panel above a credit-report summary and a liability schedule, where a bureau loan and its matching bank debit appear as one row. On the right, page 2 of the synthetic credit report with the selected current balance highlighted.">
+      <figcaption>Synthetic data. The liability schedule on the left; the credit-report page on the
+      right, with the selected balance highlighted. The model cited page 1 for this figure — the
+      quote was found on page 2, and page 2 is what opens.</figcaption>
+    </figure>
+
+    <div class="grid two" style="margin-top:28px">
+      <div>
+        <h3>Works today</h3>
+        <ul class="small">
+          <li>Salaried borrowers, one case at a time, run privately on the analyst's machine</li>
+          <li>Digital PDF statements in HDFC-style and ICICI detailed layouts, reconciled row by row</li>
+          <li>Salary slips, Form 16 Part B, ITR JSON; CIBIL report print-outs read without a model</li>
+          <li>Bureau-to-bank matching, OD treatment, analyst corrections with reasons, Excel export</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Through a scoped pilot</h3>
+        <ul class="small">
+          <li>Your most frequent banks' statement layouts and scanned documents (OCR)</li>
+          <li>Self-employed, partnership and company borrowers</li>
+          <li>Your lenders' document checklists and your MIS / Excel format</li>
+          <li>Hosting and access controls agreed with your team</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 

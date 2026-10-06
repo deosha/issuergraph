@@ -251,3 +251,11 @@ queue, no auth, no tenancy. Orchestration is a function that runs in order.
   in `reconcile.py`, not a per-fact policy.
 - CARE and Brickwork publish no instrument-level maturity table, so the maturity
   ladder comes from ICRA's Annexure I only.
+
+## IssuerGraph Assess (local, separate workflow)
+
+A private, case-scoped borrower-assessment demo (salaried case: statements,
+slips, credit report, ITR JSON → liability schedule → illustrative
+eligibility → Excel), served at `/assess` to this machine only and never by a
+demo-only deployment. Own schema (`sql/013_assess.sql`), own package
+(`issuergraph/assess/`). See `docs/ASSESS.md`.

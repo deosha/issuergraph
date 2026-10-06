@@ -119,3 +119,26 @@ def site_url() -> str:
     """The public site's absolute base URL: canonical links, Open Graph URLs
     and the www → apex redirect are built from it."""
     return _env("ISSUERGRAPH_SITE_URL", "https://issuergraph.com").rstrip("/")
+
+
+# --- IssuerGraph Assess (local, case-scoped) -----------------------------------
+# External processing for applicant documents is opt-in: with no profile set,
+# no document leaves this machine and model-backed steps fail visibly.
+
+def assess_aws_profile() -> str:
+    """AWS profile for Textract/Bedrock. Empty = external processing off."""
+    return _env("ASSESS_AWS_PROFILE")
+
+
+def assess_aws_region() -> str:
+    return _env("ASSESS_AWS_REGION", "ap-south-1")
+
+
+def assess_bedrock_model() -> str:
+    """Bedrock model or inference-profile id. Empty = discover an Anthropic
+    Claude profile available to the account at first use."""
+    return _env("ASSESS_BEDROCK_MODEL")
+
+
+def assess_textract_enabled() -> bool:
+    return _flag("ASSESS_TEXTRACT", True)

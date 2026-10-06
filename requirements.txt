@@ -6,3 +6,5 @@ pymupdf
 python-dateutil
 pytest
 lxml==6.1.3             # pinned: HTML anchors are node paths into lxml's parse (see htmldoc.py)
+openpyxl                # Assess: Excel export
+boto3[crt]              # Assess: optional Textract/Bedrock; [crt] for `aws login` profiles

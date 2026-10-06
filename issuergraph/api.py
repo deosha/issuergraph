@@ -580,6 +580,11 @@ def pdf(document_id: int):
     return FileResponse(row["local_path"], media_type="application/pdf")
 
 
+# Assess: the private, case-scoped borrower workflow (loopback only, own schema).
+from .assess.api import router as assess_router  # noqa: E402
+
+app.include_router(assess_router)
+
 # The public site (landing page, demo, pilot form) registers onto this same app:
 # one process, one deployment. The live API above is unchanged.
 from . import site  # noqa: E402  (imported here to avoid a circular import)

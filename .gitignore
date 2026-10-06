@@ -8,3 +8,4 @@ CLAUDE.md
 CLAUDE.local.md
 .env
 .env.production
+data/assess/
