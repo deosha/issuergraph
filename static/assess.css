@@ -221,3 +221,10 @@ h3.sm { font-size: 13px; margin: 14px 0 6px; }
 .v.calculated.link:hover { color: var(--teal); text-decoration-color: var(--teal); }
 .calcline { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line);
             border-radius: 6px; padding: 8px 10px; color: var(--text); }
+
+/* public demo */
+body.demo #new-case, body.demo .private, body.demo .upload, body.demo [data-action="reprocess"] { display: none; }
+body.demo .banner a { color: inherit; font-weight: 600; }
+.pagewrap { position: relative; display: block; line-height: 0; }
+.pagewrap .hl { position: absolute; background: rgba(15,118,110,.22); outline: 1.5px solid rgba(15,118,110,.7);
+                border-radius: 2px; pointer-events: none; }

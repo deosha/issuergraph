@@ -450,3 +450,41 @@ def test_every_document_type_has_a_label_in_the_ui():
     block = js[js.index("const KIND = {"):js.index("};", js.index("const KIND = {"))]
     labelled = set(re.findall(r"(\w+):", block))
     assert set(process.KINDS) <= labelled, set(process.KINDS) - labelled
+
+
+# --- public read-only demo ------------------------------------------------------------------
+
+def test_public_assess_demo_is_served_on_demo_only_deployments(monkeypatch):
+    monkeypatch.setenv("ISSUERGRAPH_DEMO_ONLY", "1")
+    page = request("GET", "/demo/assess")
+    assert page.status == 200 and "window.IGA = { demo: true }" in page.text
+    assert 'href="/demo">Corporate Research' in page.text            # switcher stays inside the demo
+    assert request("GET", "/assess").status == 404
+    assert request("GET", "/api/assess/cases").status == 404
+
+
+def test_demo_export_refuses_a_real_case(tmp_path):
+    from scripts.export_assess_demo import RefusedCase, export_cases
+
+    cid = process.create_case("test: real applicant", "Someone Real")    # is_synthetic = false
+    try:
+        with pytest.raises(RefusedCase):
+            export_cases([cid], tmp_path / "out")
+        assert not (tmp_path / "out").exists()                           # refused before writing anything
+    finally:
+        with connect() as conn:
+            conn.execute("DELETE FROM assess.case_file WHERE id=%s", (cid,))
+
+
+def test_committed_demo_snapshot_is_synthetic_and_complete():
+    root = pathlib.Path(__file__).resolve().parents[1] / "static" / "demo" / "assess"
+    snap = json.loads((root / "snapshot.json").read_text())
+    assert snap["cases"] and all(c["case"]["is_synthetic"] for c in snap["cases"].values())
+    for c in snap["cases"].values():
+        assert (root / f"case_{c['case']['id']}.xlsx").exists()
+    for ev in list(snap["facts"].values()) + list(snap["txns"].values()):
+        if ev["verified"] and ev["highlight"]:
+            page = snap["pages"][f"{ev['document']['id']}|{ev['page_no']}"]
+            assert (root / page["file"]).exists()
+    text = (root / "snapshot.json").read_text()
+    assert "/Users/" not in text and "stored_path" not in text

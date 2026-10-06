@@ -8,6 +8,35 @@
 (function () {
   "use strict";
   const API = "/api/assess";
+  // Public demo: the same workspace over a static snapshot of synthetic cases.
+  const DEMO = !!(window.IGA && window.IGA.demo);
+  const DEMO_BASE = "/static/demo/assess/";
+  const BASE = DEMO ? "/demo/assess" : "/assess";
+  const READ_ONLY = "Read-only public demo with synthetic data. Corrections, decisions and uploads work in a pilot.";
+  let demoSnap = null;
+  async function demoApi(path) {
+    if (!demoSnap) demoSnap = await (await fetch(DEMO_BASE + "snapshot.json")).json();
+    let m;
+    if (path === "/cases") return Object.values(demoSnap.cases).map((c) => ({ id: c.case.id, label: c.case.label,
+      is_synthetic: true, borrower_type: c.case.borrower_type }));
+    if ((m = path.match(/^\/cases\/(\d+)$/))) return demoSnap.cases[m[1]];
+    if ((m = path.match(/^\/fact\/(\d+)$/))) return demoSnap.facts[m[1]];
+    if ((m = path.match(/^\/txn\/(\d+)$/))) return demoSnap.txns[m[1]];
+    if ((m = path.match(/^\/json\/(\d+)\?path=(.*)$/))) return demoSnap.json[`${m[1]}|${decodeURIComponent(m[2])}`];
+    if (path === "/status") return null;
+    throw new Error(READ_ONLY);
+  }
+  // A page image: the server renders highlights live; the demo draws them over a
+  // pre-rendered page from the stored rectangles, as percentages of the page.
+  function pageImage(docId, pageNo, rects, alt) {
+    if (!DEMO) return null;
+    const pg = demoSnap.pages[`${docId}|${pageNo}`];
+    if (!pg) return `<p class="note">Page image not included in the demo.</p>`;
+    const hl = (rects || []).map(([x0, y0, x1, y1]) => `<span class="hl" style="left:${x0 / pg.width * 100}%;top:${y0 / pg.height * 100}%;
+      width:${(x1 - x0) / pg.width * 100}%;height:${(y1 - y0) / pg.height * 100}%"></span>`).join("");
+    return `<div class="pagewrap"><img class="ev-page" alt="${esc(alt)}" src="${DEMO_BASE + pg.file}">${hl}</div>`;
+  }
+  const exportUrl = (id) => (DEMO ? `${DEMO_BASE}case_${id}.xlsx` : `${API}/cases/${id}/export.xlsx`);
   const state = { cases: [], caseId: null, data: null, tab: "overview", sel: null, provider: null,
                   txnFilter: "all", hideDup: true, poll: null };
   const $ = (s) => document.querySelector(s);
@@ -40,6 +69,10 @@
                    calculated: "Calculated", suggested: "Suggested" };
 
   async function api(path, opts = {}) {
+    if (DEMO) {
+      if (opts.method && opts.method !== "GET") throw new Error(READ_ONLY);
+      return demoApi(path);
+    }
     const res = await fetch(API + path, opts);
     if (!res.ok) {
       let msg = res.status + "";
@@ -107,7 +140,7 @@
     const sel = $("#case-select");
     sel.innerHTML = state.cases.map((c) =>
       `<option value="${c.id}">#${c.id} · ${esc(c.label)}${c.is_synthetic ? " (synthetic)" : ""}</option>`).join("");
-    const fromUrl = Number(location.pathname.split("/")[2]) || null;
+    const fromUrl = Number((location.pathname.match(/\/(\d+)$/) || [])[1]) || null;
     const id = selectId || fromUrl || (state.cases[0] && state.cases[0].id);
     if (id) {
       sel.value = id;
@@ -119,8 +152,8 @@
 
   async function openCase(id) {
     state.caseId = Number(id);
-    history.replaceState(null, "", "/assess/" + id + location.hash);
-    $("#export").href = `${API}/cases/${id}/export.xlsx`;
+    history.replaceState(null, "", `${BASE}/${id}${location.hash}`);
+    $("#export").href = exportUrl(id);
     await refresh();
   }
 
@@ -161,7 +194,13 @@
           needs_input: "Worksheet needs input", invalid: "Worksheet needs review" }[c.eligibility.status] || "")}</span>
       </div>`;
     const banner = $("#banner");
-    if (k.is_synthetic) {
+    if (DEMO) {
+      banner.hidden = false;
+      banner.className = "banner synthetic";
+      banner.innerHTML = `<b>Public demo · synthetic data · read-only.</b> Every document and figure is fictional. Click any
+        figure to see its source page; corrections, decisions and uploads are shown but work only in a pilot.
+        <a href="/pilot?from=assess-demo">Discuss an assessment pilot →</a>`;
+    } else if (k.is_synthetic) {
       banner.hidden = false;
       banner.className = "banner synthetic";
       banner.textContent = "Synthetic case: every document and figure here is fictional, generated for "
@@ -797,7 +836,7 @@
         bank reconciliation, findings with their status, worksheet inputs with their basis, and the source page of every figure.</p>
         <p class="note">Worksheet: <b>${esc(label(e.status))}</b>${e.open_blocking ? ` — ${e.open_blocking} open finding(s) affect it, and the pack says so.` : "."}
         ${esc(e.label)}</p></div>
-      <a class="btn primary big-btn" href="${API}/cases/${state.caseId}/export.xlsx" download>Export review pack (.xlsx)</a></div>
+      <a class="btn primary big-btn" href="${exportUrl(state.caseId)}" download>${DEMO ? "Download sample review pack (.xlsx)" : "Export review pack (.xlsx)"}</a></div>
       <div class="card"><h2>Findings</h2>${findingGroups(c)}</div>
       ${done.length ? `<div class="card"><details><summary>${done.length} resolved finding(s)</summary>${done.map(findingItem).join("")}</details></div>` : ""}`;
   }
@@ -825,8 +864,9 @@
         const q = kind === "fact" ? `fact_id=${id}` : `txn_id=${id}`;
         body = `<p><span class="pill ok">verified</span> The highlighted text is read back from the page at stored character offsets.</p>
           <div class="ev-quote">${esc(ev.evidence_text)}</div>
-          <img class="ev-page" alt="Page ${ev.page_no} of ${esc(d.filename)} with the source text highlighted"
-            src="${API}/page.png?document_id=${d.id}&page_no=${ev.page_no}&${q}">`;
+          ${pageImage(d.id, ev.page_no, ev.rects, `Page ${ev.page_no} of ${d.filename} with the source text highlighted`) ||
+          `<img class="ev-page" alt="Page ${ev.page_no} of ${esc(d.filename)} with the source text highlighted"
+            src="${API}/page.png?document_id=${d.id}&page_no=${ev.page_no}&${q}">`}`;
       } else {
         body = `<p><span class="pill warn">unverified</span> ${esc(ev.note || "")}</p>
           <p class="note">The model's quote is shown below. It was not found on the page, so nothing is highlighted
@@ -1036,10 +1076,11 @@
     else if (a === "average") showAverage(t.dataset.acct, t.dataset.what);
     else if (a === "upload") upload();
     else if (a === "save-assumptions") saveAssumptions();
-    else if (a === "reprocess") { await post(`/documents/${t.dataset.doc}/process`, {}); await refresh(); }
+    else if (a === "reprocess") { if (DEMO) return alert(READ_ONLY); await post(`/documents/${t.dataset.doc}/process`, {}); await refresh(); }
     else if (a === "show-page") {
       $("#cited-page").innerHTML = `<p class="note">Page as cited by the model — no highlight, location not confirmed.</p>
-        <img class="ev-page" alt="Page ${t.dataset.page}" src="${API}/page.png?document_id=${t.dataset.doc}&page_no=${t.dataset.page}">`;
+        ${pageImage(t.dataset.doc, Number(t.dataset.page), [], `Page ${t.dataset.page}`) ||
+        `<img class="ev-page" alt="Page ${t.dataset.page}" src="${API}/page.png?document_id=${t.dataset.doc}&page_no=${t.dataset.page}">`}`;
     }
   });
   document.addEventListener("change", async (ev) => {
@@ -1048,6 +1089,7 @@
     if (t.id === "txn-filter") { state.txnFilter = t.value; return render(); }
     if (t.id === "hide-dup") { state.hideDup = t.checked; return render(); }
     if (t.dataset.action === "set-cat") return setCategory(t);
+    if (t.dataset.action === "set-kind" && DEMO) { alert(READ_ONLY); return refresh(); }
     if (t.dataset.action === "set-kind") {
       await post(`/documents/${t.dataset.doc}/kind`, { kind: t.value });
       return refresh();
@@ -1059,7 +1101,8 @@
   if (hashTab && TABS.some(([id]) => id === hashTab)) state.tab = hashTab;
   const hashEv = location.hash.match(/ev=(fact|txn):(\d+)/);
   if (hashEv) showEvidence(hashEv[1], hashEv[2]);
-  loadProvider().then(() => loadCases()).catch((err) => {
+  if (DEMO) document.body.classList.add("demo");
+  (DEMO ? Promise.resolve() : loadProvider()).then(() => loadCases()).catch((err) => {
     $("#view").innerHTML = `<div class="callout">Could not load cases: ${esc(err.message)}</div>`;
   });
 })();

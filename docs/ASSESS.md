@@ -113,3 +113,18 @@ case (12-month current account, savings account, GST and Udyam certificates);
   Findings use stated review prompts, not lender rules.
 - Not yet: GST return analysis (needs GSTR data), ITR computation and P&L/BS
   extraction, GST vs ITR vs bank turnover consistency — pilot scope.
+
+## Public read-only demo (`/demo/assess`)
+
+The live site shows the synthetic cases only, from a committed static snapshot:
+
+```bash
+.venv/bin/python -m scripts.export_assess_demo        # every case flagged is_synthetic
+.venv/bin/python -m pytest tests/test_assess.py -q
+git add static/demo/assess && git commit
+```
+
+The exporter refuses any case not flagged synthetic, re-verifies every anchor
+against its page text, renders the referenced pages and draws highlights from
+the stored rectangles. In the demo, corrections, decisions and uploads show a
+read-only notice; the review pack is a pre-built sample workbook.

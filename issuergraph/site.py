@@ -239,6 +239,19 @@ def register(app) -> None:
     def demo_page():
         return _page("demo.html")
 
+    @app.get("/demo/assess", include_in_schema=False)
+    @app.get("/demo/assess/{case_id}", include_in_schema=False)
+    def assess_demo_page(case_id: int | None = None):
+        # The Borrower Assessment workspace over a static snapshot of synthetic
+        # cases (scripts/export_assess_demo.py). Read-only; no API behind it.
+        body = (STATIC / "assess.html").read_text().replace("{{asset_version}}", ASSET_VERSION)
+        body = (body.replace('<title>IssuerGraph Assess</title>', '<title>Borrower Assessment demo — IssuerGraph</title>')
+                    .replace('href="/app">Corporate Research', 'href="/demo">Corporate Research')
+                    .replace('href="/assess" aria-current="page"', 'href="/demo/assess" aria-current="page"')
+                    .replace('<script src="/static/assess.js', '<script>window.IGA = { demo: true };</script>\n'
+                                                            '<script src="/static/assess.js'))
+        return HTMLResponse(body, headers={"Cache-Control": "no-cache"})
+
     @app.get("/pilot", include_in_schema=False)
     def pilot_page():
         return _page("pilot.html")
