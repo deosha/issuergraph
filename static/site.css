@@ -256,3 +256,12 @@ img, svg, table { max-width: 100%; }
    how optional configuration (a booking link, a founder bio) stays out of the
    page when it is not set. */
 [hidden] { display: none !important; }
+
+/* product preview tabs */
+.preview-tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px;
+                background: var(--panel); }
+.preview-tabs button { font: inherit; font-size: 14px; border: 0; background: none; color: var(--body);
+                       padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+.preview-tabs button.on { background: var(--accent); color: var(--accent-ink); }
+.previews .hero-shot { margin-top: 14px; }
+.shot figcaption a { color: var(--accent); font-weight: 600; white-space: nowrap; }

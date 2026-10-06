@@ -1,3 +1,15 @@
+// Adapt the form's questions to the workflow chosen on the landing page.
+(function () {
+  const wf = new URLSearchParams(location.search).get("workflow");
+  if (wf !== "assess") return;
+  const set = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
+  set("h1", "Discuss a borrower assessment pilot");
+  set(".lede", "Tell us about your cases and where review time goes. You will get a scoped reply — a fixed price and a schedule — not a brochure.");
+  set('label[for="issuers"]', `Your cases <span class="hint">Monthly volume, borrower types (salaried,
+    proprietorship, partnership, company) and the banks whose statements you see most.</span>`);
+  set('label[for="workflow"]', `The workflow you want help with <span class="hint">What your analysts do today —
+    checking credit reports, verifying documents, liabilities, lender eligibility, MIS — and where it costs time.</span>`);
+})();
 /* The pilot form.
  *
  * Two rules the UI has to respect, because they are the difference between a

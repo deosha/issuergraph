@@ -148,3 +148,17 @@ document.addEventListener("click", (e) => {
   // Only named events are sent: the privacy notice lists exactly these.
   if (map[cta.dataset.cta]) track(map[cta.dataset.cta], { page: "landing" });
 });
+
+// --- product preview tabs -------------------------------------------------------
+document.querySelectorAll("[data-preview]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll("[data-preview]").forEach((b) => {
+      const on = b === tab;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-selected", String(on));
+    });
+    document.querySelectorAll("[data-preview-panel]").forEach((p) => {
+      p.hidden = p.dataset.previewPanel !== tab.dataset.preview;
+    });
+  });
+});

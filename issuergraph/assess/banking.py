@@ -88,13 +88,20 @@ def _account(key, rows, sts) -> dict:
         if t["balance"] is not None:
             eod[date.fromisoformat(t["txn_date"])] = D(str(t["balance"]))
     has_bal = bool(eod) and opening is not None
+    starts = {}
+    for st in sts:
+        if st["period_start"] and st["summary"].get("opening_balance") is not None:
+            starts.setdefault(date.fromisoformat(st["period_start"]), D(str(st["summary"]["opening_balance"])))
     daily = {}
     bal = opening
     d = start
+    covered = lambda day: any(a <= day <= b for a, b in cover) or not cover  # noqa: E731
     while d <= end and has_bal:
+        if covered(d) and not covered(d - timedelta(days=1)) and d in starts:
+            bal = starts[d]          # a new statement after a gap opens with its own balance
         if d in eod:
             bal = eod[d]
-        if any(a <= d <= b for a, b in cover) or not cover:
+        if covered(d):
             daily[d] = bal
         d += timedelta(days=1)
 
@@ -155,16 +162,25 @@ def _account(key, rows, sts) -> dict:
                 m["cash_wdl_ids"].append(t["id"])
 
     # retention: large business credits mostly moved out within QUICK_DAYS
+    # Each rupee debited is allocated to one credit only (earliest credit first), so
+    # one withdrawal cannot make two credits look as if they left the account.
     quick, large = [], []
-    debits = [(date.fromisoformat(t["txn_date"]), D(str(t["debit"])), t["id"]) for t in rows if t["debit"]]
-    for t in business:
+    pool = [[date.fromisoformat(t["txn_date"]), D(str(t["debit"]))] for t in rows if t["debit"]]
+    for t in sorted(business, key=lambda x: (x["txn_date"], x["seq"])):
         amt = D(str(t["credit"]))
         if amt < LARGE_CREDIT:
             continue
         large.append(t)
         d0 = date.fromisoformat(t["txn_date"])
-        out_amt = sum((a for d, a, _ in debits if d0 <= d <= d0 + timedelta(days=QUICK_DAYS)), D(0))
-        if out_amt >= amt * QUICK_SHARE:
+        need, taken = amt * QUICK_SHARE, D(0)
+        window = [p for p in pool if d0 <= p[0] <= d0 + timedelta(days=QUICK_DAYS) and p[1] > 0]
+        if sum((p[1] for p in window), D(0)) >= need:
+            for p in window:
+                use = min(p[1], need - taken)
+                p[1] -= use
+                taken += use
+                if taken >= need:
+                    break
             quick.append(t)
 
     # concentration
@@ -217,8 +233,9 @@ def _account(key, rows, sts) -> dict:
         "negative_days": sum(r["neg_days"] for r in month_rows),
         "retention": {"large_credits": len(large), "quick_out": len(quick), "ids": [t["id"] for t in quick],
                       "share": _f(quick_amt / large_amt) if large_amt else None,
-                      "rule": f"Credits of ₹{LARGE_CREDIT:,.0f} or more of which at least "
-                              f"{QUICK_SHARE * 100:.0f}% was debited within {QUICK_DAYS} days."},
+                      "rule": f"Credits of ₹{LARGE_CREDIT:,.0f} or more matched by at least "
+                              f"{QUICK_SHARE * 100:.0f}% of their value in debits within {QUICK_DAYS} days; each "
+                              "debit is counted against one credit only. A timing pattern, not money traced."},
         "concentration": {"top": [{"party": p, "amount": _f(v["amount"]),
                                    "share": _f(v["amount"] / noncash) if noncash else None,
                                    "count": len(v["ids"]), "ids": v["ids"]} for p, v in top],

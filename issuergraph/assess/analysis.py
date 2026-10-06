@@ -296,7 +296,10 @@ def _income(slips, txns, docs, items) -> dict:
                        "fields": items.get(doc_id, {}).get(0, {})})
     form16.sort(key=lambda x: (x["fields"].get("assessment_year") or {}).get("value") or "")
 
-    verified_slips = [s for s in slips if s["net"] is not None and s["gross"] is not None]
+    # A slip whose month was not read stays visible and in review, but cannot sit
+    # in a dated average until its month is corrected.
+    undated = [s["document_id"] for s in slips if not s["month"]]
+    verified_slips = [s for s in slips if s["net"] is not None and s["gross"] is not None and s["month"]]
     recent = verified_slips[-3:]
     annual = None
     if verified_slips:
@@ -313,6 +316,7 @@ def _income(slips, txns, docs, items) -> dict:
                                f"({', '.join(month_label(s['month']) for s in recent)})."}
     employers = sorted({s["employer"] for s in slips if s["employer"]})
     return {"slips": slips, "comparison": comparison, "itr": itr, "form16": form16, "annualised_gross": annual,
+            "undated_slips": undated,
             "suggested_income": suggestion, "employers": employers,
             "salary_credit_rule": "Credits dated on/after the 20th count for that month; on/before the "
                                   "10th for the previous month."}
@@ -336,10 +340,13 @@ def _credit(docs, items, labels):
             if seq == 0:
                 continue
             g = lambda k: f.get(k, {}).get("value") if f.get(k) else None  # noqa: E731
+            # Only a reported (verified) or analyst-confirmed value may change how an
+            # account is treated; a model proposal that was not verified cannot close it.
+            gv = lambda k: g(k) if f.get(k) and f[k]["status"] != "unverified" else None  # noqa: E731
             acct_type = (g("account_type") or "").upper()
             own = (g("ownership") or "").upper()
-            status = (g("status") or "").upper()
-            closed = bool(g("date_closed")) or "CLOSED" in status or "SETTLED" in status \
+            status = (gv("status") or "").upper()
+            closed = bool(gv("date_closed")) or "CLOSED" in status or "SETTLED" in status \
                 or "WRITTEN" in status and "OFF" in status
             kind = ("od" if re.search(r"OVERDRAFT|\bOD\b", acct_type) else
                     "card" if "CARD" in acct_type else "loan")
@@ -535,9 +542,10 @@ def _matches(tradelines, series, decisions):
     by_series = defaultdict(list)
     for c in cands:
         by_series[c["series"]].append(c)
+    contested = {id(c) for group in by_series.values() if sum(o["strength"] == "strong" for o in group) > 1
+                 for c in group if c["strength"] == "strong"}
     for c in cands:
-        rivals = [o for o in by_series[c["series"]] if o is not c]
-        if c["strength"] == "strong" and any(o["strength"] == "strong" for o in rivals):
+        if id(c) in contested:
             c["strength"] = "contested"
         d = decided.get(c["key"])
         if d:
@@ -929,7 +937,8 @@ def _review(out, acks):
             if v["status"] == "unverified":
                 add(f"fact:{v['key']}", CONFIRM, "Credit report",
                     f"{tl['label']}: {field.replace('_', ' ')} proposed by the model but not verified "
-                    f"({v['note']}).", field in ("emi", "current_balance", "overdue"), "fact", v["key"],
+                    f"({v['note']}).", field in ("emi", "current_balance", "overdue", "status", "date_closed"),
+                    "fact", v["key"],
                     tab="liabilities")
         overdue = tl["fields"].get("overdue")
         if overdue and overdue["status"] != "unverified" and overdue["value"] and float(overdue["value"]) > 0:
@@ -970,6 +979,9 @@ def _review(out, acks):
             group = DISCREPANCY if c["difference"] not in (None, 0) else \
                 CONFIRM if "not verified" in c["note"] else MISSING
             add(f"income:{c['month']}", group, "Income", f"{c['label']}: {c['note']}", False, tab="income")
+    for doc_id in out["income"].get("undated_slips", []):
+        add(f"slip-month:{doc_id}", CONFIRM, "Income", "A salary slip's pay month was not read; it is left out of "
+            "monthly comparisons and averages until the month is corrected.", False, "ack", tab="income")
     for s in out["income"]["slips"]:
         if s["arith"] and not s["arith"]["ok"]:
             add(f"slip-arith:{s['document_id']}", DISCREPANCY, "Income",

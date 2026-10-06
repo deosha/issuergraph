@@ -488,3 +488,72 @@ def test_committed_demo_snapshot_is_synthetic_and_complete():
             assert (root / page["file"]).exists()
     text = (root / "snapshot.json").read_text()
     assert "/Users/" not in text and "stored_path" not in text
+
+
+# --- review findings (each reproduces a reported defect) -----------------------------------
+
+def _view(field, value, status="reported", kind="text", fid=1):
+    return {"key": f"9:1:{field}", "id": fid, "field": field, "kind": kind, "document_id": 9, "page_no": 1,
+            "origin": "model", "verified": status == "reported", "evidence_text": "", "json_path": None,
+            "note": None, "has_rects": True, "original": value, "reported_blank": False, "value": value,
+            "status": status, "corrections": []}
+
+
+def test_unverified_status_cannot_close_a_loan():
+    f = {"lender": _view("lender", "SOME BANK"), "account_type": _view("account_type", "PERSONAL LOAN"),
+         "status": _view("status", "CLOSED", status="unverified"),
+         "emi": _view("emi", 10000.0, kind="amount")}
+    docs = {9: {"kind": "credit_report", "status": "incomplete"}}
+    _, tls = analysis._credit(docs, {9: {0: {}, 1: f}}, {})
+    assert not tls[0]["closed"]
+    ob = analysis._obligations(tls, [], [], {})
+    assert ob["rows"][0]["included"] and ob["total_included"] == 10000.0
+
+
+def test_undated_slip_does_not_crash_and_is_kept_for_review():
+    slips = [{"document_id": 1, "status": "incomplete", "fields": {}, "month": None, "employer": None,
+              "gross": 100000.0, "deductions": 20000.0, "net": 80000.0, "arith": None},
+             {"document_id": 2, "status": "complete", "fields": {}, "month": "2026-08", "employer": None,
+              "gross": 100000.0, "deductions": 20000.0, "net": 80000.0, "arith": None}]
+    inc = analysis._income(slips, [], {}, {})
+    assert "1 verified slip" in inc["suggested_income"]["basis"]          # the undated slip is not averaged
+    assert inc["undated_slips"] == [1]
+
+
+def test_competing_matches_are_all_contested_regardless_of_order():
+    tl = lambda k: {"key": k, "closed": False, "kind": "loan", "account_type": None, "lender_tokens": ["ACME"], "last4": "1234",  # noqa: E731
+                    "fields": {"emi": _view("emi", 5000.0, kind="amount")}, "label": k}
+    series = [{"key": "s1", "category": "loan_repayment", "amount": 5000.0, "narrations": ["ACH ACME 1234"],
+               "refs": [], "recurring": True}]
+    for order in ([tl("a"), tl("b")], [tl("b"), tl("a")]):
+        ms = analysis._matches(order, series, [])
+        assert {m["status"] for m in ms} == {"ambiguous"} and {m["strength"] for m in ms} == {"contested"}
+
+
+def _txn(i, day, credit=None, debit=None, balance=None, doc=1):
+    return {"id": i, "document_id": doc, "seq": i, "account_key": "B|XX1", "txn_date": day, "narration": "NEFT CR-X-PARTY",
+            "debit": debit, "credit": credit, "balance": balance, "duplicate": False, "category": "other"}
+
+
+def test_amb_restarts_at_each_statement_after_a_gap():
+    from issuergraph.assess import banking
+
+    sts = [{"account_key": "B|XX1", "period_start": "2026-01-01", "period_end": "2026-01-31",
+            "summary": {"opening_balance": 4000.0, "account_type": "savings"}},
+           {"account_key": "B|XX1", "period_start": "2026-03-01", "period_end": "2026-03-31",
+            "summary": {"opening_balance": 1000.0, "account_type": "savings"}}]
+    txns = [_txn(1, "2026-01-31", debit=3871.0, balance=129.0)]
+    a = banking.analyse(txns, sts)[0]
+    march = next(m for m in a["months"] if m["month"] == "2026-03")
+    assert march["amb"] == 1000.0 and not any(m["month"] == "2026-02" and m["days"] for m in a["months"])
+
+
+def test_one_withdrawal_is_not_counted_against_two_credits():
+    from issuergraph.assess import banking
+
+    sts = [{"account_key": "B|XX1", "period_start": "2026-01-01", "period_end": "2026-01-31",
+            "summary": {"opening_balance": 0.0, "account_type": "current"}}]
+    txns = [_txn(1, "2026-01-10", credit=10000.0, balance=10000.0), _txn(2, "2026-01-10", credit=10000.0, balance=20000.0),
+            _txn(3, "2026-01-11", debit=8000.0, balance=12000.0)]
+    r = banking.analyse(txns, sts)[0]["retention"]
+    assert r["large_credits"] == 2 and r["quick_out"] == 1          # ₹8,000 can account for one credit at most
