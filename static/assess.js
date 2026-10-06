@@ -199,7 +199,7 @@
       banner.className = "banner synthetic";
       banner.innerHTML = `<b>Public demo · synthetic data · read-only.</b> Every document and figure is fictional. Click any
         figure to see its source page; corrections, decisions and uploads are shown but work only in a pilot.
-        <a href="/pilot?from=assess-demo">Discuss an assessment pilot →</a>`;
+        <a href="/pilot?workflow=assess&amp;from=assess-demo">Discuss an assessment pilot →</a>`;
     } else if (k.is_synthetic) {
       banner.hidden = false;
       banner.className = "banner synthetic";
@@ -429,7 +429,7 @@
           ${tile("Returns / bounces", a.returns.count ? `<span class="pill bad">${a.returns.count}</span>` : calc("0"), a.returns.ids,
             "Cheque / ECS / NACH returns and their charges")}
           ${tile("Days below zero", calc(String(a.negative_days)), a.negative_ids, a.balances_available ? "From end-of-day balances" : "Balances not available", `Rows with a balance below zero — ${name}`)}
-          ${tile("Moved out within 2 days", pct(a.retention.share), a.retention.ids, `${a.retention.quick_out} of ${a.retention.large_credits} large credits ⓘ`, null, esc(a.retention.rule))}
+          ${tile("Credits matched by subsequent debits", pct(a.retention.share), a.retention.ids, `${a.retention.quick_out} of ${a.retention.large_credits} large credits, within 2 days ⓘ`, "Credits matched by subsequent debits", esc(a.retention.rule))}
           ${tile("Largest single payer", top[0] ? pct(top[0].share) : NA, top[0] ? top[0].ids : null,
             top[0] ? esc(top[0].party) + " — share of non-cash business credits" : "", top[0] ? top[0].party : "")}
         </div>
@@ -447,7 +447,7 @@
               <td class="num">${money(r.amount)}</td></tr>`).join("")}</tbody></table>` : ""}</div>
         </div>
         <p class="note">Findings use review prompts, not lender rules: one payer ≥ ${(a.review_thresholds.concentration_share * 100).toFixed(0)}%,
-        cash ≥ ${(a.review_thresholds.cash_share * 100).toFixed(0)}% of business credits, ≥ ${(a.review_thresholds.quick_out_share * 100).toFixed(0)}% of large credits moved out within 2 days.</p></div>`;
+        cash ≥ ${(a.review_thresholds.cash_share * 100).toFixed(0)}% of business credits, ≥ ${(a.review_thresholds.quick_out_share * 100).toFixed(0)}% of large credits matched by subsequent debits within 2 days.</p></div>`;
     }
     return html || `<div class="card"><p class="empty">No statements processed.</p></div>`;
   }

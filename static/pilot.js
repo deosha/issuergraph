@@ -2,6 +2,7 @@
 (function () {
   const wf = new URLSearchParams(location.search).get("workflow");
   if (wf !== "assess") return;
+  document.querySelectorAll("[data-workflow]").forEach((el) => { el.hidden = el.dataset.workflow !== "assess"; });
   const set = (sel, html) => { const el = document.querySelector(sel); if (el) el.innerHTML = html; };
   set("h1", "Discuss a borrower assessment pilot");
   set(".lede", "Tell us about your cases and where review time goes. You will get a scoped reply — a fixed price and a schedule — not a brochure.");

@@ -1031,8 +1031,8 @@ def _review(out, acks):
         q = a["retention"]["share"]
         if q is not None and q >= th["quick_out_share"]:
             add(f"bank:quick:{a['account_key']}", CONFIRM, "Banking",
-                f"{name}: {q * 100:.0f}% of large credits (by value) left the account within "
-                f"{QUICK_DAYS_TEXT}.", False, tab="banking")
+                f"{name}: {q * 100:.0f}% of large credits (by value) were matched by subsequent debits "
+                f"within {QUICK_DAYS_TEXT} — a timing pattern to explain, not money traced.", False, tab="banking")
     e = out["eligibility"]
     if e["inputs"]["eligible_income"]["origin"] == "suggested":
         add("elig:income", CONFIRM, "Eligibility", "Eligible monthly income is a suggestion; enter the "

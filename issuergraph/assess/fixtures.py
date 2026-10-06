@@ -406,7 +406,7 @@ OWNER = "Rohan Verma (synthetic)"
 
 def current_account_rows() -> list[dict]:
     """12 months of a small packaging business: one dominant customer, cash sales,
-    an ECS EMI with one return, and a large receipt moved out within two days."""
+    an ECS EMI with one return, and a large receipt followed by debits within two days."""
     rows, bal = [], Decimal("185000.00")
     for i in range(12):
         y, m = (2025 + (9 + i) // 12, (9 + i) % 12 + 1)          # Oct 2025 .. Sep 2026

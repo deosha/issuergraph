@@ -1,8 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#0d1016"/>
-  <text x="80" y="250" fill="#eef1f7" font-family="system-ui,sans-serif" font-size="62" font-weight="600">IssuerGraph</text>
-  <text x="80" y="330" fill="#b9c2d4" font-family="system-ui,sans-serif" font-size="34">Issuer debt and rating changes,</text>
-  <text x="80" y="380" fill="#b9c2d4" font-family="system-ui,sans-serif" font-size="34">with the source behind every figure.</text>
-  <rect x="80" y="430" width="420" height="4" fill="#6aa6ff"/>
-  <text x="80" y="492" fill="#8b93a7" font-family="ui-monospace,monospace" font-size="25">every fact anchored to its page</text>
+  <rect width="1200" height="630" fill="#14304f"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#0f766e"/>
+  <rect x="80" y="92" width="58" height="40" rx="8" fill="#0f766e"/>
+  <text x="109" y="120" text-anchor="middle" fill="#ffffff" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="20" font-weight="700">IG</text>
+  <text x="154" y="122" fill="#ffffff" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="32" font-weight="600">IssuerGraph</text>
+  <text x="80" y="250" fill="#ffffff" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="54" font-weight="700">Review-ready credit assessments,</text>
+  <text x="80" y="318" fill="#ffffff" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="54" font-weight="700">with evidence behind every finding.</text>
+  <text x="80" y="392" fill="#b9c7d8" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="27">Borrower assessment for loan advisors and lender credit teams.</text>
+  <text x="80" y="432" fill="#b9c7d8" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="27">Corporate research for credit analysts.</text>
+  <rect x="80" y="486" width="370" height="54" rx="10" fill="#0f766e"/>
+  <text x="265" y="521" text-anchor="middle" fill="#ffffff" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="23" font-weight="600">Every figure opens its source</text>
+  <text x="474" y="521" fill="#7fd6cc" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="23">Two demos, no signup · issuergraph.com</text>
 </svg>

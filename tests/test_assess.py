@@ -557,3 +557,26 @@ def test_one_withdrawal_is_not_counted_against_two_credits():
             _txn(3, "2026-01-11", debit=8000.0, balance=12000.0)]
     r = banking.analyse(txns, sts)[0]["retention"]
     assert r["large_credits"] == 2 and r["quick_out"] == 1          # ₹8,000 can account for one credit at most
+
+
+def test_borrower_routes_lead_to_the_borrower_pilot_form():
+    root = pathlib.Path(__file__).resolve().parents[1] / "static"
+    assert "/pilot?workflow=assess" in (root / "assess.js").read_text()
+    pilot = (root / "pilot.html").read_text()
+    assert 'data-workflow="assess"' in pilot and 'href="/demo/assess"' in pilot
+    assert "[data-workflow]" in (root / "pilot.js").read_text()
+
+
+def test_social_preview_uses_a_png_and_the_current_positioning():
+    html = request("GET", "/").text
+    assert "/static/og.png" in html and "og.svg" not in html          # WhatsApp does not render SVG previews
+    assert "issuer facts" not in html.lower() and "issuer debt and rating changes, with the source" not in html.lower()
+    assert request("GET", "/static/og.png").status == 200
+
+
+def test_retention_is_never_described_as_money_leaving():
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for path in ("issuergraph/assess/analysis.py", "issuergraph/assess/export.py", "static/assess.js",
+                 "static/demo/assess/snapshot.json"):
+        text = (root / path).read_text().lower()
+        assert "left the account" not in text and "moved out" not in text, path

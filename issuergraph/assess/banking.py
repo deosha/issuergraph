@@ -11,7 +11,8 @@ lender policy, and the UI says so.
            reversals/returns and own-account transfers.
   Cash     deposits and withdrawals identified from narration wording.
   Returns  cheque/ECS/NACH returns and their charges, from narration wording.
-  Retention  large credits of which ≥ 80% left the account within 2 days.
+  Retention  large credits matched by subsequent debits (≥ 80% of their value within
+             2 days), each debited rupee counted once — a timing pattern, not money traced.
   Concentration  business credits grouped by the counterparty name read from
            the narration (inferred).
 """
@@ -161,9 +162,9 @@ def _account(key, rows, sts) -> dict:
                 m["cash_wdl"] += amt
                 m["cash_wdl_ids"].append(t["id"])
 
-    # retention: large business credits mostly moved out within QUICK_DAYS
+    # retention: large business credits matched by subsequent debits within QUICK_DAYS
     # Each rupee debited is allocated to one credit only (earliest credit first), so
-    # one withdrawal cannot make two credits look as if they left the account.
+    # one withdrawal cannot be matched against two credits.
     quick, large = [], []
     pool = [[date.fromisoformat(t["txn_date"]), D(str(t["debit"]))] for t in rows if t["debit"]]
     for t in sorted(business, key=lambda x: (x["txn_date"], x["seq"])):

@@ -260,7 +260,7 @@ def workbook(out: dict) -> Workbook:
                           ["Cash withdrawals", a["cash_withdrawals"]["amount"], f"{a['cash_withdrawals']['count']} entries"],
                           ["Returns / bounces", a["returns"]["count"], "; ".join(f"{x['date']} {x['narration']}" for x in a["returns"]["rows"])],
                           ["Days below zero", a["negative_days"], ""],
-                          ["Large credits moved out within 2 days (share)", a["retention"]["share"], a["retention"]["rule"]],
+                          ["Credits matched by subsequent debits within 2 days (share of large credits)", a["retention"]["share"], a["retention"]["rule"]],
                           ["Largest single payer (share)", top[0]["share"] if top else None, top[0]["party"] if top else ""]],
                          money_cols=(1,), title=name)
         _, _, r = _table(ws, r, ["Month", "AMB", "Business credits", "Credits (n)", "Debits", "Debits (n)", "Cash in",
